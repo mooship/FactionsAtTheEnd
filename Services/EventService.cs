@@ -30,6 +30,30 @@ public class EventService
     public List<GameEvent> GenerateRandomEvents(GameState gameState)
     {
         var events = new List<GameEvent>();
+        // Anti-spam: If player repeats an action 3+ times in recent turns, trigger a negative event
+        foreach (var kvp in gameState.RecentActionCounts)
+        {
+            if (kvp.Value >= 3)
+            {
+                events.Add(
+                    new GameEvent
+                    {
+                        Title = $"Repetitive Strategy: {kvp.Key.GetDisplayName()}",
+                        Description =
+                            $"Your repeated use of {kvp.Key.GetDisplayName()} has led to diminishing returns and unrest.",
+                        Type = EventType.Crisis,
+                        Cycle = gameState.CurrentCycle,
+                        AffectedFactions = [gameState.PlayerFactionId],
+                        Effects = new()
+                        {
+                            { UI.StatKey.Stability, -5 },
+                            { UI.StatKey.Resources, -3 },
+                        },
+                        BlockedActions = [kvp.Key],
+                    }
+                );
+            }
+        }
 
         // 40% chance of a random event each cycle
         if (Random.Shared.Next(1, 101) <= 40)

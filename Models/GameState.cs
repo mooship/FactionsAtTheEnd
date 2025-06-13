@@ -28,6 +28,9 @@ public class GameState
 
     // Actions blocked for the next turn due to events
     public List<PlayerActionType> BlockedActions { get; set; } = [];
+
+    // Track how many times each action was used in the last 3 turns (anti-spam)
+    public Dictionary<PlayerActionType, int> RecentActionCounts { get; set; } = [];
 }
 
 /// <summary>

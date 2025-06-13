@@ -92,6 +92,8 @@ public class GameEngine
 
         var actionValidator = new Validators.PlayerActionValidator();
         var validActions = new List<PlayerAction>();
+        // Track action usage for anti-spam
+        var actionCounts = new Dictionary<PlayerActionType, int>();
         foreach (var action in playerActions)
         {
             var validationResult = actionValidator.Validate(action);
@@ -100,6 +102,28 @@ public class GameEngine
                 continue;
             }
             validActions.Add(action);
+
+            // Count actions for anti-spam
+            if (!actionCounts.ContainsKey(action.ActionType))
+                actionCounts[action.ActionType] = 0;
+            actionCounts[action.ActionType]++;
+        }
+
+        // Update rolling action counts (decay old counts)
+        foreach (var key in actionCounts.Keys)
+        {
+            if (!CurrentGame.RecentActionCounts.ContainsKey(key))
+                CurrentGame.RecentActionCounts[key] = 0;
+            CurrentGame.RecentActionCounts[key] += actionCounts[key];
+        }
+        // Decay all action counts by 1 (min 0) to keep window ~3 turns
+        var keys = CurrentGame.RecentActionCounts.Keys.ToList();
+        foreach (var key in keys)
+        {
+            CurrentGame.RecentActionCounts[key] = Math.Max(
+                0,
+                CurrentGame.RecentActionCounts[key] - 1
+            );
         }
 
         foreach (var action in validActions)
