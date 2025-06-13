@@ -1,0 +1,87 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace FactionsAtTheEnd.Models;
+
+/// <summary>
+/// Represents a player or non-player faction in the game.
+/// </summary>
+public class Faction
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public FactionType Type { get; set; }
+    public bool IsPlayer { get; set; }
+
+    // Resources
+    public int Population { get; set; }
+    public int Military { get; set; }
+    public int Technology { get; set; }
+    public int Influence { get; set; }
+    public int Resources { get; set; }
+
+    // Status
+    public FactionStatus Status { get; set; } = FactionStatus.Stable;
+    public int Stability { get; set; } = 50;
+
+    // Faction-specific traits
+    public List<string> Traits { get; set; } = [];
+
+    public DateTime LastActive { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Ensures all resource and stat values are non-negative and do not exceed maximums.
+    /// </summary>
+    public void ClampResources()
+    {
+        const int MaxStat = 100;
+        Population = Math.Max(0, Math.Min(Population, MaxStat));
+        Military = Math.Max(0, Math.Min(Military, MaxStat));
+        Technology = Math.Max(0, Math.Min(Technology, MaxStat));
+        Influence = Math.Max(0, Math.Min(Influence, MaxStat));
+        Resources = Math.Max(0, Math.Min(Resources, MaxStat));
+        Stability = Math.Max(0, Math.Min(Stability, MaxStat));
+    }
+}
+
+/// <summary>
+/// The type of a faction, which determines its starting bonuses and flavor.
+/// </summary>
+public enum FactionType
+{
+    [Display(Name = "Military Junta")]
+    MilitaryJunta,
+
+    [Display(Name = "Corporate Council")]
+    CorporateCouncil,
+
+    [Display(Name = "Religious Order")]
+    ReligiousOrder,
+
+    [Display(Name = "Pirate Alliance")]
+    PirateAlliance,
+
+    [Display(Name = "Technocratic Union")]
+    TechnocraticUnion,
+
+    [Display(Name = "Rebellion Cell")]
+    RebellionCell,
+
+    [Display(Name = "Imperial Remnant")]
+    ImperialRemnant,
+
+    [Display(Name = "Ancient Awakened")]
+    AncientAwakened,
+}
+
+/// <summary>
+/// The current status of a faction, used for narrative and event flavor.
+/// </summary>
+public enum FactionStatus
+{
+    Thriving,
+    Stable,
+    Struggling,
+    Desperate,
+    Collapsing,
+}
