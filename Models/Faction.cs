@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using FactionsAtTheEnd.UI;
 
 namespace FactionsAtTheEnd.Models;
 
@@ -34,13 +35,12 @@ public class Faction
     /// </summary>
     public void ClampResources()
     {
-        const int MaxStat = 100;
-        Population = Math.Max(0, Math.Min(Population, MaxStat));
-        Military = Math.Max(0, Math.Min(Military, MaxStat));
-        Technology = Math.Max(0, Math.Min(Technology, MaxStat));
-        Influence = Math.Max(0, Math.Min(Influence, MaxStat));
-        Resources = Math.Max(0, Math.Min(Resources, MaxStat));
-        Stability = Math.Max(0, Math.Min(Stability, MaxStat));
+        Population = Math.Max(GameConstants.MinStat, Math.Min(Population, GameConstants.MaxStat));
+        Military = Math.Max(GameConstants.MinStat, Math.Min(Military, GameConstants.MaxStat));
+        Technology = Math.Max(GameConstants.MinStat, Math.Min(Technology, GameConstants.MaxStat));
+        Influence = Math.Max(GameConstants.MinStat, Math.Min(Influence, GameConstants.MaxStat));
+        Resources = Math.Max(GameConstants.MinStat, Math.Min(Resources, GameConstants.MaxStat));
+        Stability = Math.Max(GameConstants.MinStat, Math.Min(Stability, GameConstants.MaxStat));
     }
 }
 

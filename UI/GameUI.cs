@@ -1,15 +1,24 @@
 using FactionsAtTheEnd.Core;
+using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
-using FactionsAtTheEnd.Services;
+using FluentValidation;
 using Spectre.Console;
 
 namespace FactionsAtTheEnd.UI;
 
 // Single-player, single-faction MVP.
 // This UI is focused on the player faction only.
-public class GameUI(GameEngine gameEngine)
+public class GameUI(
+    GameEngine gameEngine,
+    IFactionService factionService,
+    IValidator<Faction> factionValidator,
+    IValidator<PlayerAction> playerActionValidator
+)
 {
     private readonly GameEngine _gameEngine = gameEngine;
+    private readonly IFactionService _factionService = factionService;
+    private readonly IValidator<Faction> _factionValidator = factionValidator;
+    private readonly IValidator<PlayerAction> _playerActionValidator = playerActionValidator;
 
     public async Task RunMainMenuAsync()
     {
@@ -82,14 +91,14 @@ public class GameUI(GameEngine gameEngine)
         foreach (var type in Enum.GetValues<FactionType>())
         {
             AnsiConsole.MarkupLine(
-                $"[aqua]{type.GetDisplayName()}[/]: {GetFactionTypeDescription(type)} Traits: [grey]{string.Join(", ", FactionService.CreateFaction("", type).Traits)}[/]"
+                $"[aqua]{type.GetDisplayName()}[/]: {GetFactionTypeDescription(type)} Traits: [grey]{string.Join(", ", _factionService.CreateFaction("", type).Traits)}[/]"
             );
         }
         AnsiConsole.MarkupLine("\nPress any key to return...");
         Console.ReadKey();
     }
 
-    private string GetActionDescription(PlayerActionType action)
+    private static string GetActionDescription(PlayerActionType action)
     {
         return action switch
         {
@@ -127,8 +136,7 @@ public class GameUI(GameEngine gameEngine)
             Type = factionType,
             IsPlayer = true,
         };
-        var validator = new Validators.FactionValidator();
-        var validationResult = validator.Validate(tempFaction);
+        var validationResult = _factionValidator.Validate(tempFaction);
         if (!validationResult.IsValid)
         {
             foreach (var error in validationResult.Errors)
@@ -156,7 +164,7 @@ public class GameUI(GameEngine gameEngine)
 
     private async Task LoadGameAsync()
     {
-        var savedGames = await GameEngine.GetSavedGamesAsync();
+        var savedGames = await _gameEngine.GetSavedGamesAsync();
 
         if (savedGames.Count == 0)
         {
@@ -489,6 +497,13 @@ public class GameUI(GameEngine gameEngine)
                 AnsiConsole.MarkupLine($"[yellow]{e.Title}[/]: {e.Description}");
             }
         }
+        // Show anti-spam feedback if any actions are blocked due to spamming
+        if (game.BlockedActions.Count > 0)
+        {
+            AnsiConsole.MarkupLine(
+                "[yellow]Some actions are temporarily blocked due to repeated use. Vary your strategy to avoid negative effects![/]"
+            );
+        }
     }
 
     // DisplayFactionsOverview is now implemented and used in the main game loop.
@@ -602,11 +617,10 @@ public class GameUI(GameEngine gameEngine)
         {
             return;
         }
-        var validator = new Validators.PlayerActionValidator();
         var validActions = new List<PlayerAction>();
         foreach (var action in playerActions)
         {
-            var result = validator.Validate(action);
+            var result = _playerActionValidator.Validate(action);
             if (result.IsValid)
             {
                 validActions.Add(action);
@@ -648,7 +662,16 @@ public class GameUI(GameEngine gameEngine)
 
     private void ShowActionTooltip(PlayerActionType actionType)
     {
-        // Expanded tooltip for blocked/unblocked actions
+        // Show anti-spam warning if action is currently blocked due to spamming
+        if (
+            _gameEngine.CurrentGame != null
+            && _gameEngine.CurrentGame.BlockedActions.Contains(actionType)
+        )
+        {
+            AnsiConsole.MarkupLine(
+                $"[yellow]You have been blocked from using [bold]{actionType.GetDisplayName()}[/] this turn due to repeated use. Try varying your strategy![/]"
+            );
+        }
         switch (actionType)
         {
             case PlayerActionType.Ancient_Studies:

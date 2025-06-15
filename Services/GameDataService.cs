@@ -1,13 +1,14 @@
+using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using LiteDB;
 
 namespace FactionsAtTheEnd.Services;
 
-public class GameDataService
+public class GameDataService : IGameDataService
 {
     private const string DatabasePath = "factionsattheend.db";
 
-    public static async Task SaveGameAsync(GameState gameState)
+    public async Task SaveGameAsync(GameState gameState)
     {
         try
         {
@@ -25,7 +26,7 @@ public class GameDataService
         }
     }
 
-    public static async Task<List<GameState>> GetSavedGamesAsync()
+    public async Task<List<GameState>> GetSavedGamesAsync()
     {
         try
         {
@@ -43,7 +44,7 @@ public class GameDataService
         }
     }
 
-    public static async Task<GameState?> LoadGameAsync(string gameId)
+    public async Task<GameState?> LoadGameAsync(string gameId)
     {
         try
         {
@@ -61,7 +62,7 @@ public class GameDataService
         }
     }
 
-    public static async Task DeleteGameAsync(string gameId)
+    public async Task DeleteGameAsync(string gameId)
     {
         try
         {

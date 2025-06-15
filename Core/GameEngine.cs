@@ -1,5 +1,7 @@
+using CommunityToolkit.Diagnostics;
+using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
-using FactionsAtTheEnd.Services;
+using FluentValidation;
 
 namespace FactionsAtTheEnd.Core;
 
@@ -7,19 +9,22 @@ namespace FactionsAtTheEnd.Core;
 /// Main game engine for Factions at the End (single-player, single-faction MVP).
 /// Handles game state, turn processing, and win/lose conditions.
 /// </summary>
-public class GameEngine
+public class GameEngine(
+    IEventService eventService,
+    IFactionService factionService,
+    IGameDataService gameDataService,
+    IValidator<PlayerAction> playerActionValidator
+)
 {
-    private readonly EventService _eventService;
+    private readonly IEventService _eventService = eventService;
+    private readonly IFactionService _factionService = factionService;
+    private readonly IGameDataService _gameDataService = gameDataService;
+    private readonly IValidator<PlayerAction> _playerActionValidator = playerActionValidator;
 
     /// <summary>
     /// The current game state. Null if no game is loaded.
     /// </summary>
     public GameState? CurrentGame { get; private set; }
-
-    public GameEngine()
-    {
-        _eventService = new EventService();
-    }
 
     /// <summary>
     /// Creates a new game with a single player faction.
@@ -29,13 +34,19 @@ public class GameEngine
         FactionType playerFactionType
     )
     {
+        Guard.IsNotNullOrWhiteSpace(playerFactionName);
+        Guard.IsTrue(
+            Enum.IsDefined(playerFactionType),
+            nameof(playerFactionType) + " must be a valid FactionType."
+        );
+
         var gameState = new GameState
         {
             SaveName = $"Game Started {DateTime.Now:yyyy-MM-dd HH:mm}",
             CurrentCycle = 1,
         };
 
-        var playerFaction = FactionService.CreateFaction(
+        var playerFaction = _factionService.CreateFaction(
             playerFactionName,
             playerFactionType,
             isPlayer: true
@@ -59,7 +70,7 @@ public class GameEngine
         gameState.RecentEvents.AddRange(initialEvents);
 
         CurrentGame = gameState;
-        await GameDataService.SaveGameAsync(gameState);
+        await _gameDataService.SaveGameAsync(gameState);
 
         return gameState;
     }
@@ -67,9 +78,11 @@ public class GameEngine
     /// <summary>
     /// Returns a list of all saved games.
     /// </summary>
-    public static async Task<List<GameState>> GetSavedGamesAsync()
+    public async Task<List<GameState>> GetSavedGamesAsync()
     {
-        return await GameDataService.GetSavedGamesAsync();
+        Guard.IsNotNull(_gameDataService);
+
+        return await _gameDataService.GetSavedGamesAsync();
     }
 
     /// <summary>
@@ -77,7 +90,10 @@ public class GameEngine
     /// </summary>
     public async Task LoadGameAsync(string gameId)
     {
-        CurrentGame = await GameDataService.LoadGameAsync(gameId);
+        Guard.IsNotNullOrWhiteSpace(gameId);
+        Guard.IsNotNull(_gameDataService);
+
+        CurrentGame = await _gameDataService.LoadGameAsync(gameId);
     }
 
     /// <summary>
@@ -85,61 +101,91 @@ public class GameEngine
     /// </summary>
     public async Task ProcessTurnAsync(List<PlayerAction> playerActions)
     {
-        if (CurrentGame == null)
-        {
-            return;
-        }
+        Guard.IsNotNull(playerActions);
+        Guard.IsNotNull(CurrentGame);
 
-        var actionValidator = new Validators.PlayerActionValidator();
+        var (validActions, actionCounts) = ValidateAndCountActions(playerActions);
+        UpdateActionCounts(actionCounts);
+        await ApplyPlayerActionsAsync(validActions);
+        await UpdateWorldStateAsync();
+        var newEvents = (await _eventService.GenerateRandomEventsAsync(CurrentGame)).ToList();
+        CurrentGame.RecentEvents.AddRange(newEvents);
+        ApplyEventEffects(newEvents);
+        await _gameDataService.SaveGameAsync(CurrentGame);
+        CheckWinLoseConditions();
+    }
+
+    /// <summary>
+    /// Validates player actions and counts their types.
+    /// </summary>
+    private (
+        List<PlayerAction> validActions,
+        Dictionary<PlayerActionType, int> actionCounts
+    ) ValidateAndCountActions(List<PlayerAction> playerActions)
+    {
         var validActions = new List<PlayerAction>();
-        // Track action usage for anti-spam
         var actionCounts = new Dictionary<PlayerActionType, int>();
         foreach (var action in playerActions)
         {
-            var validationResult = actionValidator.Validate(action);
+            var validationResult = _playerActionValidator.Validate(action);
             if (!validationResult.IsValid)
             {
                 continue;
             }
             validActions.Add(action);
-
-            // Count actions for anti-spam
-            if (!actionCounts.ContainsKey(action.ActionType))
-                actionCounts[action.ActionType] = 0;
-            actionCounts[action.ActionType]++;
+            if (!actionCounts.TryGetValue(action.ActionType, out int value))
+            {
+                value = 0;
+                actionCounts[action.ActionType] = value;
+            }
+            actionCounts[action.ActionType] = ++value;
         }
+        return (validActions, actionCounts);
+    }
 
-        // Update rolling action counts (decay old counts)
+    /// <summary>
+    /// Updates rolling action counts and decays old counts.
+    /// </summary>
+    private void UpdateActionCounts(Dictionary<PlayerActionType, int> actionCounts)
+    {
         foreach (var key in actionCounts.Keys)
         {
-            if (!CurrentGame.RecentActionCounts.ContainsKey(key))
-                CurrentGame.RecentActionCounts[key] = 0;
-            CurrentGame.RecentActionCounts[key] += actionCounts[key];
+            if (!CurrentGame!.RecentActionCounts.ContainsKey(key))
+            {
+                CurrentGame!.RecentActionCounts[key] = 0;
+            }
+            CurrentGame!.RecentActionCounts[key] += actionCounts[key];
         }
-        // Decay all action counts by 1 (min 0) to keep window ~3 turns
-        var keys = CurrentGame.RecentActionCounts.Keys.ToList();
+        var keys = CurrentGame!.RecentActionCounts.Keys.ToList();
         foreach (var key in keys)
         {
-            CurrentGame.RecentActionCounts[key] = Math.Max(
+            CurrentGame!.RecentActionCounts[key] = Math.Max(
                 0,
-                CurrentGame.RecentActionCounts[key] - 1
+                CurrentGame!.RecentActionCounts[key] - 1
             );
         }
+    }
 
+    /// <summary>
+    /// Applies all valid player actions asynchronously.
+    /// </summary>
+    private async Task ApplyPlayerActionsAsync(List<PlayerAction> validActions)
+    {
         foreach (var action in validActions)
         {
             await ProcessPlayerActionAsync(action);
         }
+    }
 
-        await UpdateWorldStateAsync();
-
-        // Generate random and special events
-        var newEvents = (await _eventService.GenerateRandomEventsAsync(CurrentGame)).ToList();
-        CurrentGame.RecentEvents.AddRange(newEvents);
-
-        // Apply event effects to the player faction and update blocked actions
-        var player = CurrentGame.Factions.FirstOrDefault(f => f.Id == CurrentGame.PlayerFactionId);
-        CurrentGame.BlockedActions.Clear();
+    /// <summary>
+    /// Applies event effects and updates blocked actions.
+    /// </summary>
+    private void ApplyEventEffects(List<GameEvent> newEvents)
+    {
+        var player = CurrentGame!.Factions.FirstOrDefault(f =>
+            f.Id == CurrentGame!.PlayerFactionId
+        );
+        CurrentGame!.BlockedActions.Clear();
         foreach (var gameEvent in newEvents)
         {
             if (player != null)
@@ -164,41 +210,36 @@ public class GameEngine
                             player.Resources += effect.Value;
                             break;
                         case UI.StatKey.Stability:
-                            player.Stability += effect.Value;
+                            CurrentGame!.GalacticStability += effect.Value;
                             break;
                     }
                 }
-                player.ClampResources();
-            }
-            if (gameEvent.BlockedActions != null && gameEvent.BlockedActions.Count > 0)
-            {
-                foreach (var blocked in gameEvent.BlockedActions)
+                if (gameEvent.BlockedActions != null)
                 {
-                    if (!CurrentGame.BlockedActions.Contains(blocked))
+                    foreach (var blocked in gameEvent.BlockedActions)
                     {
-                        CurrentGame.BlockedActions.Add(blocked);
+                        if (!CurrentGame!.BlockedActions.Contains(blocked))
+                        {
+                            CurrentGame!.BlockedActions.Add(blocked);
+                        }
                     }
                 }
             }
         }
+    }
 
-        // Keep only the 10 most recent events
-        if (CurrentGame.RecentEvents.Count > 10)
+    /// <summary>
+    /// Checks win/lose conditions and updates game state accordingly.
+    /// </summary>
+    private void CheckWinLoseConditions()
+    {
+        var player = CurrentGame!.Factions.FirstOrDefault(f =>
+            f.Id == CurrentGame!.PlayerFactionId
+        );
+        if (player != null && (CurrentGame!.CurrentCycle > 20 || player.Technology >= 100))
         {
-            CurrentGame.RecentEvents = CurrentGame.RecentEvents.TakeLast(10).ToList();
+            CurrentGame!.SaveName = "WINNER";
         }
-
-        CurrentGame.CurrentCycle++;
-        CurrentGame.LastPlayed = DateTime.UtcNow;
-
-        // Win condition: survive 20 turns or reach 100 Technology
-        if (player != null && (CurrentGame.CurrentCycle > 20 || player.Technology >= 100))
-        {
-            // Mark win for UI
-            CurrentGame.SaveName = "WINNER";
-        }
-
-        await GameDataService.SaveGameAsync(CurrentGame);
     }
 
     /// <summary>
@@ -206,6 +247,8 @@ public class GameEngine
     /// </summary>
     private async Task ProcessPlayerActionAsync(PlayerAction action)
     {
+        Guard.IsNotNull(action);
+
         switch (action.ActionType)
         {
             case PlayerActionType.Build_Defenses:
@@ -304,6 +347,10 @@ public class GameEngine
     /// </summary>
     private async Task ApplyToFactionAsync(string factionId, Func<Faction, Task> update)
     {
+        Guard.IsNotNullOrWhiteSpace(factionId);
+        Guard.IsNotNull(update);
+        Guard.IsNotNull(CurrentGame);
+
         if (CurrentGame == null)
         {
             return;
@@ -321,6 +368,8 @@ public class GameEngine
     /// </summary>
     private async Task UpdateWorldStateAsync()
     {
+        Guard.IsNotNull(CurrentGame);
+
         if (CurrentGame == null)
         {
             return;

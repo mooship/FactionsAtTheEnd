@@ -1,10 +1,12 @@
+using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
+using FactionsAtTheEnd.UI;
 
 namespace FactionsAtTheEnd.Services;
 
-public class FactionService
+public class FactionService : IFactionService
 {
-    public static Faction CreateFaction(string name, FactionType type, bool isPlayer = false)
+    public Faction CreateFaction(string name, FactionType type, bool isPlayer = false)
     {
         var faction = new Faction
         {
@@ -21,28 +23,23 @@ public class FactionService
         return faction;
     }
 
-    private static string GenerateFactionDescription(FactionType type)
+    private string GenerateFactionDescription(FactionType type)
     {
         return type switch
         {
-            FactionType.MilitaryJunta =>
-                "A ruthless military organization maintaining order through force.",
-            FactionType.CorporateCouncil =>
-                "Mega-corporations united in pursuit of profit above all else.",
-            FactionType.ReligiousOrder =>
-                "Zealous believers seeking to spread their faith across the stars.",
-            FactionType.PirateAlliance => "Raiders and smugglers operating outside galactic law.",
-            FactionType.TechnocraticUnion =>
-                "Scientists and engineers believing technology will save civilization.",
-            FactionType.RebellionCell => "Freedom fighters opposing tyranny wherever they find it.",
-            FactionType.ImperialRemnant => "Loyalists clinging to the glory of the fallen empire.",
-            FactionType.AncientAwakened =>
-                "Mysterious beings from a bygone era, recently stirred to action.",
-            _ => "A faction struggling for survival in a dying galaxy.",
+            FactionType.MilitaryJunta => FactionDescriptions.MilitaryJunta,
+            FactionType.CorporateCouncil => FactionDescriptions.CorporateCouncil,
+            FactionType.ReligiousOrder => FactionDescriptions.ReligiousOrder,
+            FactionType.PirateAlliance => FactionDescriptions.PirateAlliance,
+            FactionType.TechnocraticUnion => FactionDescriptions.TechnocraticUnion,
+            FactionType.RebellionCell => FactionDescriptions.RebellionCell,
+            FactionType.ImperialRemnant => FactionDescriptions.ImperialRemnant,
+            FactionType.AncientAwakened => FactionDescriptions.AncientAwakened,
+            _ => FactionDescriptions.Default,
         };
     }
 
-    private static List<string> GenerateFactionTraits(FactionType type)
+    private List<string> GenerateFactionTraits(FactionType type)
     {
         return type switch
         {
@@ -58,14 +55,29 @@ public class FactionService
         };
     }
 
-    private static void SetStartingResources(Faction faction)
+    private void SetStartingResources(Faction faction)
     {
         // Base starting resources
-        faction.Population = Random.Shared.Next(40, 71);
-        faction.Military = Random.Shared.Next(30, 61);
-        faction.Technology = Random.Shared.Next(25, 56);
-        faction.Influence = Random.Shared.Next(20, 51);
-        faction.Resources = Random.Shared.Next(35, 66);
+        faction.Population = Random.Shared.Next(
+            GameConstants.StartingPopulationMin,
+            GameConstants.StartingPopulationMax + 1
+        );
+        faction.Military = Random.Shared.Next(
+            GameConstants.StartingMilitaryMin,
+            GameConstants.StartingMilitaryMax + 1
+        );
+        faction.Technology = Random.Shared.Next(
+            GameConstants.StartingTechnologyMin,
+            GameConstants.StartingTechnologyMax + 1
+        );
+        faction.Influence = Random.Shared.Next(
+            GameConstants.StartingInfluenceMin,
+            GameConstants.StartingInfluenceMax + 1
+        );
+        faction.Resources = Random.Shared.Next(
+            GameConstants.StartingResourcesMin,
+            GameConstants.StartingResourcesMax + 1
+        );
 
         // Faction type bonuses
         switch (faction.Type)
@@ -90,8 +102,14 @@ public class FactionService
                 faction.Technology += 25;
                 faction.Population -= 15;
                 break;
-            // Note: Other FactionTypes like PirateAlliance, RebellionCell might need cases here
-            // if they have specific starting resource bonuses.
+            case FactionType.PirateAlliance:
+                faction.Resources += 10;
+                faction.Military += 10;
+                break;
+            case FactionType.RebellionCell:
+                faction.Stability += 10;
+                faction.Influence += 10;
+                break;
         }
 
         // Player factions get a slight bonus

@@ -1,3 +1,4 @@
+using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using FactionsAtTheEnd.UI;
 
@@ -7,7 +8,7 @@ namespace FactionsAtTheEnd.Services;
 /// Handles all event generation for the single-player, single-faction MVP.
 /// All events now only affect the player faction.
 /// </summary>
-public class EventService
+public class EventService : IEventService
 {
     public static List<GameEvent> GenerateInitialEvents(GameState gameState)
     {
@@ -27,10 +28,10 @@ public class EventService
         return events;
     }
 
-    public List<GameEvent> GenerateRandomEvents(GameState gameState)
+    public static List<GameEvent> GenerateRandomEvents(GameState gameState)
     {
         var events = new List<GameEvent>();
-        // Anti-spam: If player repeats an action 3+ times in recent turns, trigger a negative event
+        // If player repeats an action 3+ times in recent turns, trigger a negative event
         foreach (var kvp in gameState.RecentActionCounts)
         {
             if (kvp.Value >= 3)
@@ -44,11 +45,7 @@ public class EventService
                         Type = EventType.Crisis,
                         Cycle = gameState.CurrentCycle,
                         AffectedFactions = [gameState.PlayerFactionId],
-                        Effects = new()
-                        {
-                            { UI.StatKey.Stability, -5 },
-                            { UI.StatKey.Resources, -3 },
-                        },
+                        Effects = new() { { StatKey.Stability, -5 }, { StatKey.Resources, -3 } },
                         BlockedActions = [kvp.Key],
                     }
                 );

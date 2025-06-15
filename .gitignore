@@ -405,3 +405,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Ignore LiteDB database file
+*.db

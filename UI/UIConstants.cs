@@ -57,3 +57,38 @@ public static class StatKeyExtensions
         };
     }
 }
+
+public static class FactionDescriptions
+{
+    public const string MilitaryJunta =
+        "A ruthless military organization maintaining order through force.";
+    public const string CorporateCouncil =
+        "Mega-corporations united in pursuit of profit above all else.";
+    public const string ReligiousOrder =
+        "Zealous believers seeking to spread their faith across the stars.";
+    public const string PirateAlliance = "Raiders and smugglers operating outside galactic law.";
+    public const string TechnocraticUnion =
+        "Scientists and engineers believing technology will save civilization.";
+    public const string RebellionCell = "Freedom fighters opposing tyranny wherever they find it.";
+    public const string ImperialRemnant = "Loyalists clinging to the glory of the fallen empire.";
+    public const string AncientAwakened =
+        "Mysterious beings from a bygone era, recently stirred to action.";
+    public const string Default = "A faction struggling for survival in a dying galaxy.";
+}
+
+public static class GameConstants
+{
+    public const int MaxStat = 100;
+    public const int MinStat = 0;
+    public const int StartingPopulationMin = 40;
+    public const int StartingPopulationMax = 70;
+    public const int StartingMilitaryMin = 30;
+    public const int StartingMilitaryMax = 60;
+    public const int StartingTechnologyMin = 25;
+    public const int StartingTechnologyMax = 55;
+    public const int StartingInfluenceMin = 20;
+    public const int StartingInfluenceMax = 50;
+    public const int StartingResourcesMin = 35;
+    public const int StartingResourcesMax = 65;
+    // Add more as needed
+}
