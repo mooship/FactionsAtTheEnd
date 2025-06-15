@@ -6,8 +6,6 @@ using Spectre.Console;
 
 namespace FactionsAtTheEnd.UI;
 
-// Single-player, single-faction MVP.
-// This UI is focused on the player faction only.
 public class GameUI(
     GameEngine gameEngine,
     IFactionService factionService,
@@ -102,15 +100,15 @@ public class GameUI(
     {
         return action switch
         {
-            PlayerActionType.Build_Defenses => "Increase your defenses to resist attacks.",
-            PlayerActionType.Recruit_Troops => "Recruit new soldiers to boost military.",
-            PlayerActionType.Develop_Infrastructure => "Improve facilities for long-term growth.",
-            PlayerActionType.Exploit_Resources => "Gather more resources for your faction.",
-            PlayerActionType.Military_Tech => "Research new military technologies.",
-            PlayerActionType.Economic_Tech => "Research economic improvements.",
-            PlayerActionType.Ancient_Studies => "Study ancient relics for unique benefits.",
-            PlayerActionType.Gate_Network_Research => "Research the lost gate network.",
-            _ => "(No description available)",
+            PlayerActionType.Build_Defenses => ActionDescriptions.BuildDefenses,
+            PlayerActionType.Recruit_Troops => ActionDescriptions.RecruitTroops,
+            PlayerActionType.Develop_Infrastructure => ActionDescriptions.DevelopInfrastructure,
+            PlayerActionType.Exploit_Resources => ActionDescriptions.ExploitResources,
+            PlayerActionType.Military_Tech => ActionDescriptions.MilitaryTech,
+            PlayerActionType.Economic_Tech => ActionDescriptions.EconomicTech,
+            PlayerActionType.Ancient_Studies => ActionDescriptions.AncientStudies,
+            PlayerActionType.Gate_Network_Research => ActionDescriptions.GateNetworkResearch,
+            _ => ActionDescriptions.Default,
         };
     }
 
@@ -277,22 +275,6 @@ public class GameUI(
             DisplayGameState();
 
             var playerActions = new List<PlayerAction>();
-            // var game = _gameEngine.CurrentGame!;
-            // var playerFaction = game.Factions.First(f => f.Id == game.PlayerFactionId);
-
-            // Game over check
-            // if (
-            //     playerFaction.Population <= 0
-            //     || playerFaction.Resources <= 0
-            //     || playerFaction.Stability <= 0
-            // )
-            // {
-            //     AnsiConsole.MarkupLine("[bold red]GAME OVER! Your faction has collapsed.[/]");
-            //     AnsiConsole.MarkupLine($"Final Cycle: {game.CurrentCycle}");
-            //     AnsiConsole.MarkupLine("Press any key to return to the main menu...");
-            //     Console.ReadKey();
-            //     break;
-            // }
 
             var mainChoices = new[]
             {
@@ -426,7 +408,6 @@ public class GameUI(
             AnsiConsole.MarkupLine("Press any key to continue...");
             Console.ReadKey();
 
-            // --- UI/UX Feedback for Unblocked Actions ---
             // Check if "Ancient Studies" was just unblocked by an event this turn
             var unblockedActions = new List<PlayerActionType>();
             var prevBlocked = new HashSet<PlayerActionType>(game.BlockedActions);
@@ -591,7 +572,6 @@ public class GameUI(
                     "[grey]Ancient Studies: Study ancient relics for unique benefits. This action may be blocked until you discover ancient technology through special events.[/]"
                 );
                 break;
-            // Add more tooltips for other actions as needed
             default:
                 AnsiConsole.MarkupLine(
                     $"[grey]{actionType.GetDisplayName()}: {GetActionDescription(actionType)}[/]"
