@@ -5,6 +5,7 @@ using FactionsAtTheEnd.Services;
 using FactionsAtTheEnd.UI;
 using FactionsAtTheEnd.Validators;
 using FluentValidation;
+using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 
@@ -19,16 +20,7 @@ class Program
         ConfigureServices(services);
         var serviceProvider = services.BuildServiceProvider();
 
-        var gameEngine = serviceProvider.GetRequiredService<GameEngine>();
-        var factionService = serviceProvider.GetRequiredService<IFactionService>();
-        var factionValidator = serviceProvider.GetRequiredService<IValidator<Faction>>();
-        var playerActionValidator = serviceProvider.GetRequiredService<IValidator<PlayerAction>>();
-        var gameUI = new GameUI(
-            gameEngine,
-            factionService,
-            factionValidator,
-            playerActionValidator
-        );
+        var gameUI = serviceProvider.GetRequiredService<GameUI>();
 
         AnsiConsole.MarkupLine("[bold red]🔮 FACTIONS AT THE END 🔮[/]");
         AnsiConsole.MarkupLine("[dim]Grimdark diplomacy in a collapsing empire[/]");
@@ -40,6 +32,7 @@ class Program
     private static void ConfigureServices(IServiceCollection services)
     {
         // Register services and engine
+        services.AddSingleton<ILiteDatabase>(sp => new LiteDatabase("factionsattheend.db"));
         services.AddSingleton<IEventService, EventService>();
         services.AddSingleton<IFactionService, FactionService>();
         services.AddSingleton<IGameDataService, GameDataService>();
@@ -47,5 +40,7 @@ class Program
         // Register validators
         services.AddTransient<IValidator<Faction>, FactionValidator>();
         services.AddTransient<IValidator<PlayerAction>, PlayerActionValidator>();
+        // Register UI
+        services.AddTransient<GameUI>();
     }
 }

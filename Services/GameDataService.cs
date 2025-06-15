@@ -4,9 +4,9 @@ using LiteDB;
 
 namespace FactionsAtTheEnd.Services;
 
-public class GameDataService : IGameDataService
+public class GameDataService(ILiteDatabase db) : IGameDataService
 {
-    private const string DatabasePath = "factionsattheend.db";
+    private readonly ILiteDatabase _db = db;
 
     public async Task SaveGameAsync(GameState gameState)
     {
@@ -14,8 +14,7 @@ public class GameDataService : IGameDataService
         {
             await Task.Run(() =>
             {
-                using var db = new LiteDatabase(DatabasePath);
-                var collection = db.GetCollection<GameState>("games");
+                var collection = _db.GetCollection<GameState>("games");
                 collection.Upsert(gameState);
             });
         }
@@ -32,8 +31,7 @@ public class GameDataService : IGameDataService
         {
             return await Task.Run(() =>
             {
-                using var db = new LiteDatabase(DatabasePath);
-                var collection = db.GetCollection<GameState>("games");
+                var collection = _db.GetCollection<GameState>("games");
                 return collection.FindAll().OrderByDescending(g => g.LastPlayed).ToList();
             });
         }
@@ -50,8 +48,7 @@ public class GameDataService : IGameDataService
         {
             return await Task.Run(() =>
             {
-                using var db = new LiteDatabase(DatabasePath);
-                var collection = db.GetCollection<GameState>("games");
+                var collection = _db.GetCollection<GameState>("games");
                 return collection.FindById(gameId);
             });
         }
@@ -68,8 +65,7 @@ public class GameDataService : IGameDataService
         {
             await Task.Run(() =>
             {
-                using var db = new LiteDatabase(DatabasePath);
-                var collection = db.GetCollection<GameState>("games");
+                var collection = _db.GetCollection<GameState>("games");
                 collection.Delete(gameId);
             });
         }
