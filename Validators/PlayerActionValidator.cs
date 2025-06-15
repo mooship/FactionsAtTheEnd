@@ -4,7 +4,7 @@ using FluentValidation;
 namespace FactionsAtTheEnd.Validators;
 
 /// <summary>
-/// Validates player actions for the single-player, single-faction MVP.
+/// Validates player actions for type and faction ID constraints.
 /// </summary>
 public class PlayerActionValidator : AbstractValidator<PlayerAction>
 {

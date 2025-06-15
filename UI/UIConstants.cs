@@ -1,5 +1,6 @@
 namespace FactionsAtTheEnd.UI;
 
+// MenuOption: Main menu and in-game menu options for the UI.
 public enum MenuOption
 {
     NewGame,
@@ -8,10 +9,12 @@ public enum MenuOption
     Exit,
     TakeAction,
     ViewFactionOverview,
+    ViewEventLog,
     ExitToMainMenu,
     FinishTurn,
 }
 
+// StatKey: Used for stat display and event effects.
 public enum StatKey
 {
     Population,
@@ -24,6 +27,9 @@ public enum StatKey
 
 public static class MenuOptionExtensions
 {
+    /// <summary>
+    /// Get the display name for a MenuOption for UI display.
+    /// </summary>
     public static string GetDisplayName(this MenuOption option)
     {
         return option switch
@@ -36,6 +42,7 @@ public static class MenuOptionExtensions
             MenuOption.ViewFactionOverview => "View Faction Overview",
             MenuOption.ExitToMainMenu => "Exit to Main Menu",
             MenuOption.FinishTurn => "Finish Turn",
+            MenuOption.ViewEventLog => "View Event Log",
             _ => option.ToString(),
         };
     }
@@ -43,6 +50,9 @@ public static class MenuOptionExtensions
 
 public static class StatKeyExtensions
 {
+    /// <summary>
+    /// Get the display name for a StatKey for UI display.
+    /// </summary>
     public static string GetDisplayName(this StatKey key)
     {
         return key switch
@@ -58,6 +68,7 @@ public static class StatKeyExtensions
     }
 }
 
+// GameConstants: Centralized stat and resource bounds for all factions.
 public static class GameConstants
 {
     public const int MaxStat = 100;

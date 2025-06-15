@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FactionsAtTheEnd.Models;
 
+// PlayerActionType: All possible actions a player can take each turn.
 public enum PlayerActionType
 {
     [Display(Name = "Build Defenses")]
@@ -40,6 +41,9 @@ public enum PlayerActionType
 
 public static class PlayerActionTypeExtensions
 {
+    /// <summary>
+    /// Get the display name for a PlayerActionType using its Display attribute.
+    /// </summary>
     public static string GetDisplayName(this PlayerActionType actionType)
     {
         var type = actionType.GetType();

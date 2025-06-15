@@ -1,7 +1,7 @@
 namespace FactionsAtTheEnd.Models;
 
 /// <summary>
-/// Represents the full state of a game session, including world and player data.
+/// Holds all persistent and transient data for a single game session.
 /// </summary>
 public class GameState
 {
@@ -11,31 +11,31 @@ public class GameState
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime LastPlayed { get; set; } = DateTime.UtcNow;
 
-    // World state
+    // World state variables (affect events, win/lose, and narrative)
     public int GalacticStability { get; set; } = 40; // 0-100, starts deteriorating
     public int GateNetworkIntegrity { get; set; } = 60; // 0-100, affects travel/trade
     public int AncientTechDiscovery { get; set; } = 10; // 0-100, unlocks events
 
-    // All factions in the game
+    // All factions in the game (player and NPCs)
     public List<Faction> Factions { get; set; } = [];
 
-    // Player's faction ID
+    // Player's faction ID for quick lookup
     public string PlayerFactionId { get; set; } = string.Empty;
 
-    // Recent events and history
+    // Recent events (for event log and turn feedback)
     public List<GameEvent> RecentEvents { get; set; } = [];
     public List<string> WorldHistory { get; set; } = [];
 
     // Actions blocked for the next turn due to events
     public List<PlayerActionType> BlockedActions { get; set; } = [];
 
-    // Track how many times each action was used in the last 3 turns
+    // Rolling action counts for anti-spam and event logic
     public Dictionary<PlayerActionType, int> RecentActionCounts { get; set; } = [];
 
-    // Reputation stat
-    public int Reputation { get; set; } = 0; // -100 (infamous) to +100 (legendary)
+    // Reputation: -100 (infamous) to +100 (legendary), affects narrative and news
+    public int Reputation { get; set; } = 0;
 
-    // Galactic news for emergent narrative and world feedback
+    // Emergent galactic news for narrative flavor
     public List<string> GalacticNews { get; set; } = [];
 }
 

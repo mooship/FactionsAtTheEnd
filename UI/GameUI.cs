@@ -5,15 +5,25 @@ using Spectre.Console;
 
 namespace FactionsAtTheEnd.UI;
 
-public class GameUI(
-    GameEngine gameEngine,
-    IValidator<Faction> factionValidator,
-    IValidator<PlayerAction> playerActionValidator
-)
+public class GameUI
 {
-    private readonly GameEngine _gameEngine = gameEngine;
-    private readonly IValidator<Faction> _factionValidator = factionValidator;
-    private readonly IValidator<PlayerAction> _playerActionValidator = playerActionValidator;
+    private readonly GameEngine _gameEngine;
+    private readonly IValidator<Faction> _factionValidator;
+    private readonly IValidator<PlayerAction> _playerActionValidator;
+
+    public GameUI(
+        GameEngine gameEngine,
+        IValidator<Faction> factionValidator,
+        IValidator<PlayerAction> playerActionValidator
+    )
+    {
+        CommunityToolkit.Diagnostics.Guard.IsNotNull(gameEngine);
+        CommunityToolkit.Diagnostics.Guard.IsNotNull(factionValidator);
+        CommunityToolkit.Diagnostics.Guard.IsNotNull(playerActionValidator);
+        _gameEngine = gameEngine;
+        _factionValidator = factionValidator;
+        _playerActionValidator = playerActionValidator;
+    }
 
     public async Task RunMainMenuAsync()
     {
@@ -102,18 +112,30 @@ public class GameUI(
 
         var factionName = AnsiConsole.Ask<string>("What is your faction's [bold green]name[/]?");
 
-        var factionType = AnsiConsole.Prompt(
-            new SelectionPrompt<FactionType>()
+        // Prepare choices with both name and description
+        var factionChoices = Enum.GetValues<FactionType>()
+            .Select(type => new
+            {
+                Type = type,
+                Display = $"[yellow]{type.GetDisplayName()}[/] - [grey]{GetFactionTypeDescription(type)}[/]",
+            })
+            .ToList();
+
+        var selectedDisplay = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
                 .Title("Choose your faction type:")
-                .AddChoices(Enum.GetValues<FactionType>())
-                .UseConverter(type => type.GetDisplayName())
+                .AddChoices(factionChoices.Select(fc => fc.Display))
+                .HighlightStyle("bold yellow")
+                .PageSize(8)
+                .MoreChoicesText("[grey](Move up and down to reveal more factions)[/]")
         );
+        var selectedFaction = factionChoices.First(fc => fc.Display == selectedDisplay).Type;
 
         // Validate faction input
         var tempFaction = new Faction
         {
             Name = factionName,
-            Type = factionType,
+            Type = selectedFaction,
             IsPlayer = true,
         };
         var validationResult = _factionValidator.Validate(tempFaction);
@@ -130,10 +152,10 @@ public class GameUI(
         }
 
         AnsiConsole.MarkupLine(
-            $"\n[yellow]Creating faction '{factionName}' of type {factionType.GetDisplayName()}...[/]"
+            $"[yellow]Creating faction '{factionName}' of type {selectedFaction.GetDisplayName()}...[/]"
         );
 
-        var gameState = await _gameEngine.CreateNewGameAsync(factionName, factionType);
+        var gameState = await _gameEngine.CreateNewGameAsync(factionName, selectedFaction);
 
         AnsiConsole.MarkupLine("[green]Game created successfully![/]");
         AnsiConsole.MarkupLine("Press any key to begin...");
@@ -247,24 +269,26 @@ public class GameUI(
 
             var playerActions = new List<PlayerAction>();
 
-            var mainChoices = new[]
+            var mainMenuOptions = new[]
             {
-                "Take Action",
-                "View Faction Overview",
-                "Help",
-                "Exit to Main Menu",
+                MenuOption.TakeAction,
+                MenuOption.ViewFactionOverview,
+                MenuOption.ViewEventLog,
+                MenuOption.Help,
+                MenuOption.ExitToMainMenu,
             };
             var mainChoice = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("What would you like to do?")
-                    .AddChoices(mainChoices)
+                new SelectionPrompt<MenuOption>()
+                    .Title("[bold]What will you do?[/]")
+                    .AddChoices(mainMenuOptions)
+                    .UseConverter(opt => opt.GetDisplayName())
             );
-            if (mainChoice == "Help")
+            if (mainChoice == MenuOption.Help)
             {
                 ShowHelp();
                 continue;
             }
-            if (mainChoice == "View Faction Overview")
+            if (mainChoice == MenuOption.ViewFactionOverview)
             {
                 AnsiConsole.Clear();
                 DisplayFactionsOverview();
@@ -272,7 +296,12 @@ public class GameUI(
                 Console.ReadKey();
                 continue;
             }
-            if (mainChoice == "Exit to Main Menu")
+            if (mainChoice == MenuOption.ViewEventLog)
+            {
+                ShowEventLog(_gameEngine.CurrentGame);
+                continue;
+            }
+            if (mainChoice == MenuOption.ExitToMainMenu)
             {
                 break;
             }
@@ -338,7 +367,25 @@ public class GameUI(
 
             await ProcessTurnAsync(playerActions);
 
-            // Display events that occurred this turn
+            // Refresh game state after processing turn
+            game = _gameEngine.CurrentGame;
+            if (game == null)
+            {
+                AnsiConsole.MarkupLine(
+                    "[red]Error: Game state not found after turn processing.[/]"
+                );
+                return;
+            }
+            playerFaction = game.Factions.FirstOrDefault(f => f.Id == game.PlayerFactionId);
+            if (playerFaction == null)
+            {
+                AnsiConsole.MarkupLine(
+                    "[red]Error: Player faction not found after turn processing.[/]"
+                );
+                return;
+            }
+
+            // Display events that occurred this turn (only once, after processing)
             var recentEvents = game.RecentEvents.Where(e => e.Cycle == game.CurrentCycle).ToList();
             if (recentEvents.Count > 0)
             {
@@ -467,14 +514,14 @@ public class GameUI(
         var playerFaction = game.Factions.First(f => f.Id == game.PlayerFactionId);
         AnsiConsole.MarkupLine($"[bold]Cycle:[/] {game.CurrentCycle}");
         AnsiConsole.MarkupLine(
-            $"[bold]Faction:[/] {playerFaction.Name} ({playerFaction.Type.GetDisplayName()})"
+            $"[bold]Faction:[/] {playerFaction?.Name} ({playerFaction?.Type.GetDisplayName()})"
         );
-        AnsiConsole.MarkupLine($"[bold]Population:[/] {playerFaction.Population}");
-        AnsiConsole.MarkupLine($"[bold]Military:[/] {playerFaction.Military}");
-        AnsiConsole.MarkupLine($"[bold]Technology:[/] {playerFaction.Technology}");
-        AnsiConsole.MarkupLine($"[bold]Influence:[/] {playerFaction.Influence}");
-        AnsiConsole.MarkupLine($"[bold]Resources:[/] {playerFaction.Resources}");
-        AnsiConsole.MarkupLine($"[bold]Stability:[/] {playerFaction.Stability}");
+        AnsiConsole.MarkupLine($"[bold]Population:[/] {playerFaction?.Population}");
+        AnsiConsole.MarkupLine($"[bold]Military:[/] {playerFaction?.Military}");
+        AnsiConsole.MarkupLine($"[bold]Technology:[/] {playerFaction?.Technology}");
+        AnsiConsole.MarkupLine($"[bold]Influence:[/] {playerFaction?.Influence}");
+        AnsiConsole.MarkupLine($"[bold]Resources:[/] {playerFaction?.Resources}");
+        AnsiConsole.MarkupLine($"[bold]Stability:[/] {playerFaction?.Stability}");
         AnsiConsole.MarkupLine("");
         // Show Reputation
         AnsiConsole.MarkupLine(
@@ -498,24 +545,14 @@ public class GameUI(
             AnsiConsole.MarkupLine($"[grey]{game.WorldHistory.Last()}[/]");
             AnsiConsole.MarkupLine("");
         }
-        if (game.RecentEvents.Count != 0)
-        {
-            AnsiConsole.MarkupLine("[bold underline]Recent Events:[/]");
-            foreach (var e in game.RecentEvents)
-            {
-                AnsiConsole.MarkupLine($"[yellow]{e.Title}[/]: {e.Description}");
-            }
-        }
-        // Show anti-spam feedback if any actions are blocked due to spamming
         if (game.BlockedActions.Count > 0)
         {
             AnsiConsole.MarkupLine(
-                "[yellow]Some actions are temporarily blocked due to repeated use. Vary your strategy to avoid negative effects![/]"
+                "[yellow]Some actions are unavailable due to recent overuse. Your rivals are watching your every move...[/]"
             );
         }
     }
 
-    // DisplayFactionsOverview is now implemented and used in the main game loop.
     private void DisplayFactionsOverview()
     {
         var game = _gameEngine.CurrentGame!;
@@ -627,28 +664,34 @@ public class GameUI(
             return "[orange1](Distrusted)[/]";
         return "(Neutral)";
     }
-}
 
-// Add extension method for FactionType display name if not present
-public static class FactionTypeExtensions
-{
-    public static string GetDisplayName(this FactionType type)
+    private static void ShowEventLog(GameState? game)
     {
-        var typeInfo = type.GetType();
-        var memInfo = typeInfo.GetMember(type.ToString());
-        if (memInfo.Length > 0)
+        if (game == null || (game.WorldHistory.Count == 0 && game.RecentEvents.Count == 0))
         {
-            var attrs = memInfo[0]
-                .GetCustomAttributes(
-                    typeof(System.ComponentModel.DataAnnotations.DisplayAttribute),
-                    false
-                );
-            if (attrs.Length > 0)
+            AnsiConsole.MarkupLine("[grey]No events have occurred yet.[/]");
+            return;
+        }
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[bold yellow]Event Log:[/]");
+        int count = 1;
+        // Show all world history entries (narrative log)
+        foreach (var entry in game.WorldHistory)
+        {
+            AnsiConsole.MarkupLine($"[dim]{count++}.[/] {entry}");
+        }
+        // Optionally, show all detailed event titles/descriptions
+        if (game.RecentEvents.Count > 0)
+        {
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[bold]Recent Events:[/]");
+            foreach (var ev in game.RecentEvents)
             {
-                return ((System.ComponentModel.DataAnnotations.DisplayAttribute)attrs[0]).Name
-                    ?? type.ToString();
+                AnsiConsole.MarkupLine($"[dim]{count++}.[/] [aqua]{ev.Title}[/]: {ev.Description}");
             }
         }
-        return type.ToString();
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu...[/]");
+        Console.ReadKey(true);
     }
 }

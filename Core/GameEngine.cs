@@ -22,12 +22,12 @@ public class GameEngine(
     private readonly IValidator<PlayerAction> _playerActionValidator = playerActionValidator;
 
     /// <summary>
-    /// The current game state. Null if no game is loaded.
+    /// The current game state. Null if no game is loaded or before a new game starts.
     /// </summary>
     public GameState? CurrentGame { get; private set; }
 
     /// <summary>
-    /// Creates a new game with a single player faction.
+    /// Create a new game session with a single player faction and initial event.
     /// </summary>
     public async Task<GameState> CreateNewGameAsync(
         string playerFactionName,
@@ -76,7 +76,7 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Returns a list of all saved games.
+    /// Get all saved games from persistent storage, most recent first.
     /// </summary>
     public async Task<List<GameState>> GetSavedGamesAsync()
     {
@@ -86,7 +86,7 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Loads a saved game by ID.
+    /// Load a saved game by its unique ID.
     /// </summary>
     public async Task LoadGameAsync(string gameId)
     {
@@ -97,7 +97,7 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Processes a turn: validates and applies player actions, updates world state, generates events, and checks win/lose conditions.
+    /// Process a full turn: validate actions, update world, generate events, and check win/lose.
     /// </summary>
     public async Task ProcessTurnAsync(List<PlayerAction> playerActions)
     {
@@ -124,10 +124,11 @@ public class GameEngine(
         ApplyEventEffects(newEvents);
         await _gameDataService.SaveGameAsync(CurrentGame);
         CheckWinLoseConditions();
+        CurrentGame.CurrentCycle++;
     }
 
     /// <summary>
-    /// Validates player actions and counts their types.
+    /// Validate player actions and count each action type for anti-spam and event logic.
     /// </summary>
     private (
         List<PlayerAction> validActions,
@@ -156,7 +157,7 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Updates rolling action counts and decays old counts.
+    /// Update rolling action counts for anti-spam and event triggers. Decays old counts.
     /// </summary>
     private void UpdateActionCounts(Dictionary<PlayerActionType, int> actionCounts)
     {
@@ -181,7 +182,7 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Applies all valid player actions asynchronously.
+    /// Apply all valid player actions to the player's faction.
     /// </summary>
     private async Task ApplyPlayerActionsAsync(List<PlayerAction> validActions)
     {
@@ -192,16 +193,14 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Applies event effects and updates blocked actions.
+    /// Apply effects from new events and update blocked actions for the next turn.
     /// </summary>
     private void ApplyEventEffects(List<GameEvent> newEvents)
     {
         Guard.IsNotNull(newEvents);
         Guard.IsNotNull(CurrentGame);
-        var player = CurrentGame!.Factions.FirstOrDefault(f =>
-            f.Id == CurrentGame!.PlayerFactionId
-        );
-        CurrentGame!.BlockedActions.Clear();
+        var player = CurrentGame.Factions.FirstOrDefault(f => f.Id == CurrentGame.PlayerFactionId);
+        CurrentGame.BlockedActions?.Clear();
         foreach (var gameEvent in newEvents)
         {
             if (player != null)
@@ -226,17 +225,18 @@ public class GameEngine(
                             player.Resources += effect.Value;
                             break;
                         case UI.StatKey.Stability:
-                            CurrentGame!.GalacticStability += effect.Value;
+                            if (CurrentGame != null)
+                                CurrentGame.GalacticStability += effect.Value;
                             break;
                     }
                 }
-                if (gameEvent.BlockedActions != null)
+                if (gameEvent.BlockedActions != null && CurrentGame?.BlockedActions != null)
                 {
                     foreach (var blocked in gameEvent.BlockedActions)
                     {
-                        if (!CurrentGame!.BlockedActions.Contains(blocked))
+                        if (!CurrentGame.BlockedActions.Contains(blocked))
                         {
-                            CurrentGame!.BlockedActions.Add(blocked);
+                            CurrentGame.BlockedActions.Add(blocked);
                         }
                     }
                 }
@@ -245,27 +245,24 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Checks win/lose conditions and updates game state accordingly.
+    /// Check for win or lose conditions and update game state if met.
     /// </summary>
     private void CheckWinLoseConditions()
     {
         Guard.IsNotNull(CurrentGame);
-        var player = CurrentGame!.Factions.FirstOrDefault(f =>
-            f.Id == CurrentGame!.PlayerFactionId
-        );
-        if (player != null && (CurrentGame!.CurrentCycle > 20 || player.Technology >= 100))
+        var player = CurrentGame.Factions.FirstOrDefault(f => f.Id == CurrentGame.PlayerFactionId);
+        if (player != null && (CurrentGame.CurrentCycle > 20 || player.Technology >= 100))
         {
-            CurrentGame!.SaveName = "WINNER";
+            CurrentGame.SaveName = "WINNER";
         }
     }
 
     /// <summary>
-    /// Applies a single player action to the player's faction.
+    /// Apply a single player action to the player's faction, updating stats.
     /// </summary>
     private async Task ProcessPlayerActionAsync(PlayerAction action)
     {
-        if (CurrentGame == null)
-            return;
+        Guard.IsNotNull(CurrentGame);
         var player = CurrentGame.Factions.FirstOrDefault(f => f.IsPlayer);
         if (player == null)
             return;
@@ -302,11 +299,13 @@ public class GameEngine(
                         break;
                     case PlayerActionType.Ancient_Studies:
                         f.Technology += 2;
-                        CurrentGame.AncientTechDiscovery += 5;
+                        if (CurrentGame != null)
+                            CurrentGame.AncientTechDiscovery += 5;
                         break;
                     case PlayerActionType.Gate_Network_Research:
                         f.Technology += 2;
-                        CurrentGame.GateNetworkIntegrity += 3;
+                        if (CurrentGame != null)
+                            CurrentGame.GateNetworkIntegrity += 3;
                         break;
                     case PlayerActionType.Diplomacy:
                         f.Influence += 5;
@@ -329,13 +328,15 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Applies an update function to the specified faction and clamps resources.
+    /// Apply an update function to a faction and clamp its resources to valid bounds.
     /// </summary>
     private async Task ApplyToFactionAsync(string factionId, Func<Faction, Task> update)
     {
         Guard.IsNotNullOrWhiteSpace(factionId);
         Guard.IsNotNull(update);
         Guard.IsNotNull(CurrentGame);
+        if (CurrentGame == null)
+            return;
 
         var faction = CurrentGame.Factions.FirstOrDefault(f => f.Id == factionId);
         if (faction != null)
@@ -346,16 +347,11 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Updates the world state at the end of each turn (e.g., global stability, tech discovery).
+    /// Update world state at the end of each turn (e.g., decay, discoveries).
     /// </summary>
     private async Task UpdateWorldStateAsync()
     {
         Guard.IsNotNull(CurrentGame);
-
-        if (CurrentGame == null)
-        {
-            return;
-        }
         // Gradual decay of galactic infrastructure
         await Task.Run(() =>
         {

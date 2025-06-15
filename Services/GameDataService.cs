@@ -3,12 +3,16 @@ using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using LiteDB;
 
+// Handles saving, loading, and deleting game state using LiteDB for persistence.
 namespace FactionsAtTheEnd.Services;
 
 public class GameDataService(ILiteDatabase db) : IGameDataService
 {
     private readonly ILiteDatabase _db = db;
 
+    /// <summary>
+    /// Save or update a game state in the database.
+    /// </summary>
     public async Task SaveGameAsync(GameState gameState)
     {
         Guard.IsNotNull(gameState);
@@ -27,6 +31,9 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
         }
     }
 
+    /// <summary>
+    /// Get all saved games, ordered by last played (most recent first).
+    /// </summary>
     public async Task<List<GameState>> GetSavedGamesAsync()
     {
         try
@@ -44,6 +51,9 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
         }
     }
 
+    /// <summary>
+    /// Load a saved game by its unique ID.
+    /// </summary>
     public async Task<GameState?> LoadGameAsync(string gameId)
     {
         Guard.IsNotNullOrWhiteSpace(gameId);
@@ -62,6 +72,9 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
         }
     }
 
+    /// <summary>
+    /// Delete a saved game by its unique ID.
+    /// </summary>
     public async Task DeleteGameAsync(string gameId)
     {
         Guard.IsNotNullOrWhiteSpace(gameId);

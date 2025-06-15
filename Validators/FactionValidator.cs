@@ -3,6 +3,7 @@ using FluentValidation;
 
 namespace FactionsAtTheEnd.Validators;
 
+// Validates Faction objects for name and type constraints.
 public class FactionValidator : AbstractValidator<Faction>
 {
     public FactionValidator()

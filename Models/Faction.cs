@@ -5,7 +5,7 @@ using FactionsAtTheEnd.UI;
 namespace FactionsAtTheEnd.Models;
 
 /// <summary>
-/// Represents a player or non-player faction in the game.
+/// Represents a player or non-player faction, including stats, traits, and status.
 /// </summary>
 public class Faction
 {
@@ -15,24 +15,24 @@ public class Faction
     public FactionType Type { get; set; }
     public bool IsPlayer { get; set; }
 
-    // Resources
+    // Core resources and stats for gameplay
     public int Population { get; set; }
     public int Military { get; set; }
     public int Technology { get; set; }
     public int Influence { get; set; }
     public int Resources { get; set; }
 
-    // Status
+    // Narrative and mechanical status
     public FactionStatus Status { get; set; } = FactionStatus.Stable;
     public int Stability { get; set; } = 50;
 
-    // Faction-specific traits
+    // Unique traits for flavor and event hooks
     public List<string> Traits { get; set; } = [];
 
     public DateTime LastActive { get; set; } = DateTime.UtcNow;
 
     /// <summary>
-    /// Ensures all resource and stat values are non-negative and do not exceed maximums.
+    /// Clamp all resource and stat values to valid min/max bounds.
     /// </summary>
     public void ClampResources()
     {
@@ -89,6 +89,9 @@ public enum FactionStatus
 
 public static class FactionExtensions
 {
+    /// <summary>
+    /// Get the display name for a FactionType using its Display attribute.
+    /// </summary>
     public static string GetDisplayName(this FactionType factionType)
     {
         var displayName = factionType
