@@ -528,89 +528,6 @@ public class GameUI(
         AnsiConsole.Write(table);
     }
 
-    private static PlayerAction? HandleMilitaryActions(
-        Faction playerFaction,
-        List<PlayerActionType> blockedActions
-    )
-    {
-        var availableActions = new List<PlayerActionType>
-        {
-            PlayerActionType.Build_Defenses,
-            PlayerActionType.Recruit_Troops,
-        };
-        availableActions.RemoveAll(a => blockedActions.Contains(a));
-        if (availableActions.Count == 0)
-        {
-            AnsiConsole.MarkupLine(
-                "[red]No military actions are available this turn due to recent events.[/]"
-            );
-            return null;
-        }
-        var action = AnsiConsole.Prompt(
-            new SelectionPrompt<PlayerActionType>()
-                .Title("Choose a military action:")
-                .AddChoices(availableActions)
-                .UseConverter(a => a.GetDisplayName())
-        );
-        return new PlayerAction { ActionType = action, FactionId = playerFaction.Id };
-    }
-
-    private static PlayerAction? HandleEconomicActions(
-        Faction playerFaction,
-        List<PlayerActionType> blockedActions
-    )
-    {
-        var availableActions = new List<PlayerActionType>
-        {
-            PlayerActionType.Develop_Infrastructure,
-            PlayerActionType.Exploit_Resources,
-        };
-        availableActions.RemoveAll(a => blockedActions.Contains(a));
-        if (availableActions.Count == 0)
-        {
-            AnsiConsole.MarkupLine(
-                "[red]No economic actions are available this turn due to recent events.[/]"
-            );
-            return null;
-        }
-        var action = AnsiConsole.Prompt(
-            new SelectionPrompt<PlayerActionType>()
-                .Title("Choose an economic action:")
-                .AddChoices(availableActions)
-                .UseConverter(a => a.GetDisplayName())
-        );
-        return new PlayerAction { ActionType = action, FactionId = playerFaction.Id };
-    }
-
-    private static PlayerAction? HandleResearchActions(
-        Faction playerFaction,
-        List<PlayerActionType> blockedActions
-    )
-    {
-        var availableActions = new List<PlayerActionType>
-        {
-            PlayerActionType.Military_Tech,
-            PlayerActionType.Economic_Tech,
-            PlayerActionType.Ancient_Studies,
-            PlayerActionType.Gate_Network_Research,
-        };
-        availableActions.RemoveAll(a => blockedActions.Contains(a));
-        if (availableActions.Count == 0)
-        {
-            AnsiConsole.MarkupLine(
-                "[red]No research actions are available this turn due to recent events.[/]"
-            );
-            return null;
-        }
-        var action = AnsiConsole.Prompt(
-            new SelectionPrompt<PlayerActionType>()
-                .Title("Choose a research action:")
-                .AddChoices(availableActions)
-                .UseConverter(a => a.GetDisplayName())
-        );
-        return new PlayerAction { ActionType = action, FactionId = playerFaction.Id };
-    }
-
     private async Task ProcessTurnAsync(List<PlayerAction> playerActions)
     {
         if (_gameEngine.CurrentGame == null)
@@ -643,20 +560,15 @@ public class GameUI(
     {
         return type switch
         {
-            FactionType.MilitaryJunta =>
-                "A ruthless military organization maintaining order through force.",
-            FactionType.CorporateCouncil =>
-                "Mega-corporations united in pursuit of profit above all else.",
-            FactionType.ReligiousOrder =>
-                "Zealous believers seeking to spread their faith across the stars.",
-            FactionType.PirateAlliance => "Raiders and smugglers operating outside galactic law.",
-            FactionType.TechnocraticUnion =>
-                "Scientists and engineers believing technology will save civilization.",
-            FactionType.RebellionCell => "Freedom fighters opposing tyranny wherever they find it.",
-            FactionType.ImperialRemnant => "Loyalists clinging to the glory of the fallen empire.",
-            FactionType.AncientAwakened =>
-                "Mysterious beings from a bygone era, recently stirred to action.",
-            _ => "A faction struggling for survival in a dying galaxy.",
+            FactionType.MilitaryJunta => FactionDescriptions.MilitaryJunta,
+            FactionType.CorporateCouncil => FactionDescriptions.CorporateCouncil,
+            FactionType.ReligiousOrder => FactionDescriptions.ReligiousOrder,
+            FactionType.PirateAlliance => FactionDescriptions.PirateAlliance,
+            FactionType.TechnocraticUnion => FactionDescriptions.TechnocraticUnion,
+            FactionType.RebellionCell => FactionDescriptions.RebellionCell,
+            FactionType.ImperialRemnant => FactionDescriptions.ImperialRemnant,
+            FactionType.AncientAwakened => FactionDescriptions.AncientAwakened,
+            _ => FactionDescriptions.Default,
         };
     }
 
