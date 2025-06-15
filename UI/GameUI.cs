@@ -130,7 +130,7 @@ public class GameUI(
         }
 
         AnsiConsole.MarkupLine(
-            $"\n[yellow]Creating faction '{factionName}' of type {factionType}...[/]"
+            $"\n[yellow]Creating faction '{factionName}' of type {factionType.GetDisplayName()}...[/]"
         );
 
         var gameState = await _gameEngine.CreateNewGameAsync(factionName, factionType);
