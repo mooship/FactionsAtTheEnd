@@ -5,6 +5,6 @@ public class PlayerAction
 {
     public PlayerActionType ActionType { get; set; }
     public string FactionId { get; set; } = string.Empty;
-    public string? TargetId { get; set; } // Target for actions like Espionage or Sabotage
+    // TargetId is no longer used in single-faction mode, but retained for future extensibility.
     public Dictionary<string, object> Parameters { get; set; } = [];
 }

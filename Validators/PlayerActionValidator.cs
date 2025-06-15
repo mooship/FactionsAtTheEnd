@@ -14,14 +14,6 @@ public class PlayerActionValidator : AbstractValidator<PlayerAction>
 
         RuleFor(a => a.FactionId).NotEmpty().WithMessage("Faction ID is required.");
 
-        // TargetId is required for attack or spy actions
-        RuleFor(a => a.TargetId)
-            .NotEmpty()
-            .When(a =>
-                a.ActionType == PlayerActionType.Attack || a.ActionType == PlayerActionType.Spy
-            )
-            .WithMessage("Target ID is required for attack or spy actions.");
-
         // Parameters dictionary must always be present
         RuleFor(a => a.Parameters)
             .NotNull()

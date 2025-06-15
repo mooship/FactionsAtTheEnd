@@ -16,10 +16,7 @@ public class GameState
     public int GateNetworkIntegrity { get; set; } = 60; // 0-100, affects travel/trade
     public int AncientTechDiscovery { get; set; } = 10; // 0-100, unlocks events
 
-    // All factions in the game (player and NPCs)
     public List<Faction> Factions { get; set; } = [];
-
-    // Player's faction ID for quick lookup
     public string PlayerFactionId { get; set; } = string.Empty;
 
     // Recent events (for event log and turn feedback)

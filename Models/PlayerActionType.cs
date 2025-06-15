@@ -37,12 +37,6 @@ public enum PlayerActionType
 
     [Display(Name = "Sabotage")]
     Sabotage,
-
-    [Display(Name = "Attack")]
-    Attack,
-
-    [Display(Name = "Spy")]
-    Spy,
 }
 
 public static class PlayerActionTypeExtensions
