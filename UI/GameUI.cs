@@ -79,6 +79,15 @@ public class GameUI
             "- [green]Events[/]: Some events let you choose a response. Your choices can change your stats or unlock new storylines."
         );
         AnsiConsole.MarkupLine(
+            "- [green]Event Effects[/]: After each event, you'll see exactly how it affected your stats, resources, or available actions."
+        );
+        AnsiConsole.MarkupLine(
+            "- [green]Event Log[/]: Review all past events and narrative history at any time from the in-game menu."
+        );
+        AnsiConsole.MarkupLine(
+            "- [green]Faction Overview[/]: View your faction's stats, traits, and description from the in-game menu."
+        );
+        AnsiConsole.MarkupLine(
             "- [green]Win/Lose[/]: Survive 20 cycles or reach 100 Technology to win. Lose if Population, Resources, or Stability hit zero."
         );
         AnsiConsole.MarkupLine(
