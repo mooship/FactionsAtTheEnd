@@ -110,6 +110,17 @@ public class GameEngine(
         await UpdateWorldStateAsync();
         var newEvents = (await _eventService.GenerateRandomEventsAsync(CurrentGame)).ToList();
         CurrentGame.RecentEvents.AddRange(newEvents);
+        // Generate and add galactic news headlines
+        var newNews = _eventService.GenerateGalacticNews(CurrentGame, newEvents);
+        if (newNews.Count != 0)
+        {
+            CurrentGame.GalacticNews.AddRange(newNews);
+            // Keep only the most recent 15 news items
+            CurrentGame.GalacticNews =
+            [
+                .. CurrentGame.GalacticNews.Skip(CurrentGame.GalacticNews.Count - 15),
+            ];
+        }
         ApplyEventEffects(newEvents);
         await _gameDataService.SaveGameAsync(CurrentGame);
         CheckWinLoseConditions();

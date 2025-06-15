@@ -1,5 +1,4 @@
 using FactionsAtTheEnd.Core;
-using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using FluentValidation;
 using Spectre.Console;
@@ -8,13 +7,11 @@ namespace FactionsAtTheEnd.UI;
 
 public class GameUI(
     GameEngine gameEngine,
-    IFactionService factionService,
     IValidator<Faction> factionValidator,
     IValidator<PlayerAction> playerActionValidator
 )
 {
     private readonly GameEngine _gameEngine = gameEngine;
-    private readonly IFactionService _factionService = factionService;
     private readonly IValidator<Faction> _factionValidator = factionValidator;
     private readonly IValidator<PlayerAction> _playerActionValidator = playerActionValidator;
 
@@ -58,7 +55,7 @@ public class GameUI(
         }
     }
 
-    private void ShowHelp()
+    private static void ShowHelp()
     {
         AnsiConsole.MarkupLine("[bold yellow]Help & Tips[/]");
         AnsiConsole.MarkupLine(
@@ -479,6 +476,28 @@ public class GameUI(
         AnsiConsole.MarkupLine($"[bold]Resources:[/] {playerFaction.Resources}");
         AnsiConsole.MarkupLine($"[bold]Stability:[/] {playerFaction.Stability}");
         AnsiConsole.MarkupLine("");
+        // Show Reputation
+        AnsiConsole.MarkupLine(
+            $"[bold]Reputation:[/] {game.Reputation} {GetReputationDescription(game.Reputation)}"
+        );
+        AnsiConsole.MarkupLine("");
+        // Show Galactic News
+        if (game.GalacticNews.Count > 0)
+        {
+            AnsiConsole.MarkupLine("[bold underline]Galactic News:[/]");
+            foreach (var news in game.GalacticNews.TakeLast(5))
+            {
+                AnsiConsole.MarkupLine($"[aqua]{news}[/]");
+            }
+            AnsiConsole.MarkupLine("");
+        }
+        // Show World History snippet
+        if (game.WorldHistory.Count > 0)
+        {
+            AnsiConsole.MarkupLine("[bold underline]World History:[/]");
+            AnsiConsole.MarkupLine($"[grey]{game.WorldHistory.Last()}[/]");
+            AnsiConsole.MarkupLine("");
+        }
         if (game.RecentEvents.Count != 0)
         {
             AnsiConsole.MarkupLine("[bold underline]Recent Events:[/]");
@@ -589,6 +608,24 @@ public class GameUI(
             _ => ActionDescriptions.Default,
         };
         AnsiConsole.MarkupLine($"[grey]{desc}[/]");
+    }
+
+    // Returns a short description for the player's reputation
+    private static string GetReputationDescription(int reputation)
+    {
+        if (reputation >= 80)
+            return "[green](Legendary)[/]";
+        if (reputation >= 40)
+            return "[green](Respected)[/]";
+        if (reputation >= 10)
+            return "[olive](Noted)[/]";
+        if (reputation <= -80)
+            return "[red](Infamous)[/]";
+        if (reputation <= -40)
+            return "[red](Notorious)[/]";
+        if (reputation <= -10)
+            return "[orange1](Distrusted)[/]";
+        return "(Neutral)";
     }
 }
 

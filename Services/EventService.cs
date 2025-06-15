@@ -1,6 +1,8 @@
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using FactionsAtTheEnd.UI;
+using static FactionsAtTheEnd.UI.EventTemplates;
+using static FactionsAtTheEnd.UI.NewsTemplates;
 
 namespace FactionsAtTheEnd.Services;
 
@@ -16,9 +18,8 @@ public class EventService : IEventService
         {
             new()
             {
-                Title = "Collapse",
-                Description =
-                    "The imperial government has fallen. You lead the last organized group in your region. Survival is up to you.",
+                Title = CollapseTitle,
+                Description = CollapseDescription,
                 Type = EventType.Crisis,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -79,13 +80,13 @@ public class EventService : IEventService
             events.Add(
                 new GameEvent
                 {
-                    Title = "Diplomatic Overture",
-                    Description = "A neighboring faction offers an alliance. Do you accept?",
+                    Title = DiplomaticOvertureTitle,
+                    Description = DiplomaticOvertureDescription,
                     Type = EventType.Military,
                     Cycle = gameState.CurrentCycle,
                     AffectedFactions = [gameState.PlayerFactionId],
                     Parameters = new Dictionary<string, object> { { "Choice", "AllianceOffer" } },
-                    Effects = new Dictionary<UI.StatKey, int> { { UI.StatKey.Influence, 5 } },
+                    Effects = new Dictionary<UI.StatKey, int> { { StatKey.Influence, 5 } },
                     BlockedActions = [],
                 }
             );
@@ -145,8 +146,8 @@ public class EventService : IEventService
         {
             return new GameEvent
             {
-                Title = "Veteran Parade",
-                Description = "A parade of veterans inspires your troops and citizens alike.",
+                Title = VeteranParadeTitle,
+                Description = VeteranParadeDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -158,8 +159,8 @@ public class EventService : IEventService
         {
             return new GameEvent
             {
-                Title = "Successful Raid",
-                Description = "Your pirates pull off a daring raid, boosting resources and morale!",
+                Title = SuccessfulRaidTitle,
+                Description = SuccessfulRaidDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -176,8 +177,8 @@ public class EventService : IEventService
         {
             return new GameEvent
             {
-                Title = "Sabotage Success",
-                Description = "Your rebels sabotage enemy supplies, gaining support and resources.",
+                Title = SabotageSuccessTitle,
+                Description = SabotageSuccessDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -193,9 +194,8 @@ public class EventService : IEventService
         {
             0 => new GameEvent
             {
-                Title = "Raiders Attack",
-                Description =
-                    "A group of raiders attacks your supply lines, straining your defenses.",
+                Title = RaidersAttackTitle,
+                Description = RaidersAttackDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -204,8 +204,8 @@ public class EventService : IEventService
             },
             1 => new GameEvent
             {
-                Title = "Internal Mutiny",
-                Description = "A mutiny breaks out among your troops, threatening stability.",
+                Title = InternalMutinyTitle,
+                Description = InternalMutinyDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -214,8 +214,8 @@ public class EventService : IEventService
             },
             2 => new GameEvent
             {
-                Title = "Mercenary Trouble",
-                Description = "Mercenaries demand higher pay or threaten to desert.",
+                Title = MercenaryTroubleTitle,
+                Description = MercenaryTroubleDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -223,8 +223,8 @@ public class EventService : IEventService
             },
             3 => new GameEvent
             {
-                Title = "Elite Training",
-                Description = "Your officers organize elite training, boosting your forces.",
+                Title = EliteTrainingTitle,
+                Description = EliteTrainingDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -232,9 +232,8 @@ public class EventService : IEventService
             },
             4 => new GameEvent
             {
-                Title = "Border Skirmish",
-                Description =
-                    "A border skirmish tests your readiness. Losses are minimal, but morale is shaken.",
+                Title = BorderSkirmishTitle,
+                Description = BorderSkirmishDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -242,9 +241,8 @@ public class EventService : IEventService
             },
             5 => new GameEvent
             {
-                Title = "Veteran Recruits",
-                Description =
-                    "Veterans from other regions join your cause, strengthening your army.",
+                Title = VeteranRecruitsTitle,
+                Description = VeteranRecruitsDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -252,8 +250,8 @@ public class EventService : IEventService
             },
             6 => new GameEvent
             {
-                Title = "Peaceful Garrison",
-                Description = "Your garrisons report no incidents. Troops rest and recover.",
+                Title = PeacefulGarrisonTitle,
+                Description = PeacefulGarrisonDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -261,8 +259,8 @@ public class EventService : IEventService
             },
             7 => new GameEvent
             {
-                Title = "Training Accident",
-                Description = "A minor accident during training causes a brief setback.",
+                Title = TrainingAccidentTitle,
+                Description = TrainingAccidentDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -284,8 +282,8 @@ public class EventService : IEventService
         {
             return new GameEvent
             {
-                Title = "Market Boom",
-                Description = "A surge in the market brings a windfall to your coffers.",
+                Title = MarketBoomTitle,
+                Description = MarketBoomDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -297,8 +295,8 @@ public class EventService : IEventService
         {
             return new GameEvent
             {
-                Title = "Tithes and Offerings",
-                Description = "The faithful donate generously, swelling your resources.",
+                Title = TithesOfferingsTitle,
+                Description = TithesOfferingsDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -309,8 +307,8 @@ public class EventService : IEventService
         {
             0 => new GameEvent
             {
-                Title = "Resource Shortage",
-                Description = "Critical resources become scarce due to supply chain disruptions.",
+                Title = ResourceShortageTitle,
+                Description = ResourceShortageDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -319,8 +317,8 @@ public class EventService : IEventService
             },
             1 => new GameEvent
             {
-                Title = "Market Instability",
-                Description = "Economic uncertainty causes prices to fluctuate wildly.",
+                Title = MarketInstabilityTitle,
+                Description = MarketInstabilityDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -328,8 +326,8 @@ public class EventService : IEventService
             },
             2 => new GameEvent
             {
-                Title = "Black Market Surge",
-                Description = "Illegal goods flood your markets as law enforcement breaks down.",
+                Title = BlackMarketSurgeTitle,
+                Description = BlackMarketSurgeDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -337,8 +335,8 @@ public class EventService : IEventService
             },
             3 => new GameEvent
             {
-                Title = "Trade Convoy Arrives",
-                Description = "A friendly trade convoy brings much-needed supplies.",
+                Title = TradeConvoyArrivesTitle,
+                Description = TradeConvoyArrivesDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -346,8 +344,8 @@ public class EventService : IEventService
             },
             4 => new GameEvent
             {
-                Title = "Smuggling Ring Busted",
-                Description = "You uncover a smuggling ring, recovering stolen goods.",
+                Title = SmugglingRingBustedTitle,
+                Description = SmugglingRingBustedDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -355,8 +353,8 @@ public class EventService : IEventService
             },
             5 => new GameEvent
             {
-                Title = "Resource Windfall",
-                Description = "A new resource deposit is discovered, boosting your economy!",
+                Title = ResourceWindfallTitle,
+                Description = ResourceWindfallDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -364,8 +362,8 @@ public class EventService : IEventService
             },
             6 => new GameEvent
             {
-                Title = "Efficient Logistics",
-                Description = "Your supply officers optimize routes, saving resources.",
+                Title = EfficientLogisticsTitle,
+                Description = EfficientLogisticsDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -373,8 +371,8 @@ public class EventService : IEventService
             },
             7 => new GameEvent
             {
-                Title = "Charity Drive",
-                Description = "A charity drive boosts morale and stability among the people.",
+                Title = CharityDriveTitle,
+                Description = CharityDriveDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -396,9 +394,8 @@ public class EventService : IEventService
         {
             return new GameEvent
             {
-                Title = "Breakthrough Algorithm",
-                Description =
-                    "Your scientists develop a revolutionary algorithm, accelerating research.",
+                Title = BreakthroughAlgorithmTitle,
+                Description = BreakthroughAlgorithmDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -410,9 +407,8 @@ public class EventService : IEventService
         {
             return new GameEvent
             {
-                Title = "Recovered Imperial Database",
-                Description =
-                    "You recover a lost imperial database, boosting your technological edge.",
+                Title = RecoveredImperialDatabaseTitle,
+                Description = RecoveredImperialDatabaseDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -423,8 +419,8 @@ public class EventService : IEventService
         {
             0 => new GameEvent
             {
-                Title = "Tech Breakdown",
-                Description = "A critical system fails, requiring urgent repairs.",
+                Title = TechBreakdownTitle,
+                Description = TechBreakdownDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -433,8 +429,8 @@ public class EventService : IEventService
             },
             1 => new GameEvent
             {
-                Title = "Research Breakthrough",
-                Description = "Your scientists make a breakthrough, advancing your technology.",
+                Title = ResearchBreakthroughTitle,
+                Description = ResearchBreakthroughDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -442,8 +438,8 @@ public class EventService : IEventService
             },
             2 => new GameEvent
             {
-                Title = "Sabotage Attempt",
-                Description = "Saboteurs attempt to disrupt your research efforts.",
+                Title = SabotageAttemptTitle,
+                Description = SabotageAttemptDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -451,8 +447,8 @@ public class EventService : IEventService
             },
             3 => new GameEvent
             {
-                Title = "Unexpected Innovation",
-                Description = "A junior scientist invents a new process, boosting morale and tech!",
+                Title = UnexpectedInnovationTitle,
+                Description = UnexpectedInnovationDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -460,8 +456,8 @@ public class EventService : IEventService
             },
             4 => new GameEvent
             {
-                Title = "Prototype Success",
-                Description = "A risky prototype works perfectly, giving you an edge.",
+                Title = PrototypeSuccessTitle,
+                Description = PrototypeSuccessDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -469,8 +465,8 @@ public class EventService : IEventService
             },
             5 => new GameEvent
             {
-                Title = "Equipment Theft",
-                Description = "Thieves steal valuable research equipment, setting you back.",
+                Title = EquipmentTheftTitle,
+                Description = EquipmentTheftDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -478,8 +474,8 @@ public class EventService : IEventService
             },
             6 => new GameEvent
             {
-                Title = "Tech Festival",
-                Description = "A festival celebrating innovation inspires your scientists.",
+                Title = TechFestivalTitle,
+                Description = TechFestivalDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -487,8 +483,8 @@ public class EventService : IEventService
             },
             7 => new GameEvent
             {
-                Title = "Failed Experiment",
-                Description = "A failed experiment causes a minor setback.",
+                Title = FailedExperimentTitle,
+                Description = FailedExperimentDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -511,8 +507,8 @@ public class EventService : IEventService
         {
             return new GameEvent
             {
-                Title = "Ancient Memory Stirred",
-                Description = "A memory from a forgotten age grants your people new insight.",
+                Title = AncientMemoryStirredTitle,
+                Description = AncientMemoryStirredDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -524,9 +520,8 @@ public class EventService : IEventService
         {
             return new GameEvent
             {
-                Title = "Echoes of the First Empire",
-                Description =
-                    "Your people recall secrets of the First Empire, unlocking new paths.",
+                Title = EchoesOfTheFirstEmpireTitle,
+                Description = EchoesOfTheFirstEmpireDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -537,8 +532,8 @@ public class EventService : IEventService
         {
             0 => new GameEvent
             {
-                Title = "Ancient Ruins Found",
-                Description = "You discover ancient ruins containing valuable technology.",
+                Title = AncientRuinsFoundTitle,
+                Description = AncientRuinsFoundDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -546,8 +541,8 @@ public class EventService : IEventService
             },
             1 => new GameEvent
             {
-                Title = "Lost Data Recovered",
-                Description = "Lost data archives are recovered, revealing secrets of the past.",
+                Title = LostDataRecoveredTitle,
+                Description = LostDataRecoveredDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -555,8 +550,8 @@ public class EventService : IEventService
             },
             2 => new GameEvent
             {
-                Title = "Mysterious Signal Detected",
-                Description = "A mysterious signal is detected, hinting at unknown opportunities.",
+                Title = MysteriousSignalDetectedTitle,
+                Description = MysteriousSignalDetectedDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -564,8 +559,8 @@ public class EventService : IEventService
             },
             3 => new GameEvent
             {
-                Title = "Dangerous Relic Activated",
-                Description = "A relic malfunctions, causing chaos and blocking research!",
+                Title = DangerousRelicActivatedTitle,
+                Description = DangerousRelicActivatedDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -574,8 +569,8 @@ public class EventService : IEventService
             },
             4 => new GameEvent
             {
-                Title = "Alien Artifact",
-                Description = "An alien artifact is found, boosting your influence and curiosity.",
+                Title = AlienArtifactTitle,
+                Description = AlienArtifactDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -583,8 +578,8 @@ public class EventService : IEventService
             },
             5 => new GameEvent
             {
-                Title = "Forgotten Cache",
-                Description = "A forgotten cache of supplies is discovered in the ruins.",
+                Title = ForgottenCacheTitle,
+                Description = ForgottenCacheDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -592,8 +587,8 @@ public class EventService : IEventService
             },
             6 => new GameEvent
             {
-                Title = "Cultural Exchange",
-                Description = "A cultural exchange with outsiders brings new ideas.",
+                Title = CulturalExchangeTitle,
+                Description = CulturalExchangeDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -601,8 +596,8 @@ public class EventService : IEventService
             },
             7 => new GameEvent
             {
-                Title = "False Lead",
-                Description = "A promising lead turns out to be a dead end.",
+                Title = FalseLeadTitle,
+                Description = FalseLeadDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -624,8 +619,8 @@ public class EventService : IEventService
         {
             return new GameEvent
             {
-                Title = "Pilgrimage Miracle",
-                Description = "A miracle during a pilgrimage inspires hope and unity.",
+                Title = PilgrimageMiracleTitle,
+                Description = PilgrimageMiracleDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -636,8 +631,8 @@ public class EventService : IEventService
         {
             0 => new GameEvent
             {
-                Title = "Solar Flare",
-                Description = "A solar flare disrupts communications and damages equipment.",
+                Title = SolarFlareTitle,
+                Description = SolarFlareDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -645,8 +640,8 @@ public class EventService : IEventService
             },
             1 => new GameEvent
             {
-                Title = "Meteor Shower",
-                Description = "A meteor shower causes damage to infrastructure.",
+                Title = MeteorShowerTitle,
+                Description = MeteorShowerDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -654,8 +649,8 @@ public class EventService : IEventService
             },
             2 => new GameEvent
             {
-                Title = "Plague Outbreak",
-                Description = "A sudden outbreak of disease threatens your population.",
+                Title = PlagueOutbreakTitle,
+                Description = PlagueOutbreakDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -664,8 +659,8 @@ public class EventService : IEventService
             },
             3 => new GameEvent
             {
-                Title = "Bountiful Harvest",
-                Description = "Against all odds, your crops thrive!",
+                Title = BountifulHarvestTitle,
+                Description = BountifulHarvestDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -673,8 +668,8 @@ public class EventService : IEventService
             },
             4 => new GameEvent
             {
-                Title = "Earthquake!",
-                Description = "A powerful earthquake shakes your settlements, causing damage.",
+                Title = EarthquakeTitle,
+                Description = EarthquakeDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -682,8 +677,8 @@ public class EventService : IEventService
             },
             5 => new GameEvent
             {
-                Title = "Mild Season",
-                Description = "The weather is calm and pleasant, helping your people recover.",
+                Title = MildSeasonTitle,
+                Description = MildSeasonDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -691,8 +686,8 @@ public class EventService : IEventService
             },
             6 => new GameEvent
             {
-                Title = "Gentle Rains",
-                Description = "Gentle rains bring a season of prosperity.",
+                Title = GentleRainsTitle,
+                Description = GentleRainsDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -700,8 +695,8 @@ public class EventService : IEventService
             },
             7 => new GameEvent
             {
-                Title = "Minor Flood",
-                Description = "A minor flood causes inconvenience but little damage.",
+                Title = MinorFloodTitle,
+                Description = MinorFloodDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
                 AffectedFactions = [gameState.PlayerFactionId],
@@ -724,9 +719,8 @@ public class EventService : IEventService
             {
                 return new GameEvent
                 {
-                    Title = "Population Crisis",
-                    Description =
-                        "Your population is on the brink of collapse! Take urgent action.",
+                    Title = PopulationCrisisTitle,
+                    Description = PopulationCrisisDescription,
                     Type = EventType.Crisis,
                     Cycle = gameState.CurrentCycle,
                     AffectedFactions = [gameState.PlayerFactionId],
@@ -737,8 +731,8 @@ public class EventService : IEventService
             {
                 return new GameEvent
                 {
-                    Title = "Resource Crisis",
-                    Description = "Your resources are nearly depleted! Find new supplies soon.",
+                    Title = ResourceCrisisTitle,
+                    Description = ResourceCrisisDescription,
                     Type = EventType.Crisis,
                     Cycle = gameState.CurrentCycle,
                     AffectedFactions = [gameState.PlayerFactionId],
@@ -749,9 +743,8 @@ public class EventService : IEventService
             {
                 return new GameEvent
                 {
-                    Title = "Stability Crisis",
-                    Description =
-                        "Your people are losing faith in your leadership! Restore order quickly.",
+                    Title = StabilityCrisisTitle,
+                    Description = StabilityCrisisDescription,
                     Type = EventType.Crisis,
                     Cycle = gameState.CurrentCycle,
                     AffectedFactions = [gameState.PlayerFactionId],
@@ -762,8 +755,8 @@ public class EventService : IEventService
             {
                 return new GameEvent
                 {
-                    Title = "Faction on the Brink!",
-                    Description = "Your people are losing hope. Desperate measures are needed.",
+                    Title = FactionOnTheBrinkTitle,
+                    Description = FactionOnTheBrinkDescription,
                     Type = EventType.Crisis,
                     Cycle = gameState.CurrentCycle,
                     AffectedFactions = [gameState.PlayerFactionId],
@@ -779,9 +772,8 @@ public class EventService : IEventService
         // Default major crisis
         return new GameEvent
         {
-            Title = "Major Crisis",
-            Description =
-                "A major crisis shakes your faction to its core, testing your leadership.",
+            Title = MajorCrisisTitle,
+            Description = MajorCrisisDescription,
             Type = EventType.Crisis,
             Cycle = gameState.CurrentCycle,
             AffectedFactions = [gameState.PlayerFactionId],
@@ -796,13 +788,85 @@ public class EventService : IEventService
         gameState.BlockedActions.Remove(PlayerActionType.Ancient_Studies);
         return new GameEvent
         {
-            Title = "Ancient Technology Unearthed",
-            Description = "You unearth powerful ancient technology, offering new possibilities.",
+            Title = AncientTechnologyUnearthedTitle,
+            Description = AncientTechnologyUnearthedDescription,
             Type = EventType.Discovery,
             Cycle = gameState.CurrentCycle,
             AffectedFactions = [gameState.PlayerFactionId],
             Effects = new() { { StatKey.Technology, 15 }, { StatKey.Stability, 5 } },
             BlockedActions = [],
         };
+    }
+
+    /// <summary>
+    /// Generates galactic news headlines based on recent player actions, major events, and world state.
+    /// </summary>
+    public List<string> GenerateGalacticNews(GameState gameState, List<GameEvent> recentEvents)
+    {
+        var news = new List<string>();
+        var player = gameState.Factions.FirstOrDefault(f => f.Id == gameState.PlayerFactionId);
+        if (player == null)
+            return news;
+
+        // Major event headlines
+        foreach (var gameEvent in recentEvents)
+        {
+            switch (gameEvent.Type)
+            {
+                case EventType.Crisis:
+                    news.Add(string.Format(CrisisHeadline, gameEvent.Title, player.Name));
+                    break;
+                case EventType.Military:
+                    news.Add(string.Format(MilitaryHeadline, gameEvent.Title, player.Name));
+                    break;
+                case EventType.Economic:
+                    news.Add(string.Format(EconomicHeadline, gameEvent.Title, player.Name));
+                    break;
+                case EventType.Technological:
+                    news.Add(string.Format(TechHeadline, gameEvent.Title, player.Name));
+                    break;
+                case EventType.Discovery:
+                    news.Add(string.Format(DiscoveryHeadline, gameEvent.Title, player.Name));
+                    break;
+                case EventType.Natural:
+                    news.Add(string.Format(NaturalHeadline, gameEvent.Title, player.Name));
+                    break;
+            }
+        }
+
+        // Reputation-based news
+        if (gameState.Reputation >= 80)
+        {
+            news.Add(string.Format(LegendaryReputation, player.Name));
+        }
+        else if (gameState.Reputation <= -80)
+        {
+            news.Add(string.Format(InfamyReputation, player.Name));
+        }
+        else if (gameState.Reputation >= 40)
+        {
+            news.Add(string.Format(RisingStarReputation, player.Name));
+        }
+        else if (gameState.Reputation <= -40)
+        {
+            news.Add(string.Format(NotoriousReputation, player.Name));
+        }
+
+        // World state news
+        if (gameState.GalacticStability < 20)
+        {
+            news.Add(TurmoilNews);
+        }
+        if (gameState.GateNetworkIntegrity < 30)
+        {
+            news.Add(GateFailingNews);
+        }
+        if (gameState.AncientTechDiscovery > 70)
+        {
+            news.Add(AncientTechNews);
+        }
+
+        // Limit to 3-5 headlines per cycle
+        return [.. news.Take(5)];
     }
 }

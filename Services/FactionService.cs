@@ -56,7 +56,7 @@ public class FactionService : IFactionService
         return faction;
     }
 
-    private string GenerateFactionDescription(FactionType type)
+    private static string GenerateFactionDescription(FactionType type)
     {
         return type switch
         {
@@ -72,7 +72,7 @@ public class FactionService : IFactionService
         };
     }
 
-    private List<string> GenerateFactionTraits(FactionType type)
+    private static List<string> GenerateFactionTraits(FactionType type)
     {
         return type switch
         {
@@ -88,7 +88,7 @@ public class FactionService : IFactionService
         };
     }
 
-    private void SetStartingResources(Faction faction)
+    private static void SetStartingResources(Faction faction)
     {
         // Base starting resources
         faction.Population = Random.Shared.Next(

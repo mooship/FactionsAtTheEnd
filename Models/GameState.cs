@@ -31,6 +31,12 @@ public class GameState
 
     // Track how many times each action was used in the last 3 turns
     public Dictionary<PlayerActionType, int> RecentActionCounts { get; set; } = [];
+
+    // Reputation stat
+    public int Reputation { get; set; } = 0; // -100 (infamous) to +100 (legendary)
+
+    // Galactic news for emergent narrative and world feedback
+    public List<string> GalacticNews { get; set; } = [];
 }
 
 /// <summary>
