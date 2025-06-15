@@ -7,8 +7,7 @@ using static FactionsAtTheEnd.UI.NewsTemplates;
 namespace FactionsAtTheEnd.Services;
 
 /// <summary>
-/// Handles all event generation for the single-player, single-faction MVP.
-/// All events now only affect the player faction.
+/// Handles all event generation.
 /// </summary>
 public class EventService : IEventService
 {
@@ -86,7 +85,7 @@ public class EventService : IEventService
                     Cycle = gameState.CurrentCycle,
                     AffectedFactions = [gameState.PlayerFactionId],
                     Parameters = new Dictionary<string, object> { { "Choice", "AllianceOffer" } },
-                    Effects = new Dictionary<UI.StatKey, int> { { StatKey.Influence, 5 } },
+                    Effects = new Dictionary<StatKey, int> { { StatKey.Influence, 5 } },
                     BlockedActions = [],
                 }
             );

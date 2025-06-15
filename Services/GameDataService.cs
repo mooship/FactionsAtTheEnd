@@ -3,7 +3,6 @@ using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using LiteDB;
 
-// Handles saving, loading, and deleting game state using LiteDB for persistence.
 namespace FactionsAtTheEnd.Services;
 
 public class GameDataService(ILiteDatabase db) : IGameDataService

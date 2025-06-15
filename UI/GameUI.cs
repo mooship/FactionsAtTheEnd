@@ -326,6 +326,11 @@ public class GameUI
                 PlayerActionType.Economic_Tech,
                 PlayerActionType.Ancient_Studies,
                 PlayerActionType.Gate_Network_Research,
+                PlayerActionType.Diplomacy,
+                PlayerActionType.Espionage,
+                PlayerActionType.Sabotage,
+                PlayerActionType.Attack,
+                PlayerActionType.Spy,
             };
 
             var chosenActions = new HashSet<PlayerActionType>();
@@ -358,9 +363,49 @@ public class GameUI
                     i--;
                     continue;
                 }
-                playerActions.Add(
-                    new PlayerAction { ActionType = selectedAction, FactionId = playerFaction.Id }
-                );
+                // For actions that require a target, prompt for target selection
+                if (
+                    selectedAction == PlayerActionType.Attack
+                    || selectedAction == PlayerActionType.Spy
+                )
+                {
+                    var possibleTargets = game.Factions.Where(f => !f.IsPlayer).ToList();
+                    if (possibleTargets.Count == 0)
+                    {
+                        AnsiConsole.MarkupLine(
+                            "[red]No valid targets available for this action.[/]"
+                        );
+                        i--;
+                        continue;
+                    }
+                    var targetDisplay = possibleTargets
+                        .Select(f => $"{f.Name} ({f.Type.GetDisplayName()})")
+                        .ToList();
+                    var chosenTargetDisplay = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title("Choose a target faction:")
+                            .AddChoices(targetDisplay)
+                    );
+                    var chosenTarget = possibleTargets[targetDisplay.IndexOf(chosenTargetDisplay)];
+                    playerActions.Add(
+                        new PlayerAction
+                        {
+                            ActionType = selectedAction,
+                            FactionId = playerFaction.Id,
+                            TargetId = chosenTarget.Id,
+                        }
+                    );
+                }
+                else
+                {
+                    playerActions.Add(
+                        new PlayerAction
+                        {
+                            ActionType = selectedAction,
+                            FactionId = playerFaction.Id,
+                        }
+                    );
+                }
                 chosenActions.Add(selectedAction);
             }
 

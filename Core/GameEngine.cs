@@ -6,7 +6,7 @@ using FluentValidation;
 namespace FactionsAtTheEnd.Core;
 
 /// <summary>
-/// Main game engine for Factions at the End (single-player, single-faction MVP).
+/// Main game engine for Factions at the End.
 /// Handles game state, turn processing, and win/lose conditions.
 /// </summary>
 public class GameEngine(
@@ -318,6 +318,52 @@ public class GameEngine(
                     case PlayerActionType.Sabotage:
                         f.Military += 1;
                         f.Influence += 1;
+                        break;
+                    case PlayerActionType.Attack:
+                        // Attack another faction: reduce their military/resources, increase player's military/influence
+                        if (!string.IsNullOrWhiteSpace(action.TargetId))
+                        {
+                            var target = CurrentGame.Factions.FirstOrDefault(x =>
+                                x.Id == action.TargetId && !x.IsPlayer
+                            );
+                            if (target != null)
+                            {
+                                int damage = Random.Shared.Next(5, 13); // 5-12
+                                target.Military = Math.Max(0, target.Military - damage);
+                                target.Resources = Math.Max(0, target.Resources - damage / 2);
+                                f.Military += 2;
+                                f.Influence += 3;
+                                // Optional: retaliation risk
+                                if (Random.Shared.Next(1, 101) <= 20)
+                                {
+                                    f.Stability -= 2;
+                                }
+                            }
+                        }
+                        break;
+                    case PlayerActionType.Spy:
+                        // Spy on another faction: reveal stats, increase influence, risk being caught
+                        if (!string.IsNullOrWhiteSpace(action.TargetId))
+                        {
+                            var target = CurrentGame.Factions.FirstOrDefault(x =>
+                                x.Id == action.TargetId && !x.IsPlayer
+                            );
+                            if (target != null)
+                            {
+                                string spyReport =
+                                    $"Spy Report: {target.Name} - Pop: {target.Population}, Mil: {target.Military}, Tech: {target.Technology}, Inf: {target.Influence}, Res: {target.Resources}, Stability: {target.Stability}";
+                                CurrentGame.GalacticNews.Add(spyReport);
+                                f.Influence += 2;
+                                // Risk of being caught
+                                if (Random.Shared.Next(1, 101) <= 15)
+                                {
+                                    f.Stability -= 2;
+                                    CurrentGame.GalacticNews.Add(
+                                        $"Your spy was caught by {target.Name}! Public embarrassment reduces your stability."
+                                    );
+                                }
+                            }
+                        }
                         break;
                     default:
                         break;

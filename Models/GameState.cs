@@ -55,7 +55,7 @@ public class GameEvent
     // Effects: resource/stat changes (e.g., { StatKey.Military, -5 })
     public Dictionary<UI.StatKey, int> Effects { get; set; } = [];
 
-    // Blocked actions for the next turn (optional)
+    // Blocked actions for the next turn
     public List<PlayerActionType> BlockedActions { get; set; } = [];
 }
 
