@@ -27,6 +27,15 @@ public enum PlayerActionType
 
     [Display(Name = "Gate Network Research")]
     Gate_Network_Research,
+
+    [Display(Name = "Diplomacy")]
+    Diplomacy,
+
+    [Display(Name = "Espionage")]
+    Espionage,
+
+    [Display(Name = "Sabotage")]
+    Sabotage,
 }
 
 public static class PlayerActionTypeExtensions

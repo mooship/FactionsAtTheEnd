@@ -74,6 +74,23 @@ public class EventService : IEventService
             events.Add(GenerateAncientTechEvent(gameState));
         }
 
+        if (Random.Shared.Next(1, 101) <= 10)
+        {
+            events.Add(
+                new GameEvent
+                {
+                    Title = "Diplomatic Overture",
+                    Description = "A neighboring faction offers an alliance. Do you accept?",
+                    Type = EventType.Military,
+                    Cycle = gameState.CurrentCycle,
+                    AffectedFactions = [gameState.PlayerFactionId],
+                    Parameters = new Dictionary<string, object> { { "Choice", "AllianceOffer" } },
+                    Effects = new Dictionary<UI.StatKey, int> { { UI.StatKey.Influence, 5 } },
+                    BlockedActions = [],
+                }
+            );
+        }
+
         return events;
     }
 

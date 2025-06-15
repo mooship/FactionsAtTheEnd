@@ -1,3 +1,4 @@
+using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using FactionsAtTheEnd.UI;
@@ -8,6 +9,8 @@ public class FactionService : IFactionService
 {
     public Faction CreateFaction(string name, FactionType type, bool isPlayer = false)
     {
+        Guard.IsNotNullOrWhiteSpace(name);
+        Guard.IsTrue(Enum.IsDefined(type), nameof(type) + " must be a valid FactionType.");
         var faction = new Faction
         {
             Name = name,
@@ -20,6 +23,36 @@ public class FactionService : IFactionService
         // Set starting resources based on faction type
         SetStartingResources(faction);
 
+        // Unique ability: passive stat bonus
+        switch (type)
+        {
+            case FactionType.MilitaryJunta:
+                faction.Military += 5;
+                break;
+            case FactionType.CorporateCouncil:
+                faction.Resources += 5;
+                break;
+            case FactionType.ReligiousOrder:
+                faction.Stability += 5;
+                break;
+            case FactionType.PirateAlliance:
+                faction.Influence += 5;
+                break;
+            case FactionType.TechnocraticUnion:
+                faction.Technology += 5;
+                break;
+            case FactionType.RebellionCell:
+                faction.Stability += 3;
+                faction.Influence += 2;
+                break;
+            case FactionType.ImperialRemnant:
+                faction.Population += 5;
+                break;
+            case FactionType.AncientAwakened:
+                faction.Technology += 3;
+                faction.Stability += 2;
+                break;
+        }
         return faction;
     }
 

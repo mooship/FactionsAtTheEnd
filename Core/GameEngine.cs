@@ -123,6 +123,7 @@ public class GameEngine(
         Dictionary<PlayerActionType, int> actionCounts
     ) ValidateAndCountActions(List<PlayerAction> playerActions)
     {
+        Guard.IsNotNull(playerActions);
         var validActions = new List<PlayerAction>();
         var actionCounts = new Dictionary<PlayerActionType, int>();
         foreach (var action in playerActions)
@@ -148,6 +149,8 @@ public class GameEngine(
     /// </summary>
     private void UpdateActionCounts(Dictionary<PlayerActionType, int> actionCounts)
     {
+        Guard.IsNotNull(actionCounts);
+        Guard.IsNotNull(CurrentGame);
         foreach (var key in actionCounts.Keys)
         {
             if (!CurrentGame!.RecentActionCounts.ContainsKey(key))
@@ -182,6 +185,8 @@ public class GameEngine(
     /// </summary>
     private void ApplyEventEffects(List<GameEvent> newEvents)
     {
+        Guard.IsNotNull(newEvents);
+        Guard.IsNotNull(CurrentGame);
         var player = CurrentGame!.Factions.FirstOrDefault(f =>
             f.Id == CurrentGame!.PlayerFactionId
         );
@@ -233,6 +238,7 @@ public class GameEngine(
     /// </summary>
     private void CheckWinLoseConditions()
     {
+        Guard.IsNotNull(CurrentGame);
         var player = CurrentGame!.Factions.FirstOrDefault(f =>
             f.Id == CurrentGame!.PlayerFactionId
         );
@@ -247,99 +253,65 @@ public class GameEngine(
     /// </summary>
     private async Task ProcessPlayerActionAsync(PlayerAction action)
     {
-        Guard.IsNotNull(action);
+        var player = CurrentGame?.Factions.FirstOrDefault(f => f.IsPlayer);
+        if (player == null || CurrentGame == null)
+        {
+            return;
+        }
 
         switch (action.ActionType)
         {
             case PlayerActionType.Build_Defenses:
-                await ApplyToFactionAsync(
-                    action.FactionId,
-                    async f =>
-                    {
-                        f.Military += 5;
-                        f.Stability = Math.Min(100, f.Stability + 2);
-                        await Task.CompletedTask;
-                    }
-                );
+                player.Military += 5;
+                player.Stability += 2;
                 break;
             case PlayerActionType.Recruit_Troops:
-                await ApplyToFactionAsync(
-                    action.FactionId,
-                    async f =>
-                    {
-                        f.Military += 8;
-                        f.Resources = Math.Max(0, f.Resources - 5);
-                        await Task.CompletedTask;
-                    }
-                );
+                player.Military += 7;
+                player.Resources -= 3;
                 break;
             case PlayerActionType.Develop_Infrastructure:
-                await ApplyToFactionAsync(
-                    action.FactionId,
-                    async f =>
-                    {
-                        f.Resources += 7;
-                        f.Stability = Math.Min(100, f.Stability + 1);
-                        await Task.CompletedTask;
-                    }
-                );
+                player.Resources += 5;
+                player.Stability += 2;
                 break;
             case PlayerActionType.Exploit_Resources:
-                await ApplyToFactionAsync(
-                    action.FactionId,
-                    async f =>
-                    {
-                        f.Resources += 10;
-                        f.Stability = Math.Max(0, f.Stability - 2);
-                        await Task.CompletedTask;
-                    }
-                );
+                player.Resources += 8;
+                player.Stability -= 1;
                 break;
             case PlayerActionType.Military_Tech:
-                await ApplyToFactionAsync(
-                    action.FactionId,
-                    async f =>
-                    {
-                        f.Technology += 5;
-                        f.Military += 2;
-                        await Task.CompletedTask;
-                    }
-                );
+                player.Technology += 4;
+                player.Military += 2;
                 break;
             case PlayerActionType.Economic_Tech:
-                await ApplyToFactionAsync(
-                    action.FactionId,
-                    async f =>
-                    {
-                        f.Technology += 5;
-                        f.Resources += 3;
-                        await Task.CompletedTask;
-                    }
-                );
+                player.Technology += 4;
+                player.Resources += 2;
                 break;
             case PlayerActionType.Ancient_Studies:
-                await ApplyToFactionAsync(
-                    action.FactionId,
-                    async f =>
-                    {
-                        f.Technology += 3;
-                        await Task.CompletedTask;
-                    }
-                );
+                player.Technology += 2;
+                CurrentGame.AncientTechDiscovery += 5;
                 break;
             case PlayerActionType.Gate_Network_Research:
-                await ApplyToFactionAsync(
-                    action.FactionId,
-                    async f =>
-                    {
-                        f.Technology += 2;
-                        await Task.CompletedTask;
-                    }
-                );
+                player.Technology += 2;
+                CurrentGame.GateNetworkIntegrity += 3;
+                break;
+            case PlayerActionType.Diplomacy:
+                player.Influence += 5;
+                player.Stability += 1;
+                break;
+            case PlayerActionType.Espionage:
+                player.Influence += 2;
+                player.Technology += 1;
+                // Could add event: chance to block enemy action
+                break;
+            case PlayerActionType.Sabotage:
+                player.Military += 1;
+                player.Influence += 1;
+                // Could add event: chance to reduce enemy resources
                 break;
             default:
                 break;
         }
+        player.ClampResources();
+        await Task.CompletedTask;
     }
 
     /// <summary>

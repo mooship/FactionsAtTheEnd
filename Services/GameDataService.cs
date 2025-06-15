@@ -1,3 +1,4 @@
+using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using LiteDB;
@@ -10,6 +11,7 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
 
     public async Task SaveGameAsync(GameState gameState)
     {
+        Guard.IsNotNull(gameState);
         try
         {
             await Task.Run(() =>
@@ -44,6 +46,7 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
 
     public async Task<GameState?> LoadGameAsync(string gameId)
     {
+        Guard.IsNotNullOrWhiteSpace(gameId);
         try
         {
             return await Task.Run(() =>
@@ -61,6 +64,7 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
 
     public async Task DeleteGameAsync(string gameId)
     {
+        Guard.IsNotNullOrWhiteSpace(gameId);
         try
         {
             await Task.Run(() =>

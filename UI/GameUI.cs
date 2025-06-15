@@ -60,38 +60,23 @@ public class GameUI(
 
     private void ShowHelp()
     {
-        AnsiConsole.Clear();
-        AnsiConsole.MarkupLine("[bold cyan]Game Help & Tips[/]");
-        AnsiConsole.MarkupLine("[yellow]Actions:[/]");
-        foreach (var action in Enum.GetValues<PlayerActionType>())
-        {
-            AnsiConsole.MarkupLine(
-                $"[green]{action.GetDisplayName()}[/]: {GetActionDescription(action)}"
-            );
-        }
-        AnsiConsole.MarkupLine("\n[yellow]Stats:[/]");
+        AnsiConsole.MarkupLine("[bold yellow]Help & Tips[/]");
         AnsiConsole.MarkupLine(
-            "Population: Number of people in your faction. If this reaches 0, you lose."
+            "- [green]Actions[/]: Each turn, choose actions like [blue]Diplomacy[/], [blue]Espionage[/], or [blue]Sabotage[/] to shape your faction's fate."
         );
         AnsiConsole.MarkupLine(
-            "Military: Your armed strength. Needed for defense and some events."
-        );
-        AnsiConsole.MarkupLine("Technology: Your scientific progress. Reach 100 to win.");
-        AnsiConsole.MarkupLine("Influence: Your political and social sway.");
-        AnsiConsole.MarkupLine("Resources: Supplies and wealth. If this reaches 0, you lose.");
-        AnsiConsole.MarkupLine(
-            "Stability: How stable your faction is. If this reaches 0, you lose."
+            "- [green]Unique Abilities[/]: Each faction has a unique trait. Try different factions for new strategies!"
         );
         AnsiConsole.MarkupLine(
-            "\n[grey]Blocked actions are shown in red and cannot be selected during a turn. Hover for details.[/]"
+            "- [green]Events[/]: Some events let you choose a response. Your choices can change your stats or unlock new storylines."
         );
-        AnsiConsole.MarkupLine("\n[bold yellow]Faction Types & Traits:[/]");
-        foreach (var type in Enum.GetValues<FactionType>())
-        {
-            AnsiConsole.MarkupLine(
-                $"[aqua]{type.GetDisplayName()}[/]: {GetFactionTypeDescription(type)} Traits: [grey]{string.Join(", ", _factionService.CreateFaction("", type).Traits)}[/]"
-            );
-        }
+        AnsiConsole.MarkupLine(
+            "- [green]Win/Lose[/]: Survive 20 cycles or reach 100 Technology to win. Lose if Population, Resources, or Stability hit zero."
+        );
+        AnsiConsole.MarkupLine(
+            "- [green]Achievements[/]: Special milestones will be announced as you play."
+        );
+        AnsiConsole.MarkupLine("- [green]Tooltips[/]: Hover or select actions for more info.");
         AnsiConsole.MarkupLine("\nPress any key to return...");
         Console.ReadKey();
     }
@@ -234,39 +219,28 @@ public class GameUI(
                 || playerFaction.Stability <= 0
             )
             {
-                AnsiConsole.Clear();
-                AnsiConsole.MarkupLine("[bold red]GAME OVER! Your faction has collapsed.[/]");
-                AnsiConsole.MarkupLine($"[yellow]You survived {game.CurrentCycle - 1} turns.[/]");
+                AnsiConsole.MarkupLine("[bold red]Your faction has collapsed![/]");
                 AnsiConsole.MarkupLine(
-                    $"[grey]Final Stats: Population: {playerFaction.Population}, Military: {playerFaction.Military}, Technology: {playerFaction.Technology}, Influence: {playerFaction.Influence}, Resources: {playerFaction.Resources}, Stability: {playerFaction.Stability}[/]"
+                    "[yellow]Game Over. Press any key to return to the main menu.[/]"
                 );
-                AnsiConsole.MarkupLine(
-                    "[italic]The galaxy grows darker as your legacy fades...[/]"
-                );
-                AnsiConsole.MarkupLine("Press any key to return to the main menu...");
                 Console.ReadKey();
-                return;
+                break;
             }
-
             // Win condition
-            if (game.SaveName == "WINNER")
+            if (
+                game.SaveName == "WINNER"
+                || playerFaction.Technology >= 100
+                || game.CurrentCycle > 20
+            )
             {
-                AnsiConsole.Clear();
                 AnsiConsole.MarkupLine(
-                    "[bold green]CONGRATULATIONS! You have survived the end.[/]"
+                    "[bold green]Congratulations! You have survived and triumphed in the dying galaxy![/]"
                 );
                 AnsiConsole.MarkupLine(
-                    $"[yellow]You survived {game.CurrentCycle - 1} turns and reached {playerFaction.Technology} Technology.[/]"
+                    "[yellow]You win! Press any key to return to the main menu.[/]"
                 );
-                AnsiConsole.MarkupLine(
-                    $"[grey]Final Stats: Population: {playerFaction.Population}, Military: {playerFaction.Military}, Technology: {playerFaction.Technology}, Influence: {playerFaction.Influence}, Resources: {playerFaction.Resources}, Stability: {playerFaction.Stability}[/]"
-                );
-                AnsiConsole.MarkupLine(
-                    "[italic]Your name will echo in the annals of the fallen empire...[/]"
-                );
-                AnsiConsole.MarkupLine("Press any key to return to the main menu...");
                 Console.ReadKey();
-                return;
+                break;
             }
 
             AnsiConsole.Clear();
@@ -388,6 +362,33 @@ public class GameUI(
                 }
             }
 
+            // Handle player choice events
+            var choiceEvent = game.RecentEvents.FirstOrDefault(e =>
+                e.Parameters.ContainsKey("Choice")
+            );
+            if (choiceEvent != null)
+            {
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title($"[yellow]{choiceEvent.Title}[/] - {choiceEvent.Description}")
+                        .AddChoices(["Accept", "Decline"])
+                );
+                if (choice == "Accept")
+                {
+                    playerFaction.Influence += 5;
+                    AnsiConsole.MarkupLine("[green]Alliance accepted! Influence increased.[/]");
+                }
+                else
+                {
+                    playerFaction.Stability += 2;
+                    AnsiConsole.MarkupLine(
+                        "[yellow]You remain independent. Stability increased.[/]"
+                    );
+                }
+                playerFaction.ClampResources();
+                game.RecentEvents.Remove(choiceEvent);
+            }
+
             // Show post-turn feedback
             var postStats = new
             {
@@ -431,6 +432,14 @@ public class GameUI(
                     );
                 }
             }
+
+            // Achievements
+            if (playerFaction.Technology >= 50)
+                AnsiConsole.MarkupLine("[aqua]Achievement unlocked: Tech Ascendant![/]");
+            if (playerFaction.Military >= 80)
+                AnsiConsole.MarkupLine("[aqua]Achievement unlocked: Warlord![/]");
+            if (playerFaction.Influence >= 80)
+                AnsiConsole.MarkupLine("[aqua]Achievement unlocked: Kingmaker![/]");
         }
     }
 
@@ -555,29 +564,31 @@ public class GameUI(
 
     private void ShowActionTooltip(PlayerActionType actionType)
     {
-        // Show anti-spam warning if action is currently blocked due to spamming
         if (
             _gameEngine.CurrentGame != null
             && _gameEngine.CurrentGame.BlockedActions.Contains(actionType)
         )
         {
             AnsiConsole.MarkupLine(
-                $"[yellow]You have been blocked from using [bold]{actionType.GetDisplayName()}[/] this turn due to repeated use. Try varying your strategy![/]"
+                "[red]This action is currently blocked due to a recent event![/]"
             );
         }
-        switch (actionType)
+        string desc = actionType switch
         {
-            case PlayerActionType.Ancient_Studies:
-                AnsiConsole.MarkupLine(
-                    "[grey]Ancient Studies: Study ancient relics for unique benefits. This action may be blocked until you discover ancient technology through special events.[/]"
-                );
-                break;
-            default:
-                AnsiConsole.MarkupLine(
-                    $"[grey]{actionType.GetDisplayName()}: {GetActionDescription(actionType)}[/]"
-                );
-                break;
-        }
+            PlayerActionType.Build_Defenses => ActionDescriptions.BuildDefenses,
+            PlayerActionType.Recruit_Troops => ActionDescriptions.RecruitTroops,
+            PlayerActionType.Develop_Infrastructure => ActionDescriptions.DevelopInfrastructure,
+            PlayerActionType.Exploit_Resources => ActionDescriptions.ExploitResources,
+            PlayerActionType.Military_Tech => ActionDescriptions.MilitaryTech,
+            PlayerActionType.Economic_Tech => ActionDescriptions.EconomicTech,
+            PlayerActionType.Ancient_Studies => ActionDescriptions.AncientStudies,
+            PlayerActionType.Gate_Network_Research => ActionDescriptions.GateNetworkResearch,
+            PlayerActionType.Diplomacy => ActionDescriptions.Diplomacy,
+            PlayerActionType.Espionage => ActionDescriptions.Espionage,
+            PlayerActionType.Sabotage => ActionDescriptions.Sabotage,
+            _ => ActionDescriptions.Default,
+        };
+        AnsiConsole.MarkupLine($"[grey]{desc}[/]");
     }
 }
 
