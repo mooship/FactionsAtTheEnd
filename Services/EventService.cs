@@ -52,10 +52,20 @@ public class EventService : IEventService
             }
         }
 
-        // 40% chance of a random event each cycle
-        if (Random.Shared.Next(1, 101) <= 40)
+        // Reputation-based event chance adjustment
+        int baseChance = 40;
+        int rep = gameState.Reputation;
+        // For every 20 reputation above 0, +5% chance for a positive event, -5% for negative; below 0, the reverse
+        int positiveBonus = rep > 0 ? (rep / 20) * 5 : 0;
+        int negativeBonus = rep < 0 ? (Math.Abs(rep) / 20) * 5 : 0;
+        int eventRoll = Random.Shared.Next(1, 101);
+        bool forcePositive = eventRoll <= (baseChance + positiveBonus);
+        bool forceNegative = eventRoll > (100 - negativeBonus);
+
+        // 40% base chance of a random event each cycle, modified by reputation
+        if (forcePositive || forceNegative || eventRoll <= baseChance)
         {
-            var eventType = GetRandomEventType(gameState);
+            var eventType = GetRandomEventType(gameState, forcePositive, forceNegative);
             var gameEvent = GenerateEventByType(eventType, gameState);
             if (gameEvent != null)
             {
@@ -99,7 +109,12 @@ public class EventService : IEventService
         return await Task.Run(() => GenerateRandomEvents(gameState));
     }
 
-    private static EventType GetRandomEventType(GameState gameState)
+    // Overload: GetRandomEventType with reputation influence
+    private static EventType GetRandomEventType(
+        GameState gameState,
+        bool forcePositive = false,
+        bool forceNegative = false
+    )
     {
         var eventTypes = new[]
         {
@@ -110,12 +125,16 @@ public class EventService : IEventService
             EventType.Natural,
         };
 
-        // Crisis events become more likely as stability decreases
-        if (gameState.GalacticStability < 30 && Random.Shared.Next(1, 101) <= 30)
+        // Crisis events become more likely as stability decreases or if forced negative
+        if (forceNegative || (gameState.GalacticStability < 30 && Random.Shared.Next(1, 101) <= 30))
         {
             return EventType.Crisis;
         }
-
+        // If forced positive, bias toward Discovery or Technological
+        if (forcePositive)
+        {
+            return Random.Shared.Next(2) == 0 ? EventType.Discovery : EventType.Technological;
+        }
         return eventTypes[Random.Shared.Next(eventTypes.Length)];
     }
 
