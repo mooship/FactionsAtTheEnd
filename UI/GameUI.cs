@@ -1,3 +1,4 @@
+using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.Core;
 using FactionsAtTheEnd.Models;
 using FluentValidation;
@@ -17,9 +18,9 @@ public class GameUI
         IValidator<PlayerAction> playerActionValidator
     )
     {
-        CommunityToolkit.Diagnostics.Guard.IsNotNull(gameEngine);
-        CommunityToolkit.Diagnostics.Guard.IsNotNull(factionValidator);
-        CommunityToolkit.Diagnostics.Guard.IsNotNull(playerActionValidator);
+        Guard.IsNotNull(gameEngine);
+        Guard.IsNotNull(factionValidator);
+        Guard.IsNotNull(playerActionValidator);
         _gameEngine = gameEngine;
         _factionValidator = factionValidator;
         _playerActionValidator = playerActionValidator;
@@ -390,19 +391,12 @@ public class GameUI
             if (recentEvents.Count > 0)
             {
                 AnsiConsole.MarkupLine("[bold yellow]Events this turn:[/]");
-                foreach (var ev in recentEvents)
+                foreach (var gameEvent in recentEvents)
                 {
-                    AnsiConsole.MarkupLine($"[underline]{ev.Title}[/]: {ev.Description}");
-                    if (ev.Effects != null && ev.Effects.Count > 0)
-                    {
-                        var effects = string.Join(
-                            ", ",
-                            ev.Effects.Select(kv =>
-                                $"{kv.Key} {(kv.Value >= 0 ? "+" : "")}{kv.Value}"
-                            )
-                        );
-                        AnsiConsole.MarkupLine($"[grey]Effects: {effects}[/]");
-                    }
+                    AnsiConsole.MarkupLine($"[bold]{gameEvent.Title}[/]");
+                    AnsiConsole.MarkupLine(gameEvent.Description);
+                    ShowEventEffects(gameEvent, playerFaction);
+                    AnsiConsole.WriteLine();
                 }
             }
 
@@ -665,6 +659,43 @@ public class GameUI
         return "(Neutral)";
     }
 
+    private static void ShowEventEffects(GameEvent gameEvent, Faction? playerFaction)
+    {
+        // Show stat/resource changes
+        if (gameEvent.Effects != null && gameEvent.Effects.Count > 0)
+        {
+            AnsiConsole.MarkupLine("[bold yellow]Effects:[/]");
+            foreach (var effect in gameEvent.Effects)
+            {
+                var statName = effect.Key.GetDisplayName();
+                int value = effect.Value;
+                string sign = value > 0 ? "+" : "";
+                AnsiConsole.MarkupLine($"  [aqua]{statName}[/]: [bold]{sign}{value}[/]");
+            }
+        }
+        // Show blocked actions
+        if (gameEvent.BlockedActions != null && gameEvent.BlockedActions.Count > 0)
+        {
+            AnsiConsole.MarkupLine("[bold orange1]Blocked Actions Next Turn:[/]");
+            foreach (var action in gameEvent.BlockedActions)
+            {
+                AnsiConsole.MarkupLine($"  [red]{action.GetDisplayName()}[/]");
+            }
+        }
+        if (
+            gameEvent.AffectedFactions != null
+            && gameEvent.AffectedFactions.Count > 0
+            && (playerFaction == null || gameEvent.AffectedFactions.Any(f => f != playerFaction.Id))
+        )
+        {
+            AnsiConsole.MarkupLine(
+                "[dim]Other affected factions: "
+                    + string.Join(", ", gameEvent.AffectedFactions)
+                    + "[/]"
+            );
+        }
+    }
+
     private static void ShowEventLog(GameState? game)
     {
         if (game == null || (game.WorldHistory.Count == 0 && game.RecentEvents.Count == 0))
@@ -680,11 +711,11 @@ public class GameUI
         {
             AnsiConsole.MarkupLine($"[dim]{count++}.[/] {entry}");
         }
-        // Optionally, show all detailed event titles/descriptions
         if (game.RecentEvents.Count > 0)
         {
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("[bold]Recent Events:[/]");
+            var playerFaction = game.Factions?.FirstOrDefault(f => f.Id == game.PlayerFactionId);
             foreach (var ev in game.RecentEvents)
             {
                 AnsiConsole.MarkupLine($"[dim]{count++}.[/] [aqua]{ev.Title}[/]: {ev.Description}");
