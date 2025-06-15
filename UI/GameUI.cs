@@ -654,17 +654,29 @@ public class GameUI
     private static string GetReputationDescription(int reputation)
     {
         if (reputation >= 80)
+        {
             return "[green](Legendary)[/]";
+        }
         if (reputation >= 40)
+        {
             return "[green](Respected)[/]";
+        }
         if (reputation >= 10)
+        {
             return "[olive](Noted)[/]";
+        }
         if (reputation <= -80)
+        {
             return "[red](Infamous)[/]";
+        }
         if (reputation <= -40)
+        {
             return "[red](Notorious)[/]";
+        }
         if (reputation <= -10)
+        {
             return "[orange1](Distrusted)[/]";
+        }
         return "(Neutral)";
     }
 
