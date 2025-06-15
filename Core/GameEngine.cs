@@ -253,65 +253,68 @@ public class GameEngine(
     /// </summary>
     private async Task ProcessPlayerActionAsync(PlayerAction action)
     {
-        var player = CurrentGame?.Factions.FirstOrDefault(f => f.IsPlayer);
-        if (player == null || CurrentGame == null)
-        {
+        if (CurrentGame == null)
             return;
-        }
+        var player = CurrentGame.Factions.FirstOrDefault(f => f.IsPlayer);
+        if (player == null)
+            return;
 
-        switch (action.ActionType)
-        {
-            case PlayerActionType.Build_Defenses:
-                player.Military += 5;
-                player.Stability += 2;
-                break;
-            case PlayerActionType.Recruit_Troops:
-                player.Military += 7;
-                player.Resources -= 3;
-                break;
-            case PlayerActionType.Develop_Infrastructure:
-                player.Resources += 5;
-                player.Stability += 2;
-                break;
-            case PlayerActionType.Exploit_Resources:
-                player.Resources += 8;
-                player.Stability -= 1;
-                break;
-            case PlayerActionType.Military_Tech:
-                player.Technology += 4;
-                player.Military += 2;
-                break;
-            case PlayerActionType.Economic_Tech:
-                player.Technology += 4;
-                player.Resources += 2;
-                break;
-            case PlayerActionType.Ancient_Studies:
-                player.Technology += 2;
-                CurrentGame.AncientTechDiscovery += 5;
-                break;
-            case PlayerActionType.Gate_Network_Research:
-                player.Technology += 2;
-                CurrentGame.GateNetworkIntegrity += 3;
-                break;
-            case PlayerActionType.Diplomacy:
-                player.Influence += 5;
-                player.Stability += 1;
-                break;
-            case PlayerActionType.Espionage:
-                player.Influence += 2;
-                player.Technology += 1;
-                // Could add event: chance to block enemy action
-                break;
-            case PlayerActionType.Sabotage:
-                player.Military += 1;
-                player.Influence += 1;
-                // Could add event: chance to reduce enemy resources
-                break;
-            default:
-                break;
-        }
-        player.ClampResources();
-        await Task.CompletedTask;
+        await ApplyToFactionAsync(
+            player.Id,
+            async f =>
+            {
+                switch (action.ActionType)
+                {
+                    case PlayerActionType.Build_Defenses:
+                        f.Military += 5;
+                        f.Stability += 2;
+                        break;
+                    case PlayerActionType.Recruit_Troops:
+                        f.Military += 7;
+                        f.Resources -= 3;
+                        break;
+                    case PlayerActionType.Develop_Infrastructure:
+                        f.Resources += 5;
+                        f.Stability += 2;
+                        break;
+                    case PlayerActionType.Exploit_Resources:
+                        f.Resources += 8;
+                        f.Stability -= 1;
+                        break;
+                    case PlayerActionType.Military_Tech:
+                        f.Technology += 4;
+                        f.Military += 2;
+                        break;
+                    case PlayerActionType.Economic_Tech:
+                        f.Technology += 4;
+                        f.Resources += 2;
+                        break;
+                    case PlayerActionType.Ancient_Studies:
+                        f.Technology += 2;
+                        CurrentGame.AncientTechDiscovery += 5;
+                        break;
+                    case PlayerActionType.Gate_Network_Research:
+                        f.Technology += 2;
+                        CurrentGame.GateNetworkIntegrity += 3;
+                        break;
+                    case PlayerActionType.Diplomacy:
+                        f.Influence += 5;
+                        f.Stability += 1;
+                        break;
+                    case PlayerActionType.Espionage:
+                        f.Influence += 2;
+                        f.Technology += 1;
+                        break;
+                    case PlayerActionType.Sabotage:
+                        f.Military += 1;
+                        f.Influence += 1;
+                        break;
+                    default:
+                        break;
+                }
+                await Task.CompletedTask;
+            }
+        );
     }
 
     /// <summary>
@@ -323,10 +326,6 @@ public class GameEngine(
         Guard.IsNotNull(update);
         Guard.IsNotNull(CurrentGame);
 
-        if (CurrentGame == null)
-        {
-            return;
-        }
         var faction = CurrentGame.Factions.FirstOrDefault(f => f.Id == factionId);
         if (faction != null)
         {
