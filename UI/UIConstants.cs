@@ -1,6 +1,8 @@
 namespace FactionsAtTheEnd.UI;
 
-// MenuOption: Main menu and in-game menu options for the UI.
+// <summary>
+// Main menu and in-game menu options for the UI.
+// </summary>
 public enum MenuOption
 {
     NewGame,
@@ -16,7 +18,9 @@ public enum MenuOption
     ImportSave,
 }
 
-// StatKey: Used for stat display and event effects.
+// <summary>
+// Used for stat display and event effects.
+// </summary>
 public enum StatKey
 {
     Population,
@@ -74,7 +78,9 @@ public static class StatKeyExtensions
     }
 }
 
-// GameConstants: Centralized stat and resource bounds for all factions.
+// <summary>
+// Centralized stat and resource bounds for all factions.
+// </summary>
 public static class GameConstants
 {
     public const int MaxStat = 100;
