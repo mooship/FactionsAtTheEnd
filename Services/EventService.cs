@@ -793,17 +793,9 @@ public class EventService : IEventService
         {
             news.Add(string.Format(LegendaryReputation, player.Name));
         }
-        else if (player.Reputation <= -80)
-        {
-            news.Add(string.Format(InfamyReputation, player.Name));
-        }
         else if (player.Reputation >= 40)
         {
             news.Add(string.Format(RisingStarReputation, player.Name));
-        }
-        else if (player.Reputation <= -40)
-        {
-            news.Add(string.Format(NotoriousReputation, player.Name));
         }
 
         // Galactic state news
