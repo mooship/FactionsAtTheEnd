@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using FactionsAtTheEnd.Models;
 using FluentValidation;
 
@@ -6,10 +7,10 @@ namespace FactionsAtTheEnd.Validators;
 /// <summary>
 /// Validates Faction objects for required fields, valid types, and stat bounds.
 /// </summary>
-public class FactionValidator : AbstractValidator<Faction>
+public partial class FactionValidator : AbstractValidator<Faction>
 {
-    // Regex for valid faction names: letters, numbers, spaces, and select punctuation.
-    private const string NameRegex = "^[a-zA-Z0-9 .'-]+$";
+    // Compiled static regex for valid faction names: letters, numbers, spaces, and select punctuation.
+    private static readonly Regex NameRegex = MyRegex();
 
     public FactionValidator()
     {
@@ -18,7 +19,7 @@ public class FactionValidator : AbstractValidator<Faction>
             .WithMessage("Faction name is required.")
             .MaximumLength(32)
             .WithMessage("Faction name must be 32 characters or fewer.")
-            .Matches(NameRegex)
+            .Must(NameRegex.IsMatch)
             .WithMessage("Faction name contains invalid characters.");
 
         RuleFor(f => f.Type).IsInEnum().WithMessage("Invalid faction type.");
@@ -51,5 +52,14 @@ public class FactionValidator : AbstractValidator<Faction>
         RuleFor(f => f.Stability)
             .GreaterThanOrEqualTo(0)
             .WithMessage("Stability cannot be negative.");
+
+        RuleFor(f => f.Reputation)
+            .GreaterThanOrEqualTo(0)
+            .WithMessage("Reputation cannot be negative.")
+            .LessThanOrEqualTo(100)
+            .WithMessage("Reputation cannot exceed 100.");
     }
+
+    [GeneratedRegex("^[a-zA-Z0-9 .'-]+$", RegexOptions.Compiled)]
+    private static partial Regex MyRegex();
 }

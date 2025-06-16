@@ -3,6 +3,7 @@ using FactionsAtTheEnd.Core;
 using FactionsAtTheEnd.Models;
 using FluentValidation;
 using Spectre.Console;
+using TextCopy;
 
 namespace FactionsAtTheEnd.UI;
 
@@ -418,28 +419,24 @@ public class GameUI
             var choiceEvent = game.RecentEvents.FirstOrDefault(e =>
                 e.Parameters.ContainsKey("Choice")
             );
-            if (choiceEvent != null)
+            Guard.IsNotNull(choiceEvent);
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title($"[yellow]{choiceEvent.Title}[/] - {choiceEvent.Description}")
+                    .AddChoices(["Accept", "Decline"])
+            );
+            if (choice == "Accept")
             {
-                var choice = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title($"[yellow]{choiceEvent.Title}[/] - {choiceEvent.Description}")
-                        .AddChoices(["Accept", "Decline"])
-                );
-                if (choice == "Accept")
-                {
-                    playerFaction.Influence += 5;
-                    AnsiConsole.MarkupLine("[green]Alliance accepted! Influence increased.[/]");
-                }
-                else
-                {
-                    playerFaction.Stability += 2;
-                    AnsiConsole.MarkupLine(
-                        "[yellow]You remain independent. Stability increased.[/]"
-                    );
-                }
-                playerFaction.ClampResources();
-                game.RecentEvents.Remove(choiceEvent);
+                playerFaction.Influence += 5;
+                AnsiConsole.MarkupLine("[green]Alliance accepted! Influence increased.[/]");
             }
+            else
+            {
+                playerFaction.Stability += 2;
+                AnsiConsole.MarkupLine("[yellow]You remain independent. Stability increased.[/]");
+            }
+            playerFaction.ClampResources();
+            game.RecentEvents.Remove(choiceEvent);
 
             // Show post-turn feedback
             var postStats = new
@@ -539,7 +536,7 @@ public class GameUI
         AnsiConsole.MarkupLine("");
         // Show Reputation
         AnsiConsole.MarkupLine(
-            $"[bold]Reputation:[/] {game.Reputation} {GetReputationDescription(game.Reputation)}"
+            $"[bold]Reputation:[/] {playerFaction?.Reputation} {GetReputationDescription(playerFaction?.Reputation ?? 0)}"
         );
         AnsiConsole.MarkupLine("");
         // Show Galactic News
@@ -584,7 +581,10 @@ public class GameUI
         table.AddRow("Influence", playerFaction.Influence.ToString());
         table.AddRow("Resources", playerFaction.Resources.ToString());
         table.AddRow("Stability", playerFaction.Stability.ToString());
-        table.AddRow("Status", playerFaction.Status.ToString());
+        table.AddRow(
+            "Reputation",
+            $"{playerFaction.Reputation} {GetReputationDescription(playerFaction.Reputation)}"
+        );
         AnsiConsole.Write(table);
     }
 
@@ -664,6 +664,8 @@ public class GameUI
     // Returns a short description for the player's reputation
     private static string GetReputationDescription(int reputation)
     {
+        // Clamp reputation to 0-100
+        reputation = Math.Max(0, Math.Min(reputation, 100));
         if (reputation >= 80)
         {
             return "[green](Legendary)[/]";
@@ -675,18 +677,6 @@ public class GameUI
         if (reputation >= 10)
         {
             return "[olive](Noted)[/]";
-        }
-        if (reputation <= -80)
-        {
-            return "[red](Infamous)[/]";
-        }
-        if (reputation <= -40)
-        {
-            return "[red](Notorious)[/]";
-        }
-        if (reputation <= -10)
-        {
-            return "[orange1](Distrusted)[/]";
         }
         return "(Neutral)";
     }
@@ -762,7 +752,11 @@ public class GameUI
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[bold green]Exported Save (JSON):[/]");
         AnsiConsole.WriteLine(json);
-        AnsiConsole.MarkupLine("[grey]Copy and save this text to import later.[/]");
+        // Copy to clipboard
+        ClipboardService.SetText(json);
+        AnsiConsole.MarkupLine(
+            "[grey]Save JSON copied to clipboard! Paste it anywhere to back up or share.[/]"
+        );
         AnsiConsole.MarkupLine("Press any key to return...");
         Console.ReadKey();
     }

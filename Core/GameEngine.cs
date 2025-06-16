@@ -80,8 +80,8 @@ public class GameEngine(
     public async Task LoadGameAsync(string gameId)
     {
         var loaded = await _gameDataService.LoadGameAsync(gameId);
-        if (loaded != null)
-            CurrentGame = loaded;
+        Guard.IsNotNull(loaded);
+        CurrentGame = loaded;
     }
 
     /// <summary>
@@ -191,41 +191,39 @@ public class GameEngine(
         CurrentGame.BlockedActions?.Clear();
         foreach (var gameEvent in newEvents)
         {
-            if (player != null)
+            Guard.IsNotNull(player);
+            foreach (var effect in gameEvent.Effects)
             {
-                foreach (var effect in gameEvent.Effects)
+                switch (effect.Key)
                 {
-                    switch (effect.Key)
-                    {
-                        case UI.StatKey.Population:
-                            player.Population += effect.Value;
-                            break;
-                        case UI.StatKey.Military:
-                            player.Military += effect.Value;
-                            break;
-                        case UI.StatKey.Technology:
-                            player.Technology += effect.Value;
-                            break;
-                        case UI.StatKey.Influence:
-                            player.Influence += effect.Value;
-                            break;
-                        case UI.StatKey.Resources:
-                            player.Resources += effect.Value;
-                            break;
-                        case UI.StatKey.Stability:
-                            if (CurrentGame != null)
-                                CurrentGame.GalacticStability += effect.Value;
-                            break;
-                    }
+                    case UI.StatKey.Population:
+                        player.Population += effect.Value;
+                        break;
+                    case UI.StatKey.Military:
+                        player.Military += effect.Value;
+                        break;
+                    case UI.StatKey.Technology:
+                        player.Technology += effect.Value;
+                        break;
+                    case UI.StatKey.Influence:
+                        player.Influence += effect.Value;
+                        break;
+                    case UI.StatKey.Resources:
+                        player.Resources += effect.Value;
+                        break;
+                    case UI.StatKey.Stability:
+                        Guard.IsNotNull(CurrentGame);
+                        CurrentGame.GalacticStability += effect.Value;
+                        break;
                 }
-                if (gameEvent.BlockedActions != null && CurrentGame?.BlockedActions != null)
+            }
+            if (gameEvent.BlockedActions != null && CurrentGame?.BlockedActions != null)
+            {
+                foreach (var blocked in gameEvent.BlockedActions)
                 {
-                    foreach (var blocked in gameEvent.BlockedActions)
+                    if (!CurrentGame.BlockedActions.Contains(blocked))
                     {
-                        if (!CurrentGame.BlockedActions.Contains(blocked))
-                        {
-                            CurrentGame.BlockedActions.Add(blocked);
-                        }
+                        CurrentGame.BlockedActions.Add(blocked);
                     }
                 }
             }
@@ -285,18 +283,19 @@ public class GameEngine(
                         break;
                     case PlayerActionType.Ancient_Studies:
                         f.Technology += 2;
-                        if (CurrentGame != null)
-                            CurrentGame.AncientTechDiscovery += 5;
+                        Guard.IsNotNull(CurrentGame);
+                        CurrentGame.AncientTechDiscovery += 5;
                         break;
                     case PlayerActionType.Gate_Network_Research:
                         f.Technology += 2;
-                        if (CurrentGame != null)
-                            CurrentGame.GateNetworkIntegrity += 3;
+                        Guard.IsNotNull(CurrentGame);
+                        CurrentGame.GateNetworkIntegrity += 3;
                         break;
                     case PlayerActionType.Diplomacy:
                         // Handle as a world/self action: increase GalacticStability or Reputation
                         CurrentGame.GalacticStability += 3;
                         player.Influence += 2;
+                        player.Reputation += 5;
                         break;
                     case PlayerActionType.Espionage:
                         // Handle as a world/self action: reveal upcoming events or grant minor stat/resource bonuses
@@ -325,11 +324,9 @@ public class GameEngine(
         Guard.IsNotNull(CurrentGame);
 
         var faction = CurrentGame.PlayerFaction;
-        if (faction != null)
-        {
-            await update(faction);
-            faction.ClampResources();
-        }
+        Guard.IsNotNull(faction);
+        await update(faction);
+        faction.ClampResources();
     }
 
     /// <summary>

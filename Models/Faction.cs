@@ -31,6 +31,9 @@ public class Faction
 
     public DateTime LastActive { get; set; } = DateTime.UtcNow;
 
+    // Reputation: 0 (unknown) to 100 (legendary), affects narrative and news
+    public int Reputation { get; set; } = 0;
+
     /// <summary>
     /// Clamp all resource and stat values to valid min/max bounds.
     /// </summary>
@@ -42,6 +45,7 @@ public class Faction
         Influence = Math.Max(GameConstants.MinStat, Math.Min(Influence, GameConstants.MaxStat));
         Resources = Math.Max(GameConstants.MinStat, Math.Min(Resources, GameConstants.MaxStat));
         Stability = Math.Max(GameConstants.MinStat, Math.Min(Stability, GameConstants.MaxStat));
+        Reputation = Math.Max(0, Math.Min(Reputation, 100));
     }
 }
 

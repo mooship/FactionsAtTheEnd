@@ -13,9 +13,7 @@ public static class NewsTemplates
     // Reputation news
     public const string LegendaryReputation =
         "Legendary Reputation: {0} hailed as a galactic hero!";
-    public const string InfamyReputation = "Infamy: {0} feared across the stars!";
     public const string RisingStarReputation = "Rising Star: {0}'s reputation grows.";
-    public const string NotoriousReputation = "Notorious: {0} draws suspicion and fear.";
 
     // World state news
     public const string TurmoilNews = "Galaxy in Turmoil: Stability at all-time low!";
@@ -27,8 +25,5 @@ public static class NewsTemplates
     public const string LegendaryDesc = "[green](Legendary)[/]";
     public const string RespectedDesc = "[green](Respected)[/]";
     public const string NotedDesc = "[olive](Noted)[/]";
-    public const string InfamousDesc = "[red](Infamous)[/]";
-    public const string NotoriousDesc = "[red](Notorious)[/]";
-    public const string DistrustedDesc = "[orange1](Distrusted)[/]";
     public const string NeutralDesc = "(Neutral)";
 }

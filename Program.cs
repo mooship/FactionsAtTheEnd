@@ -18,11 +18,7 @@ class Program
     {
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
-            .WriteTo.File(
-                ".log",
-                rollingInterval: RollingInterval.Day,
-                rollOnFileSizeLimit: true
-            )
+            .WriteTo.File(".log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true)
             .MinimumLevel.Debug()
             .CreateLogger();
 

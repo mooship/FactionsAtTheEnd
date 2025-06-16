@@ -28,9 +28,6 @@ public class GameState
     // Rolling action counts for anti-spam and event logic
     public Dictionary<PlayerActionType, int> RecentActionCounts { get; set; } = [];
 
-    // Reputation: -100 (infamous) to +100 (legendary), affects narrative and news
-    public int Reputation { get; set; } = 0;
-
     // Emergent galactic news for narrative flavor
     public List<string> GalacticNews { get; set; } = [];
 }

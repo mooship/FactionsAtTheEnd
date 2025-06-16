@@ -52,10 +52,10 @@ public class EventService : IEventService
 
         // Reputation-based event chance adjustment
         int baseChance = 40;
-        int rep = gameState.Reputation;
+        int rep = gameState.PlayerFaction.Reputation;
         // For every 20 reputation above 0, +5% chance for a positive event, -5% for negative; below 0, the reverse
-        int positiveBonus = rep > 0 ? (rep / 20) * 5 : 0;
-        int negativeBonus = rep < 0 ? (Math.Abs(rep) / 20) * 5 : 0;
+        int positiveBonus = rep > 0 ? rep / 20 * 5 : 0;
+        int negativeBonus = rep < 0 ? Math.Abs(rep) / 20 * 5 : 0;
         int eventRoll = Random.Shared.Next(1, 101);
         bool forcePositive = eventRoll <= (baseChance + positiveBonus);
         bool forceNegative = eventRoll > (100 - negativeBonus);
@@ -65,10 +65,8 @@ public class EventService : IEventService
         {
             var eventType = GetRandomEventType(gameState, forcePositive, forceNegative);
             var gameEvent = GenerateEventByType(eventType, gameState);
-            if (gameEvent != null)
-            {
-                events.Add(gameEvent);
-            }
+            Guard.IsNotNull(gameEvent);
+            events.Add(gameEvent);
         }
 
         // Special events based on world state
@@ -678,57 +676,55 @@ public class EventService : IEventService
     {
         var player = gameState.PlayerFaction;
         // Soft-fail warning if a stat is about to hit 0
-        if (player != null)
+        Guard.IsNotNull(player);
+        if (player.Population <= 5)
         {
-            if (player.Population <= 5)
+            return new GameEvent
             {
-                return new GameEvent
-                {
-                    Title = PopulationCrisisTitle,
-                    Description = PopulationCrisisDescription,
-                    Type = EventType.Crisis,
-                    Cycle = gameState.CurrentCycle,
-                    Effects = new() { { StatKey.Stability, -3 } },
-                };
-            }
-            if (player.Resources <= 5)
+                Title = PopulationCrisisTitle,
+                Description = PopulationCrisisDescription,
+                Type = EventType.Crisis,
+                Cycle = gameState.CurrentCycle,
+                Effects = new() { { StatKey.Stability, -3 } },
+            };
+        }
+        if (player.Resources <= 5)
+        {
+            return new GameEvent
             {
-                return new GameEvent
-                {
-                    Title = ResourceCrisisTitle,
-                    Description = ResourceCrisisDescription,
-                    Type = EventType.Crisis,
-                    Cycle = gameState.CurrentCycle,
-                    Effects = new() { { StatKey.Stability, -2 } },
-                };
-            }
-            if (player.Stability <= 5)
+                Title = ResourceCrisisTitle,
+                Description = ResourceCrisisDescription,
+                Type = EventType.Crisis,
+                Cycle = gameState.CurrentCycle,
+                Effects = new() { { StatKey.Stability, -2 } },
+            };
+        }
+        if (player.Stability <= 5)
+        {
+            return new GameEvent
             {
-                return new GameEvent
-                {
-                    Title = StabilityCrisisTitle,
-                    Description = StabilityCrisisDescription,
-                    Type = EventType.Crisis,
-                    Cycle = gameState.CurrentCycle,
-                    Effects = new() { { StatKey.Population, -2 } },
-                };
-            }
-            if (player.Stability < 20)
+                Title = StabilityCrisisTitle,
+                Description = StabilityCrisisDescription,
+                Type = EventType.Crisis,
+                Cycle = gameState.CurrentCycle,
+                Effects = new() { { StatKey.Population, -2 } },
+            };
+        }
+        if (player.Stability < 20)
+        {
+            return new GameEvent
             {
-                return new GameEvent
-                {
-                    Title = FactionOnTheBrinkTitle,
-                    Description = FactionOnTheBrinkDescription,
-                    Type = EventType.Crisis,
-                    Cycle = gameState.CurrentCycle,
-                    Effects = new() { { StatKey.Stability, -10 }, { StatKey.Population, -5 } },
-                    BlockedActions =
-                    [
-                        PlayerActionType.Develop_Infrastructure,
-                        PlayerActionType.Economic_Tech,
-                    ],
-                };
-            }
+                Title = FactionOnTheBrinkTitle,
+                Description = FactionOnTheBrinkDescription,
+                Type = EventType.Crisis,
+                Cycle = gameState.CurrentCycle,
+                Effects = new() { { StatKey.Stability, -10 }, { StatKey.Population, -5 } },
+                BlockedActions =
+                [
+                    PlayerActionType.Develop_Infrastructure,
+                    PlayerActionType.Economic_Tech,
+                ],
+            };
         }
         // Default major crisis
         return new GameEvent
@@ -793,24 +789,24 @@ public class EventService : IEventService
         }
 
         // Reputation-based news
-        if (gameState.Reputation >= 80)
+        if (player.Reputation >= 80)
         {
             news.Add(string.Format(LegendaryReputation, player.Name));
         }
-        else if (gameState.Reputation <= -80)
+        else if (player.Reputation <= -80)
         {
             news.Add(string.Format(InfamyReputation, player.Name));
         }
-        else if (gameState.Reputation >= 40)
+        else if (player.Reputation >= 40)
         {
             news.Add(string.Format(RisingStarReputation, player.Name));
         }
-        else if (gameState.Reputation <= -40)
+        else if (player.Reputation <= -40)
         {
             news.Add(string.Format(NotoriousReputation, player.Name));
         }
 
-        // World state news
+        // Galactic state news
         if (gameState.GalacticStability < 20)
         {
             news.Add(TurmoilNews);
