@@ -19,7 +19,7 @@ class Program
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
             .WriteTo.File(
-                "log.txt",
+                ".log",
                 rollingInterval: RollingInterval.Day,
                 rollOnFileSizeLimit: true
             )
