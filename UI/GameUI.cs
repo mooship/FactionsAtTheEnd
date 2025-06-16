@@ -40,12 +40,25 @@ public class GameUI
                 MenuOption.LoadGame,
                 MenuOption.Help,
                 MenuOption.Exit,
+                (MenuOption)1000,
+                (MenuOption)1001,
+            };
+            var menuLabels = new Dictionary<MenuOption, string>
+            {
+                { MenuOption.NewGame, "New Game" },
+                { MenuOption.LoadGame, "Load Game" },
+                { MenuOption.Help, "Help" },
+                { MenuOption.Exit, "Exit" },
+                { (MenuOption)1000, "Export Save (JSON)" },
+                { (MenuOption)1001, "Import Save (JSON)" },
             };
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<MenuOption>()
                     .Title("What would you like to do?")
                     .AddChoices(menuOptions)
-                    .UseConverter(opt => opt.GetDisplayName())
+                    .UseConverter(opt =>
+                        menuLabels.TryGetValue(opt, out string? value) ? value : opt.ToString()
+                    )
             );
 
             switch (choice)
@@ -62,6 +75,12 @@ public class GameUI
                 case MenuOption.Exit:
                     AnsiConsole.MarkupLine("[yellow]May your faction survive the darkness...[/]");
                     return;
+                case (MenuOption)1000:
+                    ExportSave();
+                    break;
+                case (MenuOption)1001:
+                    await ImportSaveAsync();
+                    break;
             }
         }
     }
@@ -468,11 +487,17 @@ public class GameUI
 
             // Achievements
             if (playerFaction.Technology >= 50)
+            {
                 AnsiConsole.MarkupLine("[aqua]Achievement unlocked: Tech Ascendant![/]");
+            }
             if (playerFaction.Military >= 80)
+            {
                 AnsiConsole.MarkupLine("[aqua]Achievement unlocked: Warlord![/]");
+            }
             if (playerFaction.Influence >= 80)
+            {
                 AnsiConsole.MarkupLine("[aqua]Achievement unlocked: Kingmaker![/]");
+            }
         }
     }
 
@@ -689,7 +714,6 @@ public class GameUI
                 AnsiConsole.MarkupLine($"  [red]{action.GetDisplayName()}[/]");
             }
         }
-        // Removed AffectedFactions display, single player only
     }
 
     private static void ShowEventLog(GameState? game)
@@ -719,5 +743,51 @@ public class GameUI
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu...[/]");
         Console.ReadKey(true);
+    }
+
+    private void ExportSave()
+    {
+        var game = _gameEngine.CurrentGame;
+        if (game == null)
+        {
+            AnsiConsole.MarkupLine("[red]No game loaded to export.[/]");
+            AnsiConsole.MarkupLine("Press any key to return...");
+            Console.ReadKey();
+            return;
+        }
+        var json =
+            _gameEngine.CurrentGame != null
+                ? _gameEngine.GameDataService.ExportGameState(game)
+                : string.Empty;
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[bold green]Exported Save (JSON):[/]");
+        AnsiConsole.WriteLine(json);
+        AnsiConsole.MarkupLine("[grey]Copy and save this text to import later.[/]");
+        AnsiConsole.MarkupLine("Press any key to return...");
+        Console.ReadKey();
+    }
+
+    private async Task ImportSaveAsync()
+    {
+        AnsiConsole.MarkupLine(
+            "[bold yellow]Paste your exported save JSON below. Press Enter when done.[/]"
+        );
+        var json = AnsiConsole.Ask<string>("Paste JSON:");
+        try
+        {
+            var imported = _gameEngine.GameDataService.ImportGameState(json);
+            await _gameEngine.GameDataService.SaveGameAsync(imported);
+            _gameEngine.SetCurrentGame(imported);
+            AnsiConsole.MarkupLine("[green]Game imported and loaded successfully![/]");
+            AnsiConsole.MarkupLine("Press any key to continue...");
+            Console.ReadKey();
+            await RunGameLoopAsync();
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[red]Failed to import save: {ex.Message}[/]");
+            AnsiConsole.MarkupLine("Press any key to return...");
+            Console.ReadKey();
+        }
     }
 }

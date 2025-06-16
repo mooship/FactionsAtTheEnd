@@ -8,5 +8,7 @@ namespace FactionsAtTheEnd.Interfaces
         Task<List<GameState>> GetSavedGamesAsync();
         Task<GameState?> LoadGameAsync(string gameId);
         Task DeleteGameAsync(string gameId);
+        string ExportGameState(GameState gameState);
+        GameState ImportGameState(string json);
     }
 }

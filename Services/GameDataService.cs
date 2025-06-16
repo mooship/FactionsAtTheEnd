@@ -1,3 +1,4 @@
+using System.Text.Json;
 using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
@@ -89,5 +90,25 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
         {
             Console.Error.WriteLine($"[GameDataService] Error deleting game: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Export a game state as a JSON string.
+    /// </summary>
+    public string ExportGameState(GameState gameState)
+    {
+        Guard.IsNotNull(gameState);
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        return System.Text.Json.JsonSerializer.Serialize(gameState, options);
+    }
+
+    /// <summary>
+    /// Import a game state from a JSON string.
+    /// </summary>
+    public GameState ImportGameState(string json)
+    {
+        Guard.IsNotNullOrWhiteSpace(json);
+        return System.Text.Json.JsonSerializer.Deserialize<GameState>(json)
+            ?? throw new ApplicationException("Failed to import game state from JSON.");
     }
 }

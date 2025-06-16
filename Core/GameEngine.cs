@@ -358,4 +358,8 @@ public class GameEngine(
             }
         });
     }
+
+    public IGameDataService GameDataService => _gameDataService;
+
+    public void SetCurrentGame(GameState gameState) => CurrentGame = gameState;
 }

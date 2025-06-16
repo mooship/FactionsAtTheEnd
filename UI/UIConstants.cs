@@ -12,6 +12,8 @@ public enum MenuOption
     ViewEventLog,
     ExitToMainMenu,
     FinishTurn,
+    ExportSave,
+    ImportSave,
 }
 
 // StatKey: Used for stat display and event effects.
@@ -43,6 +45,8 @@ public static class MenuOptionExtensions
             MenuOption.ExitToMainMenu => "Exit to Main Menu",
             MenuOption.FinishTurn => "Finish Turn",
             MenuOption.ViewEventLog => "View Event Log",
+            MenuOption.ExportSave => "Export Save (JSON)",
+            MenuOption.ImportSave => "Import Save (JSON)",
             _ => option.ToString(),
         };
     }
