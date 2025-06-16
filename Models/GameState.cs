@@ -20,7 +20,7 @@ public class GameState
 
     // Recent events (for event log and turn feedback)
     public List<GameEvent> RecentEvents { get; set; } = [];
-    public List<string> WorldHistory { get; set; } = [];
+    public List<string> GalacticHistory { get; set; } = [];
 
     // Actions blocked for the next turn due to events
     public List<PlayerActionType> BlockedActions { get; set; } = [];

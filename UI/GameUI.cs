@@ -552,11 +552,11 @@ public class GameUI
             }
             AnsiConsole.MarkupLine("");
         }
-        // Show World History snippet
-        if (game.WorldHistory.Count > 0)
+        // Show Galactic History snippet
+        if (game.GalacticHistory.Count > 0)
         {
-            AnsiConsole.MarkupLine("[bold underline]World History:[/]");
-            AnsiConsole.MarkupLine($"[grey]{game.WorldHistory.Last()}[/]");
+            AnsiConsole.MarkupLine("[bold underline]Galactic History:[/]");
+            AnsiConsole.MarkupLine($"[grey]{game.GalacticHistory.Last()}[/]");
             AnsiConsole.MarkupLine("");
         }
         if (game.BlockedActions.Count > 0)
@@ -718,7 +718,7 @@ public class GameUI
 
     private static void ShowEventLog(GameState? game)
     {
-        if (game == null || (game.WorldHistory.Count == 0 && game.RecentEvents.Count == 0))
+        if (game == null || (game.GalacticHistory.Count == 0 && game.RecentEvents.Count == 0))
         {
             AnsiConsole.MarkupLine("[grey]No events have occurred yet.[/]");
             return;
@@ -726,8 +726,8 @@ public class GameUI
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[bold yellow]Event Log:[/]");
         int count = 1;
-        // Show all world history entries (narrative log)
-        foreach (var entry in game.WorldHistory)
+        // Show all galactic history entries (narrative log)
+        foreach (var entry in game.GalacticHistory)
         {
             AnsiConsole.MarkupLine($"[dim]{count++}.[/] {entry}");
         }
