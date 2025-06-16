@@ -18,7 +18,7 @@ public class FactionService : IFactionService
             IsPlayer = isPlayer,
             Description = GenerateFactionDescription(type),
             Traits = GenerateFactionTraits(type),
-            Reputation = 0, // Default starting reputation
+            Reputation = 25, // Default starting reputation
         };
 
         // Set starting resources based on faction type
