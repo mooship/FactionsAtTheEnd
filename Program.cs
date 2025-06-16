@@ -7,6 +7,7 @@ using FactionsAtTheEnd.Validators;
 using FluentValidation;
 using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using Spectre.Console;
 
 namespace FactionsAtTheEnd;
@@ -15,18 +16,41 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        // Setup DI
-        var services = new ServiceCollection();
-        ConfigureServices(services);
-        var serviceProvider = services.BuildServiceProvider();
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .WriteTo.File(
+                "log.txt",
+                rollingInterval: RollingInterval.Day,
+                rollOnFileSizeLimit: true
+            )
+            .MinimumLevel.Debug()
+            .CreateLogger();
 
-        var gameUI = serviceProvider.GetRequiredService<GameUI>();
+        try
+        {
+            Log.Information("Starting Factions At The End");
+            // Setup DI
+            var services = new ServiceCollection();
+            ConfigureServices(services);
+            var serviceProvider = services.BuildServiceProvider();
 
-        AnsiConsole.MarkupLine("[bold red]🔮 FACTIONS AT THE END 🔮[/]");
-        AnsiConsole.MarkupLine("[dim]Grimdark diplomacy in a collapsing empire[/]");
-        AnsiConsole.WriteLine();
+            var gameUI = serviceProvider.GetRequiredService<GameUI>();
 
-        await gameUI.RunMainMenuAsync();
+            AnsiConsole.MarkupLine("[bold red]🔮 FACTIONS AT THE END 🔮[/]");
+            AnsiConsole.MarkupLine("[dim]Grimdark diplomacy in a collapsing empire[/]");
+            AnsiConsole.WriteLine();
+
+            await gameUI.RunMainMenuAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Unhandled exception");
+            throw;
+        }
+        finally
+        {
+            await Log.CloseAndFlushAsync();
+        }
     }
 
     private static void ConfigureServices(IServiceCollection services)
