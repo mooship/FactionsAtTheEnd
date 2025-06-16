@@ -1,3 +1,4 @@
+using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using FactionsAtTheEnd.UI;
@@ -21,10 +22,8 @@ public class EventService : IEventService
                 Description = CollapseDescription,
                 Type = EventType.Crisis,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
             },
         };
-
         return events;
     }
 
@@ -44,7 +43,6 @@ public class EventService : IEventService
                             $"Your repeated use of {kvp.Key.GetDisplayName()} has led to diminishing returns and unrest.",
                         Type = EventType.Crisis,
                         Cycle = gameState.CurrentCycle,
-                        AffectedFactions = [gameState.PlayerFactionId],
                         Effects = new() { { StatKey.Stability, -5 }, { StatKey.Resources, -3 } },
                         BlockedActions = [kvp.Key],
                     }
@@ -93,7 +91,6 @@ public class EventService : IEventService
                     Description = DiplomaticOvertureDescription,
                     Type = EventType.Military,
                     Cycle = gameState.CurrentCycle,
-                    AffectedFactions = [gameState.PlayerFactionId],
                     Parameters = new Dictionary<string, object> { { "Choice", "AllianceOffer" } },
                     Effects = new Dictionary<StatKey, int> { { StatKey.Influence, 5 } },
                     BlockedActions = [],
@@ -157,7 +154,7 @@ public class EventService : IEventService
     /// </summary>
     private static GameEvent GenerateMilitaryEvent(GameState gameState)
     {
-        var player = gameState.Factions.FirstOrDefault(f => f.Id == gameState.PlayerFactionId);
+        var player = gameState.PlayerFaction;
         var index = Random.Shared.Next(10);
         // Faction-specific positive event for Military Junta
         if (player?.Type == FactionType.MilitaryJunta && Random.Shared.Next(1, 101) <= 20)
@@ -168,7 +165,6 @@ public class EventService : IEventService
                 Description = VeteranParadeDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Military, 8 }, { StatKey.Stability, 4 } },
             };
         }
@@ -181,7 +177,6 @@ public class EventService : IEventService
                 Description = SuccessfulRaidDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new()
                 {
                     { StatKey.Military, 5 },
@@ -199,7 +194,6 @@ public class EventService : IEventService
                 Description = SabotageSuccessDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new()
                 {
                     { StatKey.Military, 4 },
@@ -216,7 +210,6 @@ public class EventService : IEventService
                 Description = RaidersAttackDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Military, -5 }, { StatKey.Resources, -10 } },
                 BlockedActions = [PlayerActionType.Exploit_Resources],
             },
@@ -226,7 +219,6 @@ public class EventService : IEventService
                 Description = InternalMutinyDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Military, -8 }, { StatKey.Stability, -5 } },
                 BlockedActions = [PlayerActionType.Recruit_Troops],
             },
@@ -236,7 +228,6 @@ public class EventService : IEventService
                 Description = MercenaryTroubleDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Resources, -7 }, { StatKey.Military, -3 } },
             },
             3 => new GameEvent
@@ -245,7 +236,6 @@ public class EventService : IEventService
                 Description = EliteTrainingDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Military, 10 }, { StatKey.Stability, 2 } },
             },
             4 => new GameEvent
@@ -254,7 +244,6 @@ public class EventService : IEventService
                 Description = BorderSkirmishDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Military, -3 }, { StatKey.Stability, -2 } },
             },
             5 => new GameEvent
@@ -263,7 +252,6 @@ public class EventService : IEventService
                 Description = VeteranRecruitsDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Military, 7 }, { StatKey.Population, 2 } },
             },
             6 => new GameEvent
@@ -272,7 +260,6 @@ public class EventService : IEventService
                 Description = PeacefulGarrisonDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Military, 3 }, { StatKey.Stability, 2 } },
             },
             7 => new GameEvent
@@ -281,7 +268,6 @@ public class EventService : IEventService
                 Description = TrainingAccidentDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Military, -2 } },
             },
             _ => new GameEvent(),
@@ -293,7 +279,7 @@ public class EventService : IEventService
     /// </summary>
     private static GameEvent GenerateEconomicEvent(GameState gameState)
     {
-        var player = gameState.Factions.FirstOrDefault(f => f.Id == gameState.PlayerFactionId);
+        var player = gameState.PlayerFaction;
         var index = Random.Shared.Next(8);
         // Faction-specific positive event for Corporate Council
         if (player?.Type == FactionType.CorporateCouncil && Random.Shared.Next(1, 101) <= 20)
@@ -304,7 +290,6 @@ public class EventService : IEventService
                 Description = MarketBoomDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Resources, 12 }, { StatKey.Influence, 4 } },
             };
         }
@@ -317,7 +302,6 @@ public class EventService : IEventService
                 Description = TithesOfferingsDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Resources, 8 }, { StatKey.Stability, 3 } },
             };
         }
@@ -329,7 +313,6 @@ public class EventService : IEventService
                 Description = ResourceShortageDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Resources, -12 } },
                 BlockedActions = [PlayerActionType.Exploit_Resources],
             },
@@ -339,7 +322,6 @@ public class EventService : IEventService
                 Description = MarketInstabilityDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Resources, -8 }, { StatKey.Stability, -3 } },
             },
             2 => new GameEvent
@@ -348,7 +330,6 @@ public class EventService : IEventService
                 Description = BlackMarketSurgeDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Influence, -5 }, { StatKey.Resources, -5 } },
             },
             3 => new GameEvent
@@ -357,7 +338,6 @@ public class EventService : IEventService
                 Description = TradeConvoyArrivesDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Resources, 15 }, { StatKey.Stability, 2 } },
             },
             4 => new GameEvent
@@ -366,7 +346,6 @@ public class EventService : IEventService
                 Description = SmugglingRingBustedDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Resources, 8 }, { StatKey.Influence, 3 } },
             },
             5 => new GameEvent
@@ -375,7 +354,6 @@ public class EventService : IEventService
                 Description = ResourceWindfallDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Resources, 12 } },
             },
             6 => new GameEvent
@@ -384,7 +362,6 @@ public class EventService : IEventService
                 Description = EfficientLogisticsDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Resources, 5 } },
             },
             7 => new GameEvent
@@ -393,7 +370,6 @@ public class EventService : IEventService
                 Description = CharityDriveDescription,
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Stability, 3 } },
             },
             _ => new GameEvent(),
@@ -405,7 +381,7 @@ public class EventService : IEventService
     /// </summary>
     private static GameEvent GenerateTechnologicalEvent(GameState gameState)
     {
-        var player = gameState.Factions.FirstOrDefault(f => f.Id == gameState.PlayerFactionId);
+        var player = gameState.PlayerFaction;
         var index = Random.Shared.Next(8);
         // Faction-specific positive event for Technocratic Union
         if (player?.Type == FactionType.TechnocraticUnion && Random.Shared.Next(1, 101) <= 20)
@@ -416,7 +392,6 @@ public class EventService : IEventService
                 Description = BreakthroughAlgorithmDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Technology, 15 }, { StatKey.Stability, 3 } },
             };
         }
@@ -429,7 +404,6 @@ public class EventService : IEventService
                 Description = RecoveredImperialDatabaseDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Technology, 10 }, { StatKey.Influence, 5 } },
             };
         }
@@ -441,7 +415,6 @@ public class EventService : IEventService
                 Description = TechBreakdownDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Technology, -7 }, { StatKey.Stability, -3 } },
                 BlockedActions = [PlayerActionType.Military_Tech],
             },
@@ -451,7 +424,6 @@ public class EventService : IEventService
                 Description = ResearchBreakthroughDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Technology, 10 }, { StatKey.Resources, -3 } },
             },
             2 => new GameEvent
@@ -460,7 +432,6 @@ public class EventService : IEventService
                 Description = SabotageAttemptDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Technology, -5 }, { StatKey.Military, -2 } },
             },
             3 => new GameEvent
@@ -469,7 +440,6 @@ public class EventService : IEventService
                 Description = UnexpectedInnovationDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Technology, 7 }, { StatKey.Stability, 4 } },
             },
             4 => new GameEvent
@@ -478,7 +448,6 @@ public class EventService : IEventService
                 Description = PrototypeSuccessDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Technology, 8 }, { StatKey.Resources, -2 } },
             },
             5 => new GameEvent
@@ -487,7 +456,6 @@ public class EventService : IEventService
                 Description = EquipmentTheftDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Technology, -6 }, { StatKey.Resources, -4 } },
             },
             6 => new GameEvent
@@ -496,7 +464,6 @@ public class EventService : IEventService
                 Description = TechFestivalDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Technology, 5 }, { StatKey.Influence, 2 } },
             },
             7 => new GameEvent
@@ -505,7 +472,6 @@ public class EventService : IEventService
                 Description = FailedExperimentDescription,
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Technology, -2 } },
             },
             _ => new GameEvent(),
@@ -518,7 +484,7 @@ public class EventService : IEventService
     /// </summary>
     private static GameEvent GenerateDiscoveryEvent(GameState gameState)
     {
-        var player = gameState.Factions.FirstOrDefault(f => f.Id == gameState.PlayerFactionId);
+        var player = gameState.PlayerFaction;
         var index = Random.Shared.Next(8);
         // Faction-specific positive event for Ancient Awakened
         if (player?.Type == FactionType.AncientAwakened && Random.Shared.Next(1, 101) <= 20)
@@ -529,7 +495,6 @@ public class EventService : IEventService
                 Description = AncientMemoryStirredDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Technology, 10 }, { StatKey.Stability, 5 } },
             };
         }
@@ -542,7 +507,6 @@ public class EventService : IEventService
                 Description = EchoesOfTheFirstEmpireDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Technology, 20 }, { StatKey.Influence, 10 } },
             };
         }
@@ -554,7 +518,6 @@ public class EventService : IEventService
                 Description = AncientRuinsFoundDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Technology, 5 }, { StatKey.Resources, 3 } },
             },
             1 => new GameEvent
@@ -563,7 +526,6 @@ public class EventService : IEventService
                 Description = LostDataRecoveredDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Technology, 3 }, { StatKey.Stability, 2 } },
             },
             2 => new GameEvent
@@ -572,7 +534,6 @@ public class EventService : IEventService
                 Description = MysteriousSignalDetectedDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Influence, 4 } },
             },
             3 => new GameEvent
@@ -581,7 +542,6 @@ public class EventService : IEventService
                 Description = DangerousRelicActivatedDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Stability, -6 }, { StatKey.Technology, -2 } },
                 BlockedActions = [PlayerActionType.Ancient_Studies],
             },
@@ -591,7 +551,6 @@ public class EventService : IEventService
                 Description = AlienArtifactDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Influence, 6 }, { StatKey.Technology, 2 } },
             },
             5 => new GameEvent
@@ -600,7 +559,6 @@ public class EventService : IEventService
                 Description = ForgottenCacheDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Resources, 7 }, { StatKey.Stability, 1 } },
             },
             6 => new GameEvent
@@ -609,7 +567,6 @@ public class EventService : IEventService
                 Description = CulturalExchangeDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Influence, 4 }, { StatKey.Stability, 2 } },
             },
             7 => new GameEvent
@@ -618,7 +575,6 @@ public class EventService : IEventService
                 Description = FalseLeadDescription,
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Technology, -1 } },
             },
             _ => new GameEvent(),
@@ -630,7 +586,7 @@ public class EventService : IEventService
     /// </summary>
     private static GameEvent GenerateNaturalEvent(GameState gameState)
     {
-        var player = gameState.Factions.FirstOrDefault(f => f.Id == gameState.PlayerFactionId);
+        var player = gameState.PlayerFaction;
         var index = Random.Shared.Next(8);
         // Faction-specific positive event for Religious Order
         if (player?.Type == FactionType.ReligiousOrder && Random.Shared.Next(1, 101) <= 20)
@@ -641,7 +597,6 @@ public class EventService : IEventService
                 Description = PilgrimageMiracleDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Stability, 7 }, { StatKey.Population, 3 } },
             };
         }
@@ -653,7 +608,6 @@ public class EventService : IEventService
                 Description = SolarFlareDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Resources, -6 }, { StatKey.Technology, -3 } },
             },
             1 => new GameEvent
@@ -662,7 +616,6 @@ public class EventService : IEventService
                 Description = MeteorShowerDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Population, -4 }, { StatKey.Stability, -2 } },
             },
             2 => new GameEvent
@@ -671,7 +624,6 @@ public class EventService : IEventService
                 Description = PlagueOutbreakDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Population, -8 }, { StatKey.Stability, -4 } },
                 BlockedActions = [PlayerActionType.Develop_Infrastructure],
             },
@@ -681,7 +633,6 @@ public class EventService : IEventService
                 Description = BountifulHarvestDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Resources, 10 }, { StatKey.Stability, 3 } },
             },
             4 => new GameEvent
@@ -690,7 +641,6 @@ public class EventService : IEventService
                 Description = EarthquakeDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Population, -6 }, { StatKey.Resources, -5 } },
             },
             5 => new GameEvent
@@ -699,7 +649,6 @@ public class EventService : IEventService
                 Description = MildSeasonDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Stability, 4 }, { StatKey.Population, 2 } },
             },
             6 => new GameEvent
@@ -708,7 +657,6 @@ public class EventService : IEventService
                 Description = GentleRainsDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Resources, 6 }, { StatKey.Population, 2 } },
             },
             7 => new GameEvent
@@ -717,7 +665,6 @@ public class EventService : IEventService
                 Description = MinorFloodDescription,
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [gameState.PlayerFactionId],
                 Effects = new() { { StatKey.Resources, -2 } },
             },
             _ => new GameEvent(),
@@ -729,7 +676,7 @@ public class EventService : IEventService
     /// </summary>
     private static GameEvent GenerateCrisisEvent(GameState gameState)
     {
-        var player = gameState.Factions.FirstOrDefault(f => f.Id == gameState.PlayerFactionId);
+        var player = gameState.PlayerFaction;
         // Soft-fail warning if a stat is about to hit 0
         if (player != null)
         {
@@ -741,7 +688,6 @@ public class EventService : IEventService
                     Description = PopulationCrisisDescription,
                     Type = EventType.Crisis,
                     Cycle = gameState.CurrentCycle,
-                    AffectedFactions = [gameState.PlayerFactionId],
                     Effects = new() { { StatKey.Stability, -3 } },
                 };
             }
@@ -753,7 +699,6 @@ public class EventService : IEventService
                     Description = ResourceCrisisDescription,
                     Type = EventType.Crisis,
                     Cycle = gameState.CurrentCycle,
-                    AffectedFactions = [gameState.PlayerFactionId],
                     Effects = new() { { StatKey.Stability, -2 } },
                 };
             }
@@ -765,7 +710,6 @@ public class EventService : IEventService
                     Description = StabilityCrisisDescription,
                     Type = EventType.Crisis,
                     Cycle = gameState.CurrentCycle,
-                    AffectedFactions = [gameState.PlayerFactionId],
                     Effects = new() { { StatKey.Population, -2 } },
                 };
             }
@@ -777,7 +721,6 @@ public class EventService : IEventService
                     Description = FactionOnTheBrinkDescription,
                     Type = EventType.Crisis,
                     Cycle = gameState.CurrentCycle,
-                    AffectedFactions = [gameState.PlayerFactionId],
                     Effects = new() { { StatKey.Stability, -10 }, { StatKey.Population, -5 } },
                     BlockedActions =
                     [
@@ -794,7 +737,6 @@ public class EventService : IEventService
             Description = MajorCrisisDescription,
             Type = EventType.Crisis,
             Cycle = gameState.CurrentCycle,
-            AffectedFactions = [gameState.PlayerFactionId],
             Effects = new() { { StatKey.Stability, -7 }, { StatKey.Resources, -5 } },
         };
     }
@@ -810,7 +752,6 @@ public class EventService : IEventService
             Description = AncientTechnologyUnearthedDescription,
             Type = EventType.Discovery,
             Cycle = gameState.CurrentCycle,
-            AffectedFactions = [gameState.PlayerFactionId],
             Effects = new() { { StatKey.Technology, 15 }, { StatKey.Stability, 5 } },
             BlockedActions = [],
         };
@@ -821,10 +762,9 @@ public class EventService : IEventService
     /// </summary>
     public List<string> GenerateGalacticNews(GameState gameState, List<GameEvent> recentEvents)
     {
+        Guard.IsNotNull(gameState.PlayerFaction);
         var news = new List<string>();
-        var player = gameState.Factions.FirstOrDefault(f => f.Id == gameState.PlayerFactionId);
-        if (player == null)
-            return news;
+        var player = gameState.PlayerFaction;
 
         // Major event headlines
         foreach (var gameEvent in recentEvents)

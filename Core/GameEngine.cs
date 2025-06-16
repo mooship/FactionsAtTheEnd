@@ -34,25 +34,17 @@ public class GameEngine(
         FactionType playerFactionType
     )
     {
-        Guard.IsNotNullOrWhiteSpace(playerFactionName);
-        Guard.IsTrue(
-            Enum.IsDefined(playerFactionType),
-            nameof(playerFactionType) + " must be a valid FactionType."
-        );
-
-        var gameState = new GameState
-        {
-            SaveName = $"Game Started {DateTime.Now:yyyy-MM-dd HH:mm}",
-            CurrentCycle = 1,
-        };
-
         var playerFaction = _factionService.CreateFaction(
             playerFactionName,
             playerFactionType,
-            isPlayer: true
+            true
         );
-        gameState.Factions.Add(playerFaction);
-        gameState.PlayerFactionId = playerFaction.Id;
+        var gameState = new GameState
+        {
+            PlayerFaction = playerFaction,
+            SaveName = $"Game Started {DateTime.Now:yyyy-MM-dd HH:mm}",
+            CurrentCycle = 1,
+        };
 
         // Add initial crisis event for narrative context
         var initialEvents = new List<GameEvent>
@@ -64,7 +56,6 @@ public class GameEngine(
                     "The imperial government has fallen. You lead the last organized group in your region. Survival is up to you.",
                 Type = EventType.Crisis,
                 Cycle = gameState.CurrentCycle,
-                AffectedFactions = [playerFaction.Id],
             },
         };
         gameState.RecentEvents.AddRange(initialEvents);
@@ -80,8 +71,6 @@ public class GameEngine(
     /// </summary>
     public async Task<List<GameState>> GetSavedGamesAsync()
     {
-        Guard.IsNotNull(_gameDataService);
-
         return await _gameDataService.GetSavedGamesAsync();
     }
 
@@ -90,10 +79,9 @@ public class GameEngine(
     /// </summary>
     public async Task LoadGameAsync(string gameId)
     {
-        Guard.IsNotNullOrWhiteSpace(gameId);
-        Guard.IsNotNull(_gameDataService);
-
-        CurrentGame = await _gameDataService.LoadGameAsync(gameId);
+        var loaded = await _gameDataService.LoadGameAsync(gameId);
+        if (loaded != null)
+            CurrentGame = loaded;
     }
 
     /// <summary>
@@ -199,7 +187,7 @@ public class GameEngine(
     {
         Guard.IsNotNull(newEvents);
         Guard.IsNotNull(CurrentGame);
-        var player = CurrentGame.Factions.FirstOrDefault(f => f.Id == CurrentGame.PlayerFactionId);
+        var player = CurrentGame.PlayerFaction;
         CurrentGame.BlockedActions?.Clear();
         foreach (var gameEvent in newEvents)
         {
@@ -250,7 +238,7 @@ public class GameEngine(
     private void CheckWinLoseConditions()
     {
         Guard.IsNotNull(CurrentGame);
-        var player = CurrentGame.Factions.FirstOrDefault(f => f.Id == CurrentGame.PlayerFactionId);
+        var player = CurrentGame.PlayerFaction;
         if (player != null && (CurrentGame.CurrentCycle > 20 || player.Technology >= 100))
         {
             CurrentGame.SaveName = "WINNER";
@@ -263,10 +251,8 @@ public class GameEngine(
     private async Task ProcessPlayerActionAsync(PlayerAction action)
     {
         Guard.IsNotNull(CurrentGame);
-        var player = CurrentGame.Factions.FirstOrDefault(f => f.IsPlayer);
-        if (player == null)
-            return;
-
+        Guard.IsNotNull(CurrentGame.PlayerFaction);
+        var player = CurrentGame.PlayerFaction;
         await ApplyToFactionAsync(
             player.Id,
             async f =>
@@ -338,7 +324,7 @@ public class GameEngine(
         Guard.IsNotNull(update);
         Guard.IsNotNull(CurrentGame);
 
-        var faction = CurrentGame.Factions.FirstOrDefault(f => f.Id == factionId);
+        var faction = CurrentGame.PlayerFaction;
         if (faction != null)
         {
             await update(faction);

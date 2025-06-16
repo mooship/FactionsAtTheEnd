@@ -208,17 +208,9 @@ public class GameUI
         while (true)
         {
             var game = _gameEngine.CurrentGame;
-            if (game == null)
-            {
-                AnsiConsole.MarkupLine("[red]Error: Game state not found.[/]");
-                return;
-            }
-            var playerFaction = game.Factions.FirstOrDefault(f => f.Id == game.PlayerFactionId);
-            if (playerFaction == null)
-            {
-                AnsiConsole.MarkupLine("[red]Error: Player faction not found.[/]");
-                return;
-            }
+            Guard.IsNotNull(game);
+            var playerFaction = game.PlayerFaction;
+            Guard.IsNotNull(playerFaction);
 
             // Show blocked actions from events
             if (game.BlockedActions.Count > 0)
@@ -380,23 +372,11 @@ public class GameUI
 
             await ProcessTurnAsync(playerActions);
 
-            // Refresh game state after processing turn
+            // After turn processing, refresh game state
             game = _gameEngine.CurrentGame;
-            if (game == null)
-            {
-                AnsiConsole.MarkupLine(
-                    "[red]Error: Game state not found after turn processing.[/]"
-                );
-                return;
-            }
-            playerFaction = game.Factions.FirstOrDefault(f => f.Id == game.PlayerFactionId);
-            if (playerFaction == null)
-            {
-                AnsiConsole.MarkupLine(
-                    "[red]Error: Player faction not found after turn processing.[/]"
-                );
-                return;
-            }
+            Guard.IsNotNull(game);
+            playerFaction = game.PlayerFaction;
+            Guard.IsNotNull(playerFaction);
 
             // Display events that occurred this turn (only once, after processing)
             var recentEvents = game.RecentEvents.Where(e => e.Cycle == game.CurrentCycle).ToList();
@@ -517,7 +497,7 @@ public class GameUI
     private void DisplayGameState()
     {
         var game = _gameEngine.CurrentGame!;
-        var playerFaction = game.Factions.First(f => f.Id == game.PlayerFactionId);
+        var playerFaction = game.PlayerFaction;
         AnsiConsole.MarkupLine($"[bold]Cycle:[/] {game.CurrentCycle}");
         AnsiConsole.MarkupLine(
             $"[bold]Faction:[/] {playerFaction?.Name} ({playerFaction?.Type.GetDisplayName()})"
@@ -562,7 +542,7 @@ public class GameUI
     private void DisplayFactionsOverview()
     {
         var game = _gameEngine.CurrentGame!;
-        var playerFaction = game.Factions.First(f => f.Id == game.PlayerFactionId);
+        var playerFaction = game.PlayerFaction;
         var table = new Table().Border(TableBorder.Rounded).Title("[bold cyan]Faction Overview[/]");
         table.AddColumn("[bold]Property[/]");
         table.AddColumn("[bold]Value[/]");
@@ -706,18 +686,7 @@ public class GameUI
                 AnsiConsole.MarkupLine($"  [red]{action.GetDisplayName()}[/]");
             }
         }
-        if (
-            gameEvent.AffectedFactions != null
-            && gameEvent.AffectedFactions.Count > 0
-            && (playerFaction == null || gameEvent.AffectedFactions.Any(f => f != playerFaction.Id))
-        )
-        {
-            AnsiConsole.MarkupLine(
-                "[dim]Other affected factions: "
-                    + string.Join(", ", gameEvent.AffectedFactions)
-                    + "[/]"
-            );
-        }
+        // Removed AffectedFactions display, single player only
     }
 
     private static void ShowEventLog(GameState? game)
@@ -739,7 +708,6 @@ public class GameUI
         {
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("[bold]Recent Events:[/]");
-            var playerFaction = game.Factions?.FirstOrDefault(f => f.Id == game.PlayerFactionId);
             foreach (var ev in game.RecentEvents)
             {
                 AnsiConsole.MarkupLine($"[dim]{count++}.[/] [aqua]{ev.Title}[/]: {ev.Description}");

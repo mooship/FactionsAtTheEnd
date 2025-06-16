@@ -16,8 +16,7 @@ public class GameState
     public int GateNetworkIntegrity { get; set; } = 60; // 0-100, affects travel/trade
     public int AncientTechDiscovery { get; set; } = 10; // 0-100, unlocks events
 
-    public List<Faction> Factions { get; set; } = [];
-    public string PlayerFactionId { get; set; } = string.Empty;
+    public Faction PlayerFaction { get; set; } = new Faction();
 
     // Recent events (for event log and turn feedback)
     public List<GameEvent> RecentEvents { get; set; } = [];
@@ -46,7 +45,6 @@ public class GameEvent
     public string Description { get; set; } = string.Empty;
     public EventType Type { get; set; }
     public int Cycle { get; set; }
-    public List<string> AffectedFactions { get; set; } = [];
     public Dictionary<string, object> Parameters { get; set; } = [];
 
     // Effects: resource/stat changes (e.g., { StatKey.Military, -5 })
