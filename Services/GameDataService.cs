@@ -2,6 +2,7 @@ using System.Text.Json;
 using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
+using FactionsAtTheEnd.Validators;
 using LiteDB;
 
 namespace FactionsAtTheEnd.Services;
@@ -9,6 +10,7 @@ namespace FactionsAtTheEnd.Services;
 public class GameDataService(ILiteDatabase db) : IGameDataService
 {
     private readonly ILiteDatabase _db = db;
+    private readonly GameStateValidator _gameStateValidator = new();
 
     /// <summary>
     /// Save or update a game state in the database.
@@ -98,6 +100,13 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
     public string ExportGameState(GameState gameState)
     {
         Guard.IsNotNull(gameState);
+        var validation = _gameStateValidator.Validate(gameState);
+        if (!validation.IsValid)
+        {
+            throw new ApplicationException(
+                $"Cannot export: GameState is invalid.\n{string.Join("\n", validation.Errors.Select(e => e.ErrorMessage))}"
+            );
+        }
         var options = new JsonSerializerOptions { WriteIndented = true };
         return System.Text.Json.JsonSerializer.Serialize(gameState, options);
     }
@@ -108,7 +117,16 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
     public GameState ImportGameState(string json)
     {
         Guard.IsNotNullOrWhiteSpace(json);
-        return System.Text.Json.JsonSerializer.Deserialize<GameState>(json)
+        var gameState =
+            System.Text.Json.JsonSerializer.Deserialize<GameState>(json)
             ?? throw new ApplicationException("Failed to import game state from JSON.");
+        var validation = _gameStateValidator.Validate(gameState);
+        if (!validation.IsValid)
+        {
+            throw new ApplicationException(
+                $"Imported GameState is invalid.\n{string.Join("\n", validation.Errors.Select(e => e.ErrorMessage))}"
+            );
+        }
+        return gameState;
     }
 }

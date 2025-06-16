@@ -1,6 +1,5 @@
 using FactionsAtTheEnd.Models;
 using FluentValidation;
-using FactionsAtTheEnd.UI;
 
 namespace FactionsAtTheEnd.Validators;
 
