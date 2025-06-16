@@ -1,6 +1,8 @@
 namespace FactionsAtTheEnd.Models;
 
-// PlayerAction: Represents a single action taken by a player in a turn.
+// <summary>
+// Represents a single action taken by a player in a turn.
+// </summary>
 public class PlayerAction
 {
     public PlayerActionType ActionType { get; set; }
