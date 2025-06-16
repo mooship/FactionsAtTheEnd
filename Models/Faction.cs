@@ -45,7 +45,7 @@ public class Faction
         Influence = Math.Max(GameConstants.MinStat, Math.Min(Influence, GameConstants.MaxStat));
         Resources = Math.Max(GameConstants.MinStat, Math.Min(Resources, GameConstants.MaxStat));
         Stability = Math.Max(GameConstants.MinStat, Math.Min(Stability, GameConstants.MaxStat));
-        Reputation = Math.Max(0, Math.Min(Reputation, 100));
+        Reputation = Math.Max(GameConstants.MinStat, Math.Min(Reputation, 100));
     }
 }
 
