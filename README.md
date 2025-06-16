@@ -26,7 +26,7 @@ A single-player, single-faction survival strategy game.
 - Access the event log and faction overview from the in-game menu
 
 ## Tech Stack
-- .NET 9.0
+- .NET 8.0
 - Spectre.Console for UI
 - LiteDB for save/load
 - FluentValidation for input validation
