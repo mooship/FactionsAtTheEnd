@@ -26,4 +26,7 @@ public static class NewsTemplates
     public const string RespectedDesc = "[green](Respected)[/]";
     public const string NotedDesc = "[olive](Noted)[/]";
     public const string NeutralDesc = "(Neutral)";
+    public const string NotoriousDesc = "[yellow](Notorious)[/]";
+    public const string FearedDesc = "[red](Feared)[/]";
+    public const string InfamousDesc = "[red](Infamous)[/]";
 }

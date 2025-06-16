@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using FactionsAtTheEnd.Models;
+using FactionsAtTheEnd.UI;
 using FluentValidation;
 
 namespace FactionsAtTheEnd.Validators;
@@ -53,10 +54,10 @@ public partial class FactionValidator : AbstractValidator<Faction>
             .WithMessage("Stability cannot be negative.");
 
         RuleFor(f => f.Reputation)
-            .GreaterThanOrEqualTo(0)
-            .WithMessage("Reputation cannot be negative.")
-            .LessThanOrEqualTo(100)
-            .WithMessage("Reputation cannot exceed 100.");
+            .GreaterThanOrEqualTo(GameConstants.MinReputation)
+            .WithMessage($"Reputation cannot be less than {GameConstants.MinReputation}.")
+            .LessThanOrEqualTo(GameConstants.MaxReputation)
+            .WithMessage($"Reputation cannot exceed {GameConstants.MaxReputation}.");
     }
 
     [GeneratedRegex("^[a-zA-Z0-9 .'-]+$", RegexOptions.Compiled)]

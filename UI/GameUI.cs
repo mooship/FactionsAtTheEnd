@@ -411,7 +411,7 @@ public class GameUI
                 {
                     AnsiConsole.MarkupLine($"[bold]{gameEvent.Title}[/]");
                     AnsiConsole.MarkupLine(gameEvent.Description);
-                    ShowEventEffects(gameEvent, playerFaction);
+                    ShowEventEffects(gameEvent);
                     AnsiConsole.WriteLine();
                 }
             }
@@ -666,24 +666,39 @@ public class GameUI
     // Returns a short description for the player's reputation
     private static string GetReputationDescription(int reputation)
     {
-        // Clamp reputation to 0-100
-        reputation = Math.Max(0, Math.Min(reputation, 100));
+        // Clamp reputation to -100 to 100
+        reputation = Math.Max(
+            GameConstants.MinReputation,
+            Math.Min(reputation, GameConstants.MaxReputation)
+        );
         if (reputation >= 80)
         {
-            return "[green](Legendary)[/]";
+            return NewsTemplates.LegendaryDesc;
         }
         if (reputation >= 40)
         {
-            return "[green](Respected)[/]";
+            return NewsTemplates.RespectedDesc;
         }
         if (reputation >= 10)
         {
-            return "[olive](Noted)[/]";
+            return NewsTemplates.NotedDesc;
         }
-        return "(Neutral)";
+        if (reputation <= -80)
+        {
+            return "[red](Infamous)[/]";
+        }
+        if (reputation <= -40)
+        {
+            return "[red](Feared)[/]";
+        }
+        if (reputation <= -10)
+        {
+            return "[yellow](Notorious)[/]";
+        }
+        return NewsTemplates.NeutralDesc;
     }
 
-    private static void ShowEventEffects(GameEvent gameEvent, Faction? playerFaction)
+    private static void ShowEventEffects(GameEvent gameEvent)
     {
         // Show stat/resource changes
         if (gameEvent.Effects != null && gameEvent.Effects.Count > 0)

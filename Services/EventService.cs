@@ -56,6 +56,9 @@ public class EventService : IEventService
         // For every 20 reputation above 0, +5% chance for a positive event, -5% for negative; below 0, the reverse
         int positiveBonus = rep > 0 ? rep / 20 * 5 : 0;
         int negativeBonus = rep < 0 ? Math.Abs(rep) / 20 * 5 : 0;
+        // Clamp bonuses to a reasonable range
+        positiveBonus = Math.Min(positiveBonus, 25); // max +25%
+        negativeBonus = Math.Min(negativeBonus, 25); // max +25%
         int eventRoll = Random.Shared.Next(1, 101);
         bool forcePositive = eventRoll <= (baseChance + positiveBonus);
         bool forceNegative = eventRoll > (100 - negativeBonus);
@@ -811,6 +814,18 @@ public class EventService : IEventService
         else if (player.Reputation >= 40)
         {
             news.Add(string.Format(RisingStarReputation, player.Name));
+        }
+        else if (player.Reputation <= -80)
+        {
+            news.Add($"Infamous: {player.Name} is feared across the galaxy!");
+        }
+        else if (player.Reputation <= -40)
+        {
+            news.Add($"Feared: {player.Name}'s reputation strikes terror in many.");
+        }
+        else if (player.Reputation <= -10)
+        {
+            news.Add($"Notorious: {player.Name} is gaining a dark reputation.");
         }
 
         // Galactic state news

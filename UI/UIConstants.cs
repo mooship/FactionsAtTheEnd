@@ -25,7 +25,7 @@ public enum StatKey
     Influence,
     Resources,
     Stability,
-    Reputation
+    Reputation,
 }
 
 public static class MenuOptionExtensions
@@ -79,6 +79,8 @@ public static class GameConstants
 {
     public const int MaxStat = 100;
     public const int MinStat = 0;
+    public const int MinReputation = -100;
+    public const int MaxReputation = 100;
     public const int StartingPopulationMin = 40;
     public const int StartingPopulationMax = 70;
     public const int StartingMilitaryMin = 30;

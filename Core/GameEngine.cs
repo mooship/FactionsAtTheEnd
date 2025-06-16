@@ -218,6 +218,10 @@ public class GameEngine(
                         break;
                     case StatKey.Reputation:
                         player.Reputation += effect.Value;
+                        player.Reputation = Math.Max(
+                            GameConstants.MinReputation,
+                            Math.Min(player.Reputation, GameConstants.MaxReputation)
+                        );
                         break;
                 }
             }
@@ -300,6 +304,10 @@ public class GameEngine(
                         CurrentGame.GalacticStability += 3;
                         player.Influence += 2;
                         player.Reputation += 5;
+                        player.Reputation = Math.Max(
+                            GameConstants.MinReputation,
+                            Math.Min(player.Reputation, GameConstants.MaxReputation)
+                        );
                         break;
                     case PlayerActionType.Espionage:
                         // Handle as a world/self action: reveal upcoming events or grant minor stat/resource bonuses
