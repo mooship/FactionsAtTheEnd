@@ -391,6 +391,7 @@ public class GameUI
                 playerFaction.Influence,
                 playerFaction.Resources,
                 playerFaction.Stability,
+                playerFaction.Reputation,
             };
 
             await ProcessTurnAsync(playerActions);
@@ -447,6 +448,7 @@ public class GameUI
                 playerFaction.Influence,
                 playerFaction.Resources,
                 playerFaction.Stability,
+                playerFaction.Reputation,
             };
             AnsiConsole.MarkupLine("[bold green]Turn Results:[/]");
             ShowStatChange("Population", preStats.Population, postStats.Population);

@@ -101,6 +101,21 @@ public class EventService : IEventService
 
     public async Task<List<GameEvent>> GenerateRandomEventsAsync(GameState gameState)
     {
+        // 10% chance to generate a random choice event by type
+        if (Random.Shared.Next(1, 101) <= 10)
+        {
+            var choiceGenerators = new Func<GameState, GameEvent>[]
+            {
+                GenerateChoiceEvent,
+                GenerateMilitaryChoiceEvent,
+                GenerateEconomicChoiceEvent,
+                GenerateTechnologicalChoiceEvent,
+                GenerateDiscoveryChoiceEvent,
+                GenerateNaturalChoiceEvent,
+            };
+            var selected = choiceGenerators[Random.Shared.Next(choiceGenerators.Length)];
+            return [selected(gameState)];
+        }
         return await Task.Run(() => GenerateRandomEvents(gameState));
     }
 
@@ -814,5 +829,156 @@ public class EventService : IEventService
 
         // Limit to 3-5 headlines per cycle
         return [.. news.Take(5)];
+    }
+
+    public static GameEvent GenerateChoiceEvent(GameState gameState)
+    {
+        return new GameEvent
+        {
+            Title = "A Fork in the Road",
+            Description = "A crisis forces your faction to choose a path.",
+            Type = EventType.Crisis,
+            Cycle = gameState.CurrentCycle,
+            Choices =
+            [
+                new EventChoice
+                {
+                    Description =
+                        "Send aid to a neighboring world (lose resources, gain stability)",
+                    Effects = new() { { StatKey.Resources, -10 }, { StatKey.Stability, +5 } },
+                },
+                new EventChoice
+                {
+                    Description = "Ignore their plea (risk unrest, save resources)",
+                    Effects = new() { { StatKey.Stability, -5 } },
+                },
+            ],
+        };
+    }
+
+    public static GameEvent GenerateMilitaryChoiceEvent(GameState gameState)
+    {
+        return new GameEvent
+        {
+            Title = "Mercenary Dilemma",
+            Description =
+                "A group of mercenaries offers their services for a steep price. Do you hire them to bolster your military, or refuse and risk their wrath?",
+            Type = EventType.Military,
+            Cycle = gameState.CurrentCycle,
+            Choices =
+            [
+                new EventChoice
+                {
+                    Description = "Hire the mercenaries (lose resources, gain military)",
+                    Effects = new() { { StatKey.Resources, -12 }, { StatKey.Military, +8 } },
+                },
+                new EventChoice
+                {
+                    Description = "Refuse their offer (risk sabotage, save resources)",
+                    Effects = new() { { StatKey.Stability, -4 }, { StatKey.Resources, +2 } },
+                    BlockedActions = [PlayerActionType.Recruit_Troops],
+                },
+            ],
+        };
+    }
+
+    public static GameEvent GenerateEconomicChoiceEvent(GameState gameState)
+    {
+        return new GameEvent
+        {
+            Title = "Corporate Investment",
+            Description =
+                "A mega-corporation offers to invest in your infrastructure, but demands a share of your resources. Do you accept the deal or maintain independence?",
+            Type = EventType.Economic,
+            Cycle = gameState.CurrentCycle,
+            Choices =
+            [
+                new EventChoice
+                {
+                    Description = "Accept the investment (gain resources, lose influence)",
+                    Effects = new() { { StatKey.Resources, +10 }, { StatKey.Influence, -5 } },
+                },
+                new EventChoice
+                {
+                    Description = "Refuse the deal (gain stability, no resource bonus)",
+                    Effects = new() { { StatKey.Stability, +3 } },
+                },
+            ],
+        };
+    }
+
+    public static GameEvent GenerateTechnologicalChoiceEvent(GameState gameState)
+    {
+        return new GameEvent
+        {
+            Title = "Experimental Technology",
+            Description =
+                "Scientists propose deploying untested technology. Do you approve the risky experiment or play it safe?",
+            Type = EventType.Technological,
+            Cycle = gameState.CurrentCycle,
+            Choices =
+            [
+                new EventChoice
+                {
+                    Description = "Approve the experiment (potential big gain, risk failure)",
+                    Effects = new() { { StatKey.Technology, +12 }, { StatKey.Stability, -6 } },
+                },
+                new EventChoice
+                {
+                    Description = "Reject the proposal (no risk, but lose opportunity)",
+                    Effects = new() { { StatKey.Technology, +2 } },
+                },
+            ],
+        };
+    }
+
+    public static GameEvent GenerateDiscoveryChoiceEvent(GameState gameState)
+    {
+        return new GameEvent
+        {
+            Title = "Alien Relic Discovered",
+            Description =
+                "An ancient alien relic is found. Do you study it for potential breakthroughs or sell it to collectors?",
+            Type = EventType.Discovery,
+            Cycle = gameState.CurrentCycle,
+            Choices =
+            [
+                new EventChoice
+                {
+                    Description = "Study the relic (gain technology, risk instability)",
+                    Effects = new() { { StatKey.Technology, +8 }, { StatKey.Stability, -3 } },
+                },
+                new EventChoice
+                {
+                    Description = "Sell the relic (gain resources, lose potential tech)",
+                    Effects = new() { { StatKey.Resources, +10 } },
+                },
+            ],
+        };
+    }
+
+    public static GameEvent GenerateNaturalChoiceEvent(GameState gameState)
+    {
+        return new GameEvent
+        {
+            Title = "Natural Disaster Response",
+            Description =
+                "A natural disaster strikes a colony. Do you divert resources to help, or focus on your core worlds?",
+            Type = EventType.Natural,
+            Cycle = gameState.CurrentCycle,
+            Choices =
+            [
+                new EventChoice
+                {
+                    Description = "Send aid (lose resources, gain stability)",
+                    Effects = new() { { StatKey.Resources, -8 }, { StatKey.Stability, +5 } },
+                },
+                new EventChoice
+                {
+                    Description = "Focus on core worlds (save resources, risk unrest)",
+                    Effects = new() { { StatKey.Stability, -4 }, { StatKey.Resources, +2 } },
+                },
+            ],
+        };
     }
 }

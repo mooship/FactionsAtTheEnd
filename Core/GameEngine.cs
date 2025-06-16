@@ -1,6 +1,7 @@
 using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
+using FactionsAtTheEnd.UI;
 using FluentValidation;
 
 namespace FactionsAtTheEnd.Core;
@@ -196,22 +197,22 @@ public class GameEngine(
             {
                 switch (effect.Key)
                 {
-                    case UI.StatKey.Population:
+                    case StatKey.Population:
                         player.Population += effect.Value;
                         break;
-                    case UI.StatKey.Military:
+                    case StatKey.Military:
                         player.Military += effect.Value;
                         break;
-                    case UI.StatKey.Technology:
+                    case StatKey.Technology:
                         player.Technology += effect.Value;
                         break;
-                    case UI.StatKey.Influence:
+                    case StatKey.Influence:
                         player.Influence += effect.Value;
                         break;
-                    case UI.StatKey.Resources:
+                    case StatKey.Resources:
                         player.Resources += effect.Value;
                         break;
-                    case UI.StatKey.Stability:
+                    case StatKey.Stability:
                         Guard.IsNotNull(CurrentGame);
                         CurrentGame.GalacticStability += effect.Value;
                         break;

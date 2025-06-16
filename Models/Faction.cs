@@ -21,6 +21,7 @@ public class Faction
     public int Technology { get; set; }
     public int Influence { get; set; }
     public int Resources { get; set; }
+    public int Reputation { get; set; } = 0;
 
     // Narrative and mechanical status
     public FactionStatus Status { get; set; } = FactionStatus.Stable;
@@ -30,9 +31,6 @@ public class Faction
     public List<string> Traits { get; set; } = [];
 
     public DateTime LastActive { get; set; } = DateTime.UtcNow;
-
-    // Reputation: 0 (unknown) to 100 (legendary), affects narrative and news
-    public int Reputation { get; set; } = 0;
 
     /// <summary>
     /// Clamp all resource and stat values to valid min/max bounds.
