@@ -47,7 +47,7 @@ public class FactionService : IFactionService
                 faction.Influence += 2;
                 break;
             case FactionType.ImperialRemnant:
-                faction.Population += 5;
+                faction.Population += 4;
                 faction.Reputation += 1;
                 break;
             case FactionType.AncientAwakened:
