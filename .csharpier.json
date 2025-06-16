@@ -1,0 +1,20 @@
+{
+  "printWidth": 100,
+  "tabWidth": 4,
+  "useTabs": false,
+  "logLevel": "Warning",
+  "writeToFile": true,
+  "check": false,
+  "exclude": [
+    "bin/",
+    "obj/",
+    "**/GeneratedCode/",
+    "**/*.g.cs",
+    "**/*.designer.cs",
+    "**/*.AssemblyInfo.cs"
+  ],
+  "include": [
+    "**/*.cs"
+  ],
+  "formatPreprocessorDirectives": true
+}
