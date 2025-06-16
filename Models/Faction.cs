@@ -21,7 +21,7 @@ public class Faction
     public int Technology { get; set; }
     public int Influence { get; set; }
     public int Resources { get; set; }
-    public int Reputation { get; set; } = 0;
+    public int Reputation { get; set; } = 25;
 
     // Narrative and mechanical status
     public FactionStatus Status { get; set; } = FactionStatus.Stable;
