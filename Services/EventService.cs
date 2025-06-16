@@ -1012,12 +1012,12 @@ public class EventService : IEventService
             [
                 new EventChoice
                 {
-                    Description = "Attempt infiltration (gain tech, risk stability)",
+                    Description = "Attempt infiltration",
                     Effects = new() { { StatKey.Technology, +6 }, { StatKey.Stability, -4 } },
                 },
                 new EventChoice
                 {
-                    Description = "Play it safe (minor influence gain)",
+                    Description = "Play it safe",
                     Effects = new() { { StatKey.Influence, +3 } },
                 },
             ],
@@ -1037,12 +1037,12 @@ public class EventService : IEventService
             [
                 new EventChoice
                 {
-                    Description = "Cover it up (lose resources, avoid reputation loss)",
+                    Description = "Cover it up",
                     Effects = new() { { StatKey.Resources, -7 } },
                 },
                 new EventChoice
                 {
-                    Description = "Accept responsibility (lose reputation, gain stability)",
+                    Description = "Accept responsibility",
                     Effects = new() { { StatKey.Reputation, -6 }, { StatKey.Stability, +4 } },
                 },
             ],
