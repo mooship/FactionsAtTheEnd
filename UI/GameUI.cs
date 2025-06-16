@@ -418,26 +418,63 @@ public class GameUI
 
             // Handle player choice events
             var choiceEvent = game.RecentEvents.FirstOrDefault(e =>
-                e.Parameters.ContainsKey("Choice")
+                e.Choices != null && e.Choices.Count > 0
             );
-            Guard.IsNotNull(choiceEvent);
-            var choice = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title($"[yellow]{choiceEvent.Title}[/] - {choiceEvent.Description}")
-                    .AddChoices(["Accept", "Decline"])
-            );
-            if (choice == "Accept")
+            if (choiceEvent?.Choices != null && choiceEvent.Choices.Count > 0)
             {
-                playerFaction.Influence += 5;
-                AnsiConsole.MarkupLine("[green]Alliance accepted! Influence increased.[/]");
+                var choiceDescriptions = choiceEvent.Choices.Select(c => c.Description).ToList();
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title($"[yellow]{choiceEvent.Title}[/] - {choiceEvent.Description}")
+                        .AddChoices(choiceDescriptions)
+                );
+                var selectedChoice = choiceEvent.Choices.First(c => c.Description == choice);
+                // Apply effects
+                foreach (var effect in selectedChoice.Effects)
+                {
+                    switch (effect.Key)
+                    {
+                        case StatKey.Population:
+                            playerFaction.Population += effect.Value;
+                            break;
+                        case StatKey.Military:
+                            playerFaction.Military += effect.Value;
+                            break;
+                        case StatKey.Technology:
+                            playerFaction.Technology += effect.Value;
+                            break;
+                        case StatKey.Influence:
+                            playerFaction.Influence += effect.Value;
+                            break;
+                        case StatKey.Resources:
+                            playerFaction.Resources += effect.Value;
+                            break;
+                        case StatKey.Stability:
+                            playerFaction.Stability += effect.Value;
+                            break;
+                        case StatKey.Reputation:
+                            playerFaction.Reputation += effect.Value;
+                            break;
+                    }
+                }
+                // Block actions if any
+                if (
+                    selectedChoice.BlockedActions != null
+                    && selectedChoice.BlockedActions.Count > 0
+                )
+                {
+                    foreach (var blocked in selectedChoice.BlockedActions)
+                    {
+                        if (!game.BlockedActions.Contains(blocked))
+                        {
+                            game.BlockedActions.Add(blocked);
+                        }
+                    }
+                }
+                playerFaction.ClampResources();
+                AnsiConsole.MarkupLine($"[green]Choice applied: {selectedChoice.Description}[/]");
+                game.RecentEvents.Remove(choiceEvent);
             }
-            else
-            {
-                playerFaction.Stability += 2;
-                AnsiConsole.MarkupLine("[yellow]You remain independent. Stability increased.[/]");
-            }
-            playerFaction.ClampResources();
-            game.RecentEvents.Remove(choiceEvent);
 
             // Show post-turn feedback
             var postStats = new
