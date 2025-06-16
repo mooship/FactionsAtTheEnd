@@ -28,7 +28,6 @@ public partial class FactionValidator : AbstractValidator<Faction>
             .MaximumLength(256)
             .WithMessage("Description must be 256 characters or fewer.");
 
-        // Ensure all numeric stats are non-negative
         RuleFor(f => f.Population)
             .GreaterThanOrEqualTo(0)
             .WithMessage("Population cannot be negative.");
