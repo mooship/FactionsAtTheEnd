@@ -1,5 +1,3 @@
-using FactionsAtTheEnd.UI;
-
 namespace FactionsAtTheEnd.Models;
 
 /// <summary>
@@ -32,48 +30,4 @@ public class GameState
 
     // Emergent galactic news for narrative flavor
     public List<string> GalacticNews { get; set; } = [];
-}
-
-/// <summary>
-/// Represents a narrative or mechanical event that affects the game state.
-/// </summary>
-public class GameEvent
-{
-    public string Id { get; set; } = Guid.NewGuid().ToString();
-    public string Title { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public EventType Type { get; set; }
-    public int Cycle { get; set; }
-    public Dictionary<string, object> Parameters { get; set; } = [];
-
-    // Effects: resource/stat changes (e.g., { StatKey.Military, -5 })
-    public Dictionary<StatKey, int> Effects { get; set; } = [];
-
-    // Blocked actions for the next turn
-    public List<PlayerActionType> BlockedActions { get; set; } = [];
-
-    public List<EventChoice>? Choices { get; set; } // Null if not a choice event
-}
-
-/// <summary>
-/// Represents a choice within a game event, allowing player decisions.
-/// </summary>
-public class EventChoice
-{
-    public string Description { get; set; } = string.Empty;
-    public Dictionary<StatKey, int> Effects { get; set; } = [];
-    public List<PlayerActionType> BlockedActions { get; set; } = [];
-}
-
-/// <summary>
-/// The type/category of a game event.
-/// </summary>
-public enum EventType
-{
-    Military,
-    Economic,
-    Technological,
-    Crisis,
-    Discovery,
-    Natural,
 }

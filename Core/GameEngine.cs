@@ -216,6 +216,9 @@ public class GameEngine(
                         Guard.IsNotNull(CurrentGame);
                         CurrentGame.GalacticStability += effect.Value;
                         break;
+                    case StatKey.Reputation:
+                        player.Reputation += effect.Value;
+                        break;
                 }
             }
             if (gameEvent.BlockedActions != null && CurrentGame?.BlockedActions != null)

@@ -25,6 +25,7 @@ public enum StatKey
     Influence,
     Resources,
     Stability,
+    Reputation
 }
 
 public static class MenuOptionExtensions
@@ -67,6 +68,7 @@ public static class StatKeyExtensions
             StatKey.Influence => "Influence",
             StatKey.Resources => "Resources",
             StatKey.Stability => "Stability",
+            StatKey.Reputation => "Reputation",
             _ => key.ToString(),
         };
     }
