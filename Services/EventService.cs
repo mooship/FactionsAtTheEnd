@@ -884,12 +884,12 @@ public class EventService : IEventService
             [
                 new EventChoice
                 {
-                    Description = "Hire the mercenaries (lose resources, gain military)",
+                    Description = "Hire the mercenaries",
                     Effects = new() { { StatKey.Resources, -12 }, { StatKey.Military, +8 } },
                 },
                 new EventChoice
                 {
-                    Description = "Refuse their offer (risk sabotage, save resources)",
+                    Description = "Refuse their offer",
                     Effects = new() { { StatKey.Stability, -4 }, { StatKey.Resources, +2 } },
                     BlockedActions = [PlayerActionType.RecruitTroops],
                 },
@@ -910,12 +910,12 @@ public class EventService : IEventService
             [
                 new EventChoice
                 {
-                    Description = "Accept the investment (gain resources, lose influence)",
+                    Description = "Accept the investment",
                     Effects = new() { { StatKey.Resources, +10 }, { StatKey.Influence, -5 } },
                 },
                 new EventChoice
                 {
-                    Description = "Refuse the deal (gain stability, no resource bonus)",
+                    Description = "Refuse the deal",
                     Effects = new() { { StatKey.Stability, +3 } },
                 },
             ],
@@ -935,12 +935,12 @@ public class EventService : IEventService
             [
                 new EventChoice
                 {
-                    Description = "Approve the experiment (potential big gain, risk failure)",
+                    Description = "Approve the experiment",
                     Effects = new() { { StatKey.Technology, +12 }, { StatKey.Stability, -6 } },
                 },
                 new EventChoice
                 {
-                    Description = "Reject the proposal (no risk, but lose opportunity)",
+                    Description = "Reject the proposal",
                     Effects = new() { { StatKey.Technology, +2 } },
                 },
             ],
@@ -960,12 +960,12 @@ public class EventService : IEventService
             [
                 new EventChoice
                 {
-                    Description = "Study the relic (gain technology, risk instability)",
+                    Description = "Study the relic",
                     Effects = new() { { StatKey.Technology, +8 }, { StatKey.Stability, -3 } },
                 },
                 new EventChoice
                 {
-                    Description = "Sell the relic (gain resources, lose potential tech)",
+                    Description = "Sell the relic",
                     Effects = new() { { StatKey.Resources, +10 } },
                 },
             ],
@@ -985,12 +985,12 @@ public class EventService : IEventService
             [
                 new EventChoice
                 {
-                    Description = "Send aid (lose resources, gain stability)",
+                    Description = "Send aid",
                     Effects = new() { { StatKey.Resources, -8 }, { StatKey.Stability, +5 } },
                 },
                 new EventChoice
                 {
-                    Description = "Focus on core worlds (save resources, risk unrest)",
+                    Description = "Focus on core worlds",
                     Effects = new() { { StatKey.Stability, -4 }, { StatKey.Resources, +2 } },
                 },
             ],
