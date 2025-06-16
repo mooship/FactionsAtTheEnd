@@ -115,6 +115,8 @@ public class EventService : IEventService
                 GenerateTechnologicalChoiceEvent,
                 GenerateDiscoveryChoiceEvent,
                 GenerateNaturalChoiceEvent,
+                GenerateEspionageChoiceEvent,
+                GenerateReputationChoiceEvent,
             };
             var selected = choiceGenerators[Random.Shared.Next(choiceGenerators.Length)];
             return [selected(gameState)];
@@ -992,6 +994,56 @@ public class EventService : IEventService
                 {
                     Description = "Focus on core worlds",
                     Effects = new() { { StatKey.Stability, -4 }, { StatKey.Resources, +2 } },
+                },
+            ],
+        };
+    }
+
+    public static GameEvent GenerateEspionageChoiceEvent(GameState gameState)
+    {
+        return new GameEvent
+        {
+            Title = "Espionage Opportunity",
+            Description =
+                "A rival faction's secrets are within your grasp. Do you attempt a risky infiltration or play it safe?",
+            Type = EventType.Crisis,
+            Cycle = gameState.CurrentCycle,
+            Choices =
+            [
+                new EventChoice
+                {
+                    Description = "Attempt infiltration (gain tech, risk stability)",
+                    Effects = new() { { StatKey.Technology, +6 }, { StatKey.Stability, -4 } },
+                },
+                new EventChoice
+                {
+                    Description = "Play it safe (minor influence gain)",
+                    Effects = new() { { StatKey.Influence, +3 } },
+                },
+            ],
+        };
+    }
+
+    public static GameEvent GenerateReputationChoiceEvent(GameState gameState)
+    {
+        return new GameEvent
+        {
+            Title = "Public Scandal",
+            Description =
+                "A scandal threatens your reputation. Do you launch a cover-up or accept responsibility?",
+            Type = EventType.Crisis,
+            Cycle = gameState.CurrentCycle,
+            Choices =
+            [
+                new EventChoice
+                {
+                    Description = "Cover it up (lose resources, avoid reputation loss)",
+                    Effects = new() { { StatKey.Resources, -7 } },
+                },
+                new EventChoice
+                {
+                    Description = "Accept responsibility (lose reputation, gain stability)",
+                    Effects = new() { { StatKey.Reputation, -6 }, { StatKey.Stability, +4 } },
                 },
             ],
         };
