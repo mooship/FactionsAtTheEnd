@@ -33,4 +33,5 @@ A single-player, single-faction survival strategy game.
 
 ## Notes
 - All code is async and robust against invalid input
+- The game is strictly single-player and single-faction. There is no AI, no diplomacy, and no multifaction logic anywhere in the codebase, yet.
 - See in-game help for more details

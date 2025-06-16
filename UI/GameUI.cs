@@ -70,10 +70,13 @@ public class GameUI
     {
         AnsiConsole.MarkupLine("[bold yellow]Help & Tips[/]");
         AnsiConsole.MarkupLine(
+            "- [green]Single Faction[/]: You control the only surviving faction. There are no AI, diplomacy, or multifaction mechanics."
+        );
+        AnsiConsole.MarkupLine(
             "- [green]Actions[/]: Each turn, choose actions like [blue]Diplomacy[/], [blue]Espionage[/], or [blue]Sabotage[/] to shape your faction's fate."
         );
         AnsiConsole.MarkupLine(
-            "- [green]Unique Abilities[/]: Each faction has a unique trait. Try different factions for new strategies!"
+            "- [green]Unique Abilities[/]: Each faction type has a unique trait. Try different types for new strategies!"
         );
         AnsiConsole.MarkupLine(
             "- [green]Events[/]: Some events let you choose a response. Your choices can change your stats or unlock new storylines."
@@ -85,7 +88,7 @@ public class GameUI
             "- [green]Event Log[/]: Review all past events and narrative history at any time from the in-game menu."
         );
         AnsiConsole.MarkupLine(
-            "- [green]Faction Overview[/]: View your faction's stats, traits, and description from the in-game menu."
+            "- [green]Faction Overview[/]: View your stats, traits, and description from the in-game menu."
         );
         AnsiConsole.MarkupLine(
             "- [green]Win/Lose[/]: Survive 20 cycles or reach 100 Technology to win. Lose if Population, Resources, or Stability hit zero."
