@@ -265,36 +265,36 @@ public class GameEngine(
             {
                 switch (action.ActionType)
                 {
-                    case PlayerActionType.Build_Defenses:
+                    case PlayerActionType.BuildDefenses:
                         f.Military += 5;
                         f.Stability += 2;
                         break;
-                    case PlayerActionType.Recruit_Troops:
+                    case PlayerActionType.RecruitTroops:
                         f.Military += 7;
                         f.Resources -= 3;
                         break;
-                    case PlayerActionType.Develop_Infrastructure:
+                    case PlayerActionType.DevelopInfrastructure:
                         f.Resources += 5;
                         f.Stability += 2;
                         break;
-                    case PlayerActionType.Exploit_Resources:
+                    case PlayerActionType.ExploitResources:
                         f.Resources += 8;
                         f.Stability -= 1;
                         break;
-                    case PlayerActionType.Military_Tech:
+                    case PlayerActionType.MilitaryTech:
                         f.Technology += 4;
                         f.Military += 2;
                         break;
-                    case PlayerActionType.Economic_Tech:
+                    case PlayerActionType.EconomicTech:
                         f.Technology += 4;
                         f.Resources += 2;
                         break;
-                    case PlayerActionType.Ancient_Studies:
+                    case PlayerActionType.AncientStudies:
                         f.Technology += 2;
                         Guard.IsNotNull(CurrentGame);
                         CurrentGame.AncientTechDiscovery += 5;
                         break;
-                    case PlayerActionType.Gate_Network_Research:
+                    case PlayerActionType.GateNetworkResearch:
                         f.Technology += 2;
                         Guard.IsNotNull(CurrentGame);
                         CurrentGame.GateNetworkIntegrity += 3;

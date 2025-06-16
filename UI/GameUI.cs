@@ -125,14 +125,14 @@ public class GameUI
     {
         return action switch
         {
-            PlayerActionType.Build_Defenses => ActionDescriptions.BuildDefenses,
-            PlayerActionType.Recruit_Troops => ActionDescriptions.RecruitTroops,
-            PlayerActionType.Develop_Infrastructure => ActionDescriptions.DevelopInfrastructure,
-            PlayerActionType.Exploit_Resources => ActionDescriptions.ExploitResources,
-            PlayerActionType.Military_Tech => ActionDescriptions.MilitaryTech,
-            PlayerActionType.Economic_Tech => ActionDescriptions.EconomicTech,
-            PlayerActionType.Ancient_Studies => ActionDescriptions.AncientStudies,
-            PlayerActionType.Gate_Network_Research => ActionDescriptions.GateNetworkResearch,
+            PlayerActionType.BuildDefenses => ActionDescriptions.BuildDefenses,
+            PlayerActionType.RecruitTroops => ActionDescriptions.RecruitTroops,
+            PlayerActionType.DevelopInfrastructure => ActionDescriptions.DevelopInfrastructure,
+            PlayerActionType.ExploitResources => ActionDescriptions.ExploitResources,
+            PlayerActionType.MilitaryTech => ActionDescriptions.MilitaryTech,
+            PlayerActionType.EconomicTech => ActionDescriptions.EconomicTech,
+            PlayerActionType.AncientStudies => ActionDescriptions.AncientStudies,
+            PlayerActionType.GateNetworkResearch => ActionDescriptions.GateNetworkResearch,
             _ => ActionDescriptions.Default,
         };
     }
@@ -333,14 +333,14 @@ public class GameUI
 
             var actionChoices = new[]
             {
-                PlayerActionType.Build_Defenses,
-                PlayerActionType.Recruit_Troops,
-                PlayerActionType.Develop_Infrastructure,
-                PlayerActionType.Exploit_Resources,
-                PlayerActionType.Military_Tech,
-                PlayerActionType.Economic_Tech,
-                PlayerActionType.Ancient_Studies,
-                PlayerActionType.Gate_Network_Research,
+                PlayerActionType.BuildDefenses,
+                PlayerActionType.RecruitTroops,
+                PlayerActionType.DevelopInfrastructure,
+                PlayerActionType.ExploitResources,
+                PlayerActionType.MilitaryTech,
+                PlayerActionType.EconomicTech,
+                PlayerActionType.AncientStudies,
+                PlayerActionType.GateNetworkResearch,
                 PlayerActionType.Diplomacy,
                 PlayerActionType.Espionage,
                 PlayerActionType.Sabotage,
@@ -647,14 +647,14 @@ public class GameUI
         }
         string desc = actionType switch
         {
-            PlayerActionType.Build_Defenses => ActionDescriptions.BuildDefenses,
-            PlayerActionType.Recruit_Troops => ActionDescriptions.RecruitTroops,
-            PlayerActionType.Develop_Infrastructure => ActionDescriptions.DevelopInfrastructure,
-            PlayerActionType.Exploit_Resources => ActionDescriptions.ExploitResources,
-            PlayerActionType.Military_Tech => ActionDescriptions.MilitaryTech,
-            PlayerActionType.Economic_Tech => ActionDescriptions.EconomicTech,
-            PlayerActionType.Ancient_Studies => ActionDescriptions.AncientStudies,
-            PlayerActionType.Gate_Network_Research => ActionDescriptions.GateNetworkResearch,
+            PlayerActionType.BuildDefenses => ActionDescriptions.BuildDefenses,
+            PlayerActionType.RecruitTroops => ActionDescriptions.RecruitTroops,
+            PlayerActionType.DevelopInfrastructure => ActionDescriptions.DevelopInfrastructure,
+            PlayerActionType.ExploitResources => ActionDescriptions.ExploitResources,
+            PlayerActionType.MilitaryTech => ActionDescriptions.MilitaryTech,
+            PlayerActionType.EconomicTech => ActionDescriptions.EconomicTech,
+            PlayerActionType.AncientStudies => ActionDescriptions.AncientStudies,
+            PlayerActionType.GateNetworkResearch => ActionDescriptions.GateNetworkResearch,
             PlayerActionType.Diplomacy => ActionDescriptions.Diplomacy,
             PlayerActionType.Espionage => ActionDescriptions.Espionage,
             PlayerActionType.Sabotage => ActionDescriptions.Sabotage,

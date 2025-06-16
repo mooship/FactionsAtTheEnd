@@ -227,7 +227,7 @@ public class EventService : IEventService
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
                 Effects = new() { { StatKey.Military, -5 }, { StatKey.Resources, -10 } },
-                BlockedActions = [PlayerActionType.Exploit_Resources],
+                BlockedActions = [PlayerActionType.ExploitResources],
             },
             1 => new GameEvent
             {
@@ -236,7 +236,7 @@ public class EventService : IEventService
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
                 Effects = new() { { StatKey.Military, -8 }, { StatKey.Stability, -5 } },
-                BlockedActions = [PlayerActionType.Recruit_Troops],
+                BlockedActions = [PlayerActionType.RecruitTroops],
             },
             2 => new GameEvent
             {
@@ -330,7 +330,7 @@ public class EventService : IEventService
                 Type = EventType.Economic,
                 Cycle = gameState.CurrentCycle,
                 Effects = new() { { StatKey.Resources, -12 } },
-                BlockedActions = [PlayerActionType.Exploit_Resources],
+                BlockedActions = [PlayerActionType.ExploitResources],
             },
             1 => new GameEvent
             {
@@ -432,7 +432,7 @@ public class EventService : IEventService
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
                 Effects = new() { { StatKey.Technology, -7 }, { StatKey.Stability, -3 } },
-                BlockedActions = [PlayerActionType.Military_Tech],
+                BlockedActions = [PlayerActionType.MilitaryTech],
             },
             1 => new GameEvent
             {
@@ -559,7 +559,7 @@ public class EventService : IEventService
                 Type = EventType.Discovery,
                 Cycle = gameState.CurrentCycle,
                 Effects = new() { { StatKey.Stability, -6 }, { StatKey.Technology, -2 } },
-                BlockedActions = [PlayerActionType.Ancient_Studies],
+                BlockedActions = [PlayerActionType.AncientStudies],
             },
             4 => new GameEvent
             {
@@ -641,7 +641,7 @@ public class EventService : IEventService
                 Type = EventType.Natural,
                 Cycle = gameState.CurrentCycle,
                 Effects = new() { { StatKey.Population, -8 }, { StatKey.Stability, -4 } },
-                BlockedActions = [PlayerActionType.Develop_Infrastructure],
+                BlockedActions = [PlayerActionType.DevelopInfrastructure],
             },
             3 => new GameEvent
             {
@@ -739,8 +739,8 @@ public class EventService : IEventService
                 Effects = new() { { StatKey.Stability, -10 }, { StatKey.Population, -5 } },
                 BlockedActions =
                 [
-                    PlayerActionType.Develop_Infrastructure,
-                    PlayerActionType.Economic_Tech,
+                    PlayerActionType.DevelopInfrastructure,
+                    PlayerActionType.EconomicTech,
                 ],
             };
         }
@@ -759,7 +759,7 @@ public class EventService : IEventService
     {
         // Rare beneficial event, can unlock Ancient Studies if previously blocked
         // Remove Ancient_Studies from BlockedActions if present (unblock for next turn)
-        gameState.BlockedActions.Remove(PlayerActionType.Ancient_Studies);
+        gameState.BlockedActions.Remove(PlayerActionType.AncientStudies);
         return new GameEvent
         {
             Title = AncientTechnologyUnearthedTitle,
@@ -891,7 +891,7 @@ public class EventService : IEventService
                 {
                     Description = "Refuse their offer (risk sabotage, save resources)",
                     Effects = new() { { StatKey.Stability, -4 }, { StatKey.Resources, +2 } },
-                    BlockedActions = [PlayerActionType.Recruit_Troops],
+                    BlockedActions = [PlayerActionType.RecruitTroops],
                 },
             ],
         };

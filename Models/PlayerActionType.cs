@@ -8,28 +8,28 @@ namespace FactionsAtTheEnd.Models;
 public enum PlayerActionType
 {
     [Display(Name = "Build Defenses")]
-    Build_Defenses,
+    BuildDefenses,
 
     [Display(Name = "Recruit Troops")]
-    Recruit_Troops,
+    RecruitTroops,
 
     [Display(Name = "Develop Infrastructure")]
-    Develop_Infrastructure,
+    DevelopInfrastructure,
 
     [Display(Name = "Exploit Resources")]
-    Exploit_Resources,
+    ExploitResources,
 
     [Display(Name = "Military Tech Research")]
-    Military_Tech,
+    MilitaryTech,
 
     [Display(Name = "Economic Tech Research")]
-    Economic_Tech,
+    EconomicTech,
 
     [Display(Name = "Ancient Studies")]
-    Ancient_Studies,
+    AncientStudies,
 
     [Display(Name = "Gate Network Research")]
-    Gate_Network_Research,
+    GateNetworkResearch,
 
     [Display(Name = "Diplomacy")]
     Diplomacy,
