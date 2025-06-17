@@ -1,3 +1,5 @@
+[![.NET](https://github.com/mooship/FactionsAtTheEnd/actions/workflows/dotnet.yml/badge.svg)](https://github.com/mooship/FactionsAtTheEnd/actions/workflows/dotnet.yml)
+
 # Factions at the End
 
 A single-player, single-faction survival strategy game.
