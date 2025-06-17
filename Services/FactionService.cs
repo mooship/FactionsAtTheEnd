@@ -10,7 +10,10 @@ public class FactionService : IFactionService
     public Faction CreateFaction(string name, FactionType type, bool isPlayer = false)
     {
         Guard.IsNotNullOrWhiteSpace(name);
-        Guard.IsTrue(Enum.IsDefined(type), nameof(type) + " must be a valid FactionType.");
+        Guard.IsTrue(
+            Enum.IsDefined(typeof(FactionType), type),
+            nameof(type) + " must be a valid FactionType."
+        );
         var faction = new Faction
         {
             Name = name,
@@ -60,6 +63,10 @@ public class FactionService : IFactionService
 
     private static string GenerateFactionDescription(FactionType type)
     {
+        Guard.IsTrue(
+            Enum.IsDefined(typeof(FactionType), type),
+            nameof(type) + " must be a valid FactionType."
+        );
         return type switch
         {
             FactionType.MilitaryJunta => FactionDescriptions.MilitaryJunta,
@@ -76,6 +83,10 @@ public class FactionService : IFactionService
 
     private static List<string> GenerateFactionTraits(FactionType type)
     {
+        Guard.IsTrue(
+            Enum.IsDefined(typeof(FactionType), type),
+            nameof(type) + " must be a valid FactionType."
+        );
         return type switch
         {
             FactionType.MilitaryJunta => ["Disciplined", "Aggressive", "Organized"],

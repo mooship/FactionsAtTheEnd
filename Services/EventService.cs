@@ -15,6 +15,7 @@ public class EventService : IEventService
 {
     public static List<GameEvent> GenerateInitialEvents(GameState gameState)
     {
+        Guard.IsNotNull(gameState);
         var events = new List<GameEvent>
         {
             new()
@@ -30,6 +31,7 @@ public class EventService : IEventService
 
     public static List<GameEvent> GenerateRandomEvents(GameState gameState)
     {
+        Guard.IsNotNull(gameState);
         var events = new List<GameEvent>();
         // If player repeats an action 3+ times in recent turns, trigger a negative event
         foreach (var kvp in gameState.RecentActionCounts)
@@ -120,6 +122,7 @@ public class EventService : IEventService
 
     public async Task<List<GameEvent>> GenerateRandomEventsAsync(GameState gameState)
     {
+        Guard.IsNotNull(gameState);
         // 10% chance to generate a random choice event by type
         if (Random.Shared.Next(1, 101) <= 10)
         {
