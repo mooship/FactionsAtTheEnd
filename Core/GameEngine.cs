@@ -45,7 +45,7 @@ public class GameEngine(
         var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmm");
         var safeFactionName = string.Join(
             "",
-            playerFactionName.Split(System.IO.Path.GetInvalidFileNameChars())
+            playerFactionName.Split(Path.GetInvalidFileNameChars())
         );
         var gameState = new GameState
         {

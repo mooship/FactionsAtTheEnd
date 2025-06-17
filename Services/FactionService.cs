@@ -127,32 +127,41 @@ public class FactionService : IFactionService
         switch (faction.Type)
         {
             case FactionType.MilitaryJunta:
-                faction.Military += 20;
+                faction.Military += 15;
+                faction.Stability -= 10;
                 break;
             case FactionType.CorporateCouncil:
-                faction.Resources += 20;
+                faction.Resources += 15;
+                faction.Reputation -= 10;
                 break;
             case FactionType.TechnocraticUnion:
-                faction.Technology += 20;
+                faction.Technology += 15;
+                faction.Influence -= 10;
                 break;
             case FactionType.ReligiousOrder:
-                faction.Influence += 15;
                 faction.Population += 10;
+                faction.Influence += 10;
+                faction.Technology -= 10;
                 break;
             case FactionType.ImperialRemnant:
-                faction.Influence += 20;
+                faction.Influence += 10;
+                faction.Military += 10;
+                faction.Reputation += 10;
+                faction.Resources -= 10;
                 break;
             case FactionType.AncientAwakened:
-                faction.Technology += 25;
-                faction.Population -= 15;
+                faction.Technology += 20;
+                faction.Population -= 20;
                 break;
             case FactionType.PirateAlliance:
-                faction.Resources += 10;
                 faction.Military += 10;
+                faction.Resources += 10;
+                faction.Stability -= 10;
                 break;
             case FactionType.RebellionCell:
                 faction.Stability += 10;
                 faction.Influence += 10;
+                faction.Resources -= 10;
                 break;
         }
 
