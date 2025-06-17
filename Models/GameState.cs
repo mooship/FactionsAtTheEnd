@@ -43,15 +43,19 @@ public class GameState
     /// </summary>
     public List<string> GalacticNews { get; set; } = [];
 
-    public GameState()
+    public GameState(string id, string saveName, Faction playerFaction)
     {
-        Guard.IsNotNullOrWhiteSpace(Id, nameof(Id));
-        Guard.IsNotNullOrWhiteSpace(SaveName, nameof(SaveName));
-        Guard.IsNotNull(PlayerFaction, nameof(PlayerFaction));
-        Guard.IsNotNull(RecentEvents, nameof(RecentEvents));
-        Guard.IsNotNull(GalacticHistory, nameof(GalacticHistory));
-        Guard.IsNotNull(BlockedActions, nameof(BlockedActions));
-        Guard.IsNotNull(RecentActionCounts, nameof(RecentActionCounts));
-        Guard.IsNotNull(GalacticNews, nameof(GalacticNews));
+        Id = id;
+        SaveName = saveName;
+        PlayerFaction = playerFaction;
+        CreatedAt = DateTime.UtcNow;
+        LastPlayed = DateTime.UtcNow;
+        RecentEvents = [];
+        GalacticHistory = [];
+        BlockedActions = [];
+        RecentActionCounts = [];
+        GalacticNews = [];
     }
+
+    public GameState() { }
 }

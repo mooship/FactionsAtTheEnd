@@ -10,9 +10,11 @@ public class PlayerAction
     public PlayerActionType ActionType { get; set; }
     public Dictionary<string, object> Parameters { get; set; } = [];
 
-    public PlayerAction()
+    public PlayerAction(PlayerActionType actionType, Dictionary<string, object>? parameters = null)
     {
-        Guard.IsTrue(Enum.IsDefined(typeof(PlayerActionType), ActionType), nameof(ActionType));
-        Guard.IsNotNull(Parameters, nameof(Parameters));
+        ActionType = actionType;
+        Parameters = parameters ?? new Dictionary<string, object>();
     }
+
+    public PlayerAction() { }
 }

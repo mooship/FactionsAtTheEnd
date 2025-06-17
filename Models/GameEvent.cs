@@ -18,14 +18,17 @@ public class GameEvent
     public List<PlayerActionType> BlockedActions { get; set; } = [];
     public List<EventChoice>? Choices { get; set; }
 
-    public GameEvent()
+    public GameEvent(string title, string description, EventType type, int cycle)
     {
-        Guard.IsNotNullOrWhiteSpace(Id, nameof(Id));
-        Guard.IsNotNullOrWhiteSpace(Title, nameof(Title));
-        Guard.IsNotNullOrWhiteSpace(Description, nameof(Description));
-        Guard.IsTrue(Enum.IsDefined(typeof(EventType), Type), nameof(Type));
-        Guard.IsNotNull(Parameters, nameof(Parameters));
-        Guard.IsNotNull(Effects, nameof(Effects));
-        Guard.IsNotNull(BlockedActions, nameof(BlockedActions));
+        Id = Guid.NewGuid().ToString();
+        Title = title;
+        Description = description;
+        Type = type;
+        Cycle = cycle;
+        Parameters = [];
+        Effects = [];
+        BlockedActions = [];
     }
+
+    public GameEvent() { }
 }

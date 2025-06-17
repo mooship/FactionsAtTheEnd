@@ -26,14 +26,15 @@ public class Faction
     public List<string> Traits { get; set; } = [];
     public DateTime LastActive { get; set; } = DateTime.UtcNow;
 
-    public Faction()
+    public Faction(string name, string description, FactionType type, bool isPlayer = false)
     {
-        Guard.IsNotNullOrWhiteSpace(Name, nameof(Name));
-        Guard.IsNotNullOrWhiteSpace(Description, nameof(Description));
-        Guard.IsTrue(Enum.IsDefined(typeof(FactionType), Type), nameof(Type));
-        Guard.IsTrue(Enum.IsDefined(typeof(FactionStatus), Status), nameof(Status));
-        Guard.IsNotNull(Traits, nameof(Traits));
+        Name = name;
+        Description = description;
+        Type = type;
+        IsPlayer = isPlayer;
     }
+
+    public Faction() { }
 
     /// <summary>
     /// Clamp all resource and stat values to valid min/max bounds.
