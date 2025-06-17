@@ -48,10 +48,8 @@ public static class ChoiceEventTemplates
 
     public const string CrisisChoiceTitle = "A Fork in the Road";
     public const string CrisisChoiceDescription = "A crisis forces your faction to choose a path.";
-    public const string CrisisChoiceAidDescription =
-        "Send aid to a neighboring world (lose resources, gain stability)";
-    public const string CrisisChoiceIgnoreDescription =
-        "Ignore their plea (risk unrest, save resources)";
+    public const string CrisisChoiceAidDescription = "Send aid to a neighboring world";
+    public const string CrisisChoiceIgnoreDescription = "Ignore their plea";
 
     public const string MilitaryChoiceHireDescription = "Hire the mercenaries";
     public const string MilitaryChoiceRefuseDescription = "Refuse their offer";
@@ -68,12 +66,9 @@ public static class ChoiceEventTemplates
     public const string NaturalChoiceAidDescription = "Send aid";
     public const string NaturalChoiceFocusDescription = "Focus on core worlds";
 
-    public const string EspionageChoiceAttemptDescription =
-        "Attempt infiltration (gain tech, risk stability)";
-    public const string EspionageChoiceSafeDescription = "Play it safe (minor influence gain)";
+    public const string EspionageChoiceAttemptDescription = "Attempt infiltration";
+    public const string EspionageChoiceSafeDescription = "Play it safe";
 
-    public const string ReputationChoiceCoverupDescription =
-        "Cover it up (lose resources, avoid reputation loss)";
-    public const string ReputationChoiceAcceptDescription =
-        "Accept responsibility (lose reputation, gain stability)";
+    public const string ReputationChoiceCoverupDescription = "Cover it up";
+    public const string ReputationChoiceAcceptDescription = "Accept responsibility";
 }
