@@ -442,9 +442,7 @@ public class GameUI
                     continue;
                 }
                 Guard.IsNotNull(playerFaction);
-                playerActions.Add(
-                    new PlayerAction { ActionType = selectedAction, FactionId = playerFaction.Id }
-                );
+                playerActions.Add(new PlayerAction { ActionType = selectedAction });
                 chosenActions.Add(selectedAction);
             }
 
