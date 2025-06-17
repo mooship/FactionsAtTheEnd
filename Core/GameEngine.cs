@@ -62,6 +62,7 @@ public class GameEngine(
         gameState.RecentEvents.AddRange(initialEvents);
 
         CurrentGame = gameState;
+        Guard.IsNotNull(gameState, nameof(gameState));
         await _gameDataService.SaveGameAsync(gameState);
 
         return gameState;
@@ -350,10 +351,6 @@ public class GameEngine(
                     case PlayerActionType.Espionage:
                         player.Technology += 1;
                         player.Resources += 2;
-                        break;
-                    case PlayerActionType.Sabotage:
-                        Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
-                        CurrentGame.GalacticStability += 1;
                         break;
                     default:
                         break;

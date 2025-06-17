@@ -7,9 +7,11 @@ namespace FactionsAtTheEnd.Services;
 
 public class FactionService : IFactionService
 {
+    public FactionService() { }
+
     public Faction CreateFaction(string name, FactionType type, bool isPlayer = false)
     {
-        Guard.IsNotNullOrWhiteSpace(name);
+        Guard.IsNotNullOrWhiteSpace(name, nameof(name));
         Guard.IsTrue(
             Enum.IsDefined(typeof(FactionType), type),
             nameof(type) + " must be a valid FactionType."

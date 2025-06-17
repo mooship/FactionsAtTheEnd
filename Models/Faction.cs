@@ -25,11 +25,19 @@ public class Faction
     public List<string> Traits { get; set; } = [];
     public DateTime LastActive { get; set; } = DateTime.UtcNow;
 
+    public Faction()
+    {
+        // Guard.IsNotNullOrWhiteSpace(Name, nameof(Name));
+        // Guard.IsNotNullOrWhiteSpace(Description, nameof(Description));
+        // Guard.IsNotNull(Traits, nameof(Traits));
+    }
+
     /// <summary>
     /// Clamp all resource and stat values to valid min/max bounds.
     /// </summary>
     public void ClampResources()
     {
+        // Defensive: Clamp, but do not throw, to avoid breaking game flow
         Population = Math.Max(GameConstants.MinStat, Math.Min(Population, GameConstants.MaxStat));
         Military = Math.Max(GameConstants.MinStat, Math.Min(Military, GameConstants.MaxStat));
         Technology = Math.Max(GameConstants.MinStat, Math.Min(Technology, GameConstants.MaxStat));

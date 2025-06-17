@@ -36,9 +36,6 @@ public enum PlayerActionType
 
     [Display(Name = "Espionage")]
     Espionage,
-
-    [Display(Name = "Sabotage")]
-    Sabotage,
 }
 
 public static class PlayerActionTypeExtensions

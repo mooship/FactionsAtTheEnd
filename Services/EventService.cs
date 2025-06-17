@@ -45,7 +45,7 @@ public class EventService : IEventService
 
     public static List<GameEvent> GenerateRandomEvents(GameState gameState)
     {
-        Guard.IsNotNull(gameState);
+        Guard.IsNotNull(gameState, nameof(gameState));
         var events = new List<GameEvent>();
         foreach (var kvp in gameState.RecentActionCounts)
         {
@@ -129,7 +129,7 @@ public class EventService : IEventService
 
     public async Task<List<GameEvent>> GenerateRandomEventsAsync(GameState gameState)
     {
-        Guard.IsNotNull(gameState);
+        Guard.IsNotNull(gameState, nameof(gameState));
         if (Random.Shared.Next(1, 101) <= 10)
         {
             var choiceGenerators = new Func<GameState, GameEvent>[]
@@ -155,6 +155,8 @@ public class EventService : IEventService
         bool forceNegative = false
     )
     {
+        Guard.IsNotNull(gameState, nameof(gameState));
+
         var eventTypes = new[]
         {
             EventType.Military,
@@ -177,6 +179,8 @@ public class EventService : IEventService
 
     private static GameEvent? GenerateEventByType(EventType eventType, GameState gameState)
     {
+        Guard.IsNotNull(gameState, nameof(gameState));
+
         return eventType switch
         {
             EventType.Military => GenerateMilitaryEvent(gameState),
@@ -227,15 +231,15 @@ public class EventService : IEventService
         {
             return new GameEvent
             {
-                Title = SabotageSuccessTitle,
-                Description = SabotageSuccessDescription,
+                Title = UprisingIgnitedTitle,
+                Description = UprisingIgnitedDescription,
                 Type = EventType.Military,
                 Cycle = gameState.CurrentCycle,
                 Effects = new()
                 {
-                    { StatKey.Military, 4 },
-                    { StatKey.Resources, 6 },
-                    { StatKey.Influence, 3 },
+                    { StatKey.Military, 3 },
+                    { StatKey.Influence, 4 },
+                    { StatKey.Stability, 2 },
                 },
             };
         }
@@ -461,8 +465,8 @@ public class EventService : IEventService
             },
             2 => new GameEvent
             {
-                Title = SabotageAttemptTitle,
-                Description = SabotageAttemptDescription,
+                Title = "System Malfunction",
+                Description = "A critical system malfunction disrupts your research efforts.",
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
                 Effects = new() { { StatKey.Technology, -5 }, { StatKey.Military, -2 } },

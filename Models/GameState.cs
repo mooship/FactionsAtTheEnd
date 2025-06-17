@@ -40,4 +40,6 @@ public class GameState
     /// Emergent galactic news for narrative flavor.
     /// </summary>
     public List<string> GalacticNews { get; set; } = [];
+
+    public GameState() { }
 }

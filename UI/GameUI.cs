@@ -19,9 +19,9 @@ public class GameUI
         IValidator<PlayerAction> playerActionValidator
     )
     {
-        Guard.IsNotNull(gameEngine);
-        Guard.IsNotNull(factionValidator);
-        Guard.IsNotNull(playerActionValidator);
+        Guard.IsNotNull(gameEngine, nameof(gameEngine));
+        Guard.IsNotNull(factionValidator, nameof(factionValidator));
+        Guard.IsNotNull(playerActionValidator, nameof(playerActionValidator));
         _gameEngine = gameEngine;
         _factionValidator = factionValidator;
         _playerActionValidator = playerActionValidator;
@@ -93,7 +93,7 @@ public class GameUI
             "- [green]Single Faction[/]: You control the only surviving faction. There are no AI, diplomacy, or multifaction mechanics."
         );
         AnsiConsole.MarkupLine(
-            "- [green]Actions[/]: Each turn, choose actions like [blue]Diplomacy[/], [blue]Espionage[/], or [blue]Sabotage[/] to shape your faction's fate."
+            "- [green]Actions[/]: Each turn, choose actions like [blue]Diplomacy[/] or [blue]Espionage[/] to shape your faction's fate."
         );
         AnsiConsole.MarkupLine(
             "- [green]Unique Abilities[/]: Each faction type has a unique trait. Try different types for new strategies!"
@@ -133,6 +133,8 @@ public class GameUI
             PlayerActionType.EconomicTech => ActionDescriptions.EconomicTech,
             PlayerActionType.AncientStudies => ActionDescriptions.AncientStudies,
             PlayerActionType.GateNetworkResearch => ActionDescriptions.GateNetworkResearch,
+            PlayerActionType.Diplomacy => ActionDescriptions.Diplomacy,
+            PlayerActionType.Espionage => ActionDescriptions.Espionage,
             _ => ActionDescriptions.Default,
         };
     }
@@ -352,7 +354,35 @@ public class GameUI
             if (mainChoice == MenuOption.ViewFactionOverview)
             {
                 AnsiConsole.Clear();
-                DisplayFactionsOverview();
+                var overviewOptions = new[]
+                {
+                    "Table Overview (Stats Table)",
+                    "Detailed Game State (Narrative)",
+                    "Show Both",
+                    "Back",
+                };
+                var overviewChoice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("How would you like to view your faction?")
+                        .AddChoices(overviewOptions)
+                );
+                AnsiConsole.Clear();
+                if (overviewChoice == "Table Overview (Stats Table)")
+                {
+                    DisplayFactionsOverview();
+                }
+                else if (overviewChoice == "Detailed Game State (Narrative)")
+                {
+                    DisplayGameState();
+                }
+                else if (overviewChoice == "Show Both")
+                {
+                    DisplayFactionsOverview();
+                    AnsiConsole.MarkupLine("\n[grey]--- Press any key for detailed view ---[/]");
+                    Console.ReadKey();
+                    AnsiConsole.Clear();
+                    DisplayGameState();
+                }
                 AnsiConsole.MarkupLine("Press any key to return...");
                 Console.ReadKey();
                 continue;
@@ -379,7 +409,6 @@ public class GameUI
                 PlayerActionType.GateNetworkResearch,
                 PlayerActionType.Diplomacy,
                 PlayerActionType.Espionage,
-                PlayerActionType.Sabotage,
             };
 
             var chosenActions = new HashSet<PlayerActionType>();
@@ -412,12 +441,14 @@ public class GameUI
                     i--;
                     continue;
                 }
+                Guard.IsNotNull(playerFaction);
                 playerActions.Add(
                     new PlayerAction { ActionType = selectedAction, FactionId = playerFaction.Id }
                 );
                 chosenActions.Add(selectedAction);
             }
 
+            Guard.IsNotNull(playerFaction);
             // Show pre-turn stats for feedback
             var preStats = new
             {
@@ -434,9 +465,9 @@ public class GameUI
 
             // After turn processing, refresh game state
             game = _gameEngine.CurrentGame;
-            Guard.IsNotNull(game);
+            Guard.IsNotNull(game, nameof(game));
             playerFaction = game.PlayerFaction;
-            Guard.IsNotNull(playerFaction);
+            Guard.IsNotNull(playerFaction, nameof(playerFaction));
 
             // Display events that occurred this turn (only once, after processing)
             var recentEvents = game.RecentEvents.Where(e => e.Cycle == game.CurrentCycle).ToList();
@@ -599,6 +630,8 @@ public class GameUI
     {
         var game = _gameEngine.CurrentGame!;
         var playerFaction = game.PlayerFaction;
+        Guard.IsNotNull(game, nameof(game));
+        Guard.IsNotNull(playerFaction, nameof(playerFaction));
         AnsiConsole.MarkupLine($"[bold]Cycle:[/] {game.CurrentCycle}");
         AnsiConsole.MarkupLine("");
         AnsiConsole.MarkupLine(
@@ -610,6 +643,7 @@ public class GameUI
         AnsiConsole.MarkupLine($"[bold]Influence:[/] {playerFaction?.Influence}");
         AnsiConsole.MarkupLine($"[bold]Resources:[/] {playerFaction?.Resources}");
         AnsiConsole.MarkupLine($"[bold]Stability:[/] {playerFaction?.Stability}");
+        AnsiConsole.MarkupLine($"[bold]Reputation:[/] {playerFaction?.Reputation}");
         AnsiConsole.MarkupLine(
             $"[bold]Reputation:[/] {playerFaction?.Reputation} {GetReputationDescription(playerFaction?.Reputation ?? 0)}"
         );
@@ -730,7 +764,6 @@ public class GameUI
             PlayerActionType.GateNetworkResearch => ActionDescriptions.GateNetworkResearch,
             PlayerActionType.Diplomacy => ActionDescriptions.Diplomacy,
             PlayerActionType.Espionage => ActionDescriptions.Espionage,
-            PlayerActionType.Sabotage => ActionDescriptions.Sabotage,
             _ => ActionDescriptions.Default,
         };
         AnsiConsole.MarkupLine($"[grey]{desc}[/]");

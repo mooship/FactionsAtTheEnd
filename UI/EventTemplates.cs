@@ -16,10 +16,6 @@ public static class EventTemplates
     public const string SuccessfulRaidDescription =
         "Your pirates pull off a daring raid, boosting resources and morale!";
 
-    public const string SabotageSuccessTitle = "Sabotage Success";
-    public const string SabotageSuccessDescription =
-        "Your rebels sabotage enemy supplies, gaining support and resources.";
-
     public const string RaidersAttackTitle = "Raiders Attack";
     public const string RaidersAttackDescription =
         "A group of raiders attacks your supply lines, straining your defenses.";
@@ -109,10 +105,6 @@ public static class EventTemplates
     public const string ResearchBreakthroughTitle = "Research Breakthrough";
     public const string ResearchBreakthroughDescription =
         "Your scientists make a breakthrough, advancing your technology.";
-
-    public const string SabotageAttemptTitle = "Sabotage Attempt";
-    public const string SabotageAttemptDescription =
-        "Saboteurs attempt to disrupt your research efforts.";
 
     public const string UnexpectedInnovationTitle = "Unexpected Innovation";
     public const string UnexpectedInnovationDescription =
@@ -241,4 +233,8 @@ public static class EventTemplates
     public const string ProsperityWaveTitle = "Prosperity Wave";
     public const string ProsperityWaveDescription =
         "Your faction's high stability has led to a period of growth and optimism.";
+
+    public const string UprisingIgnitedTitle = "Uprising Ignited";
+    public const string UprisingIgnitedDescription =
+        "Your agents inspire a local uprising, swelling your ranks and spreading hope among the oppressed.";
 }

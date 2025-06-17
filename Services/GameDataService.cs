@@ -24,7 +24,7 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
     /// </summary>
     public async Task SaveGameAsync(GameState gameState)
     {
-        Guard.IsNotNull(gameState);
+        Guard.IsNotNull(gameState, nameof(gameState));
         try
         {
             await Task.Run(() =>
@@ -65,7 +65,7 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
     /// </summary>
     public async Task<GameState?> LoadGameAsync(string gameId)
     {
-        Guard.IsNotNullOrWhiteSpace(gameId);
+        Guard.IsNotNullOrWhiteSpace(gameId, nameof(gameId));
         try
         {
             return await Task.Run(() =>
@@ -86,7 +86,7 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
     /// </summary>
     public async Task DeleteGameAsync(string gameId)
     {
-        Guard.IsNotNullOrWhiteSpace(gameId);
+        Guard.IsNotNullOrWhiteSpace(gameId, nameof(gameId));
         try
         {
             await Task.Run(() =>
@@ -106,7 +106,7 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
     /// </summary>
     public string ExportGameState(GameState gameState)
     {
-        Guard.IsNotNull(gameState);
+        Guard.IsNotNull(gameState, nameof(gameState));
         var validation = _gameStateValidator.Validate(gameState);
         Guard.IsTrue(
             validation.IsValid,
@@ -129,7 +129,7 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
     /// </summary>
     public GameState? ImportGameState(string json)
     {
-        Guard.IsNotNullOrWhiteSpace(json);
+        Guard.IsNotNullOrWhiteSpace(json, nameof(json));
         try
         {
             var gameState = System.Text.Json.JsonSerializer.Deserialize<GameState>(
