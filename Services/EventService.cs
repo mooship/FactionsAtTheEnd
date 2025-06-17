@@ -73,6 +73,21 @@ public class EventService : IEventService
             events.Add(gameEvent);
         }
 
+        // Stability-based positive event
+        if (gameState.PlayerFaction.Stability > 75 && Random.Shared.Next(1, 101) <= 20) // 20% chance if stability > 75
+        {
+            events.Add(
+                new GameEvent
+                {
+                    Title = ProsperityWaveTitle,
+                    Description = ProsperityWaveDescription,
+                    Type = EventType.Economic,
+                    Cycle = gameState.CurrentCycle,
+                    Effects = new() { { StatKey.Resources, 2 }, { StatKey.Influence, 1 } },
+                }
+            );
+        }
+
         // Special events based on world state
         if (gameState.GalacticStability <= 20 && Random.Shared.Next(1, 101) <= 30)
         {

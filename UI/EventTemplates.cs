@@ -237,4 +237,7 @@ public static class EventTemplates
     public const string AncientTechnologyUnearthedTitle = "Ancient Technology Unearthed";
     public const string AncientTechnologyUnearthedDescription =
         "You unearth powerful ancient technology, offering new possibilities.";
+
+    public const string ProsperityWaveTitle = "Prosperity Wave";
+    public const string ProsperityWaveDescription = "Your faction's high stability has led to a period of growth and optimism.";
 }

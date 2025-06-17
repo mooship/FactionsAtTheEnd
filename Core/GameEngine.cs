@@ -300,7 +300,6 @@ public class GameEngine(
                         CurrentGame.GateNetworkIntegrity += 3;
                         break;
                     case PlayerActionType.Diplomacy:
-                        // Handle as a world/self action: increase GalacticStability or Reputation
                         CurrentGame.GalacticStability += 3;
                         player.Influence += 2;
                         player.Reputation += 5;
@@ -310,12 +309,10 @@ public class GameEngine(
                         );
                         break;
                     case PlayerActionType.Espionage:
-                        // Handle as a world/self action: reveal upcoming events or grant minor stat/resource bonuses
                         player.Technology += 1;
                         player.Resources += 2;
                         break;
                     case PlayerActionType.Sabotage:
-                        // Handle as a world/self action: reduce negative event impact or remove internal obstacles
                         CurrentGame.GalacticStability += 1;
                         break;
                     default:
