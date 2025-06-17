@@ -7,13 +7,20 @@ using LiteDB;
 
 namespace FactionsAtTheEnd.Services;
 
+/// <summary>
+/// Handles saving, loading, deleting, exporting, and importing game state data using LiteDB.
+/// </summary>
 public class GameDataService(ILiteDatabase db) : IGameDataService
 {
     private readonly ILiteDatabase _db = db;
     private readonly GameStateValidator _gameStateValidator = new();
+    private static readonly JsonSerializerOptions CachedJsonOptions = new()
+    {
+        WriteIndented = true,
+    };
 
     /// <summary>
-    /// Save or update a game state in the database.
+    /// Asynchronously saves the current game state to the database.
     /// </summary>
     public async Task SaveGameAsync(GameState gameState)
     {
@@ -34,7 +41,7 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
     }
 
     /// <summary>
-    /// Get all saved games, ordered by last played (most recent first).
+    /// Asynchronously retrieves all saved games, ordered by most recently played.
     /// </summary>
     public async Task<List<GameState>> GetSavedGamesAsync()
     {
@@ -54,7 +61,7 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
     }
 
     /// <summary>
-    /// Load a saved game by its unique ID.
+    /// Asynchronously loads a saved game by its unique ID.
     /// </summary>
     public async Task<GameState?> LoadGameAsync(string gameId)
     {
@@ -75,7 +82,7 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
     }
 
     /// <summary>
-    /// Delete a saved game by its unique ID.
+    /// Asynchronously deletes a saved game by its unique ID.
     /// </summary>
     public async Task DeleteGameAsync(string gameId)
     {
@@ -109,7 +116,7 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
 
         try
         {
-            return System.Text.Json.JsonSerializer.Serialize(gameState, new JsonSerializerOptions { WriteIndented = true });
+            return System.Text.Json.JsonSerializer.Serialize(gameState, CachedJsonOptions);
         }
         catch (JsonException ex)
         {
@@ -126,14 +133,20 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
         Guard.IsNotNullOrWhiteSpace(json);
         try
         {
-            var gameState = System.Text.Json.JsonSerializer.Deserialize<GameState>(json);
-            if (gameState == null) return null;
+            var gameState = System.Text.Json.JsonSerializer.Deserialize<GameState>(
+                json,
+                CachedJsonOptions
+            );
+            if (gameState == null)
+                return null;
 
             var validation = _gameStateValidator.Validate(gameState);
             if (!validation.IsValid)
             {
                 var errors = string.Join("; ", validation.Errors.Select(e => e.ErrorMessage));
-                Console.Error.WriteLine($"[GameDataService] Invalid game state from import: {errors}");
+                Console.Error.WriteLine(
+                    $"[GameDataService] Invalid game state from import: {errors}"
+                );
                 return null;
             }
             return gameState;

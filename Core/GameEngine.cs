@@ -7,8 +7,7 @@ using FluentValidation;
 namespace FactionsAtTheEnd.Core;
 
 /// <summary>
-/// Main game engine for Factions at the End.
-/// Handles game state, turn processing, and win/lose conditions.
+/// Main game engine for Factions at the End. Handles game state, turn processing, and win/lose conditions.
 /// </summary>
 public class GameEngine(
     IEventService eventService,
@@ -23,14 +22,12 @@ public class GameEngine(
     private readonly IValidator<PlayerAction> _playerActionValidator = playerActionValidator;
 
     /// <summary>
-    /// Gets the current game state.
-    /// This is null if no game is loaded or before a new game starts.
+    /// Gets the current game state. This is null if no game is loaded or before a new game starts.
     /// </summary>
     public GameState? CurrentGame { get; private set; }
 
     /// <summary>
-    /// Creates a new game session.
-    /// Initializes a player faction and sets up the initial game state, including a starting crisis event.
+    /// Creates a new game session. Initializes a player faction and sets up the initial game state, including a starting crisis event.
     /// </summary>
     /// <param name="playerFactionName">The name of the player's faction.</param>
     /// <param name="playerFactionType">The type of the player's faction.</param>
@@ -92,8 +89,7 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Processes a full turn in the game.
-    /// This includes validating player actions, updating the world state, generating new events,
+    /// Processes a full turn in the game. This includes validating player actions, updating the world state, generating new events,
     /// applying event effects, saving the game, checking win/loss conditions, and advancing the game cycle.
     /// </summary>
     /// <param name="playerActions">A list of actions taken by the player during this turn.</param>
@@ -126,8 +122,7 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Validates a list of player actions and counts the occurrences of each action type.
-    /// Invalid actions are filtered out.
+    /// Validates a list of player actions and counts the occurrences of each action type. Invalid actions are filtered out.
     /// This count can be used for game mechanics like preventing action spam or triggering specific events.
     /// </summary>
     /// <param name="playerActions">The list of player actions to validate and count.</param>
@@ -159,8 +154,7 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Updates the rolling counts of recently performed actions.
-    /// This involves adding the counts from the current turn and then decaying the counts from previous turns.
+    /// Updates the rolling counts of recently performed actions. This involves adding the counts from the current turn and then decaying the counts from previous turns.
     /// This mechanic can be used to influence event generation or impose temporary restrictions.
     /// </summary>
     /// <param name="actionCounts">A dictionary containing the counts of each action type performed in the current turn.</param>

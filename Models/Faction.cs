@@ -14,22 +14,15 @@ public class Faction
     public string Description { get; set; } = string.Empty;
     public FactionType Type { get; set; }
     public bool IsPlayer { get; set; }
-
-    // Core resources and stats for gameplay
     public int Population { get; set; }
     public int Military { get; set; }
     public int Technology { get; set; }
     public int Influence { get; set; }
     public int Resources { get; set; }
     public int Reputation { get; set; } = 25;
-
-    // Narrative and mechanical status
     public FactionStatus Status { get; set; } = FactionStatus.Stable;
     public int Stability { get; set; } = 50;
-
-    // Unique traits for flavor and event hooks
     public List<string> Traits { get; set; } = [];
-
     public DateTime LastActive { get; set; } = DateTime.UtcNow;
 
     /// <summary>
