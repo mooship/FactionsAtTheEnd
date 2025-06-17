@@ -1,3 +1,4 @@
+using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.UI;
 
 namespace FactionsAtTheEnd.Models;
@@ -16,4 +17,15 @@ public class GameEvent
     public Dictionary<StatKey, int> Effects { get; set; } = [];
     public List<PlayerActionType> BlockedActions { get; set; } = [];
     public List<EventChoice>? Choices { get; set; }
+
+    public GameEvent()
+    {
+        Guard.IsNotNullOrWhiteSpace(Id, nameof(Id));
+        Guard.IsNotNullOrWhiteSpace(Title, nameof(Title));
+        Guard.IsNotNullOrWhiteSpace(Description, nameof(Description));
+        Guard.IsTrue(Enum.IsDefined(typeof(EventType), Type), nameof(Type));
+        Guard.IsNotNull(Parameters, nameof(Parameters));
+        Guard.IsNotNull(Effects, nameof(Effects));
+        Guard.IsNotNull(BlockedActions, nameof(BlockedActions));
+    }
 }

@@ -103,6 +103,11 @@ public class FactionService : IFactionService
 
     private static void SetStartingResources(Faction faction)
     {
+        Guard.IsNotNull(faction, nameof(faction));
+        Guard.IsTrue(
+            Enum.IsDefined(typeof(FactionType), faction.Type),
+            nameof(faction.Type) + " must be a valid FactionType."
+        );
         faction.Population = Random.Shared.Next(
             GameConstants.StartingPopulationMin,
             GameConstants.StartingPopulationMax + 1

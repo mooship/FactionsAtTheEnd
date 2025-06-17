@@ -37,6 +37,12 @@ public class GameEngine(
         FactionType playerFactionType
     )
     {
+        Guard.IsNotNullOrWhiteSpace(playerFactionName, nameof(playerFactionName));
+        Guard.IsTrue(
+            Enum.IsDefined(typeof(FactionType), playerFactionType),
+            nameof(playerFactionType)
+        );
+
         var playerFaction = _factionService.CreateFaction(
             playerFactionName,
             playerFactionType,
@@ -79,6 +85,7 @@ public class GameEngine(
     /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="GameState"/> objects.</returns>
     public async Task<List<GameState>> GetSavedGamesAsync()
     {
+        Guard.IsNotNull(_gameDataService, nameof(_gameDataService));
         return await _gameDataService.GetSavedGamesAsync();
     }
 
@@ -89,6 +96,8 @@ public class GameEngine(
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task LoadGameAsync(string gameId)
     {
+        Guard.IsNotNullOrWhiteSpace(gameId, nameof(gameId));
+
         var loaded = await _gameDataService.LoadGameAsync(gameId);
         Guard.IsNotNull(loaded, nameof(loaded));
         CurrentGame = loaded;
@@ -103,6 +112,7 @@ public class GameEngine(
     public async Task ProcessTurnAsync(List<PlayerAction> playerActions)
     {
         Guard.IsNotNull(playerActions, nameof(playerActions));
+        Guard.IsTrue(playerActions.Count > 0, "At least one player action must be provided.");
         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
 
         var (validActions, actionCounts) = ValidateAndCountActions(playerActions);
@@ -138,7 +148,9 @@ public class GameEngine(
         Dictionary<PlayerActionType, int> actionCounts
     ) ValidateAndCountActions(List<PlayerAction> playerActions)
     {
-        Guard.IsNotNull(playerActions);
+        Guard.IsNotNull(playerActions, nameof(playerActions));
+        Guard.IsTrue(playerActions.Count > 0, "At least one player action must be provided.");
+
         var validActions = new List<PlayerAction>();
         var actionCounts = new Dictionary<PlayerActionType, int>();
         foreach (var action in playerActions)
@@ -167,6 +179,7 @@ public class GameEngine(
     private void UpdateActionCounts(Dictionary<PlayerActionType, int> actionCounts)
     {
         Guard.IsNotNull(actionCounts, nameof(actionCounts));
+        Guard.IsTrue(actionCounts.Count > 0, "At least one action count must be provided.");
         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
 
         // Increment counts for actions performed this turn
@@ -200,6 +213,7 @@ public class GameEngine(
     /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task ApplyPlayerActionsAsync(List<PlayerAction> validActions)
     {
+        Guard.IsNotNull(validActions, nameof(validActions));
         foreach (var action in validActions)
         {
             await ProcessPlayerActionAsync(action);
@@ -214,6 +228,7 @@ public class GameEngine(
     private void ApplyEventEffects(List<GameEvent> newEvents)
     {
         Guard.IsNotNull(newEvents, nameof(newEvents));
+        Guard.IsTrue(newEvents.Count > 0, "At least one event must be provided.");
         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
         var player = CurrentGame.PlayerFaction;
         CurrentGame.BlockedActions?.Clear();
@@ -299,6 +314,7 @@ public class GameEngine(
     /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task ProcessPlayerActionAsync(PlayerAction action)
     {
+        Guard.IsNotNull(action, nameof(action));
         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
         Guard.IsNotNull(CurrentGame.PlayerFaction, nameof(CurrentGame.PlayerFaction));
         var player = CurrentGame.PlayerFaction;
@@ -348,10 +364,6 @@ public class GameEngine(
                         CurrentGame.GalacticStability += 3;
                         player.Influence += 2;
                         player.Reputation += 5;
-                        player.Reputation = Math.Max(
-                            GameConstants.MinReputation,
-                            Math.Min(player.Reputation, GameConstants.MaxReputation)
-                        );
                         break;
                     case PlayerActionType.Espionage:
                         player.Technology += 1;
@@ -424,5 +436,9 @@ public class GameEngine(
     /// Sets the current game state. Primarily used for testing or specific game setup scenarios.
     /// </summary>
     /// <param name="gameState">The <see cref="GameState"/> to set as the current game.</param>
-    public void SetCurrentGame(GameState gameState) => CurrentGame = gameState;
+    public void SetCurrentGame(GameState gameState)
+    {
+        Guard.IsNotNull(gameState, nameof(gameState));
+        CurrentGame = gameState;
+    }
 }

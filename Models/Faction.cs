@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.UI;
 
 namespace FactionsAtTheEnd.Models;
@@ -27,9 +28,11 @@ public class Faction
 
     public Faction()
     {
-        // Guard.IsNotNullOrWhiteSpace(Name, nameof(Name));
-        // Guard.IsNotNullOrWhiteSpace(Description, nameof(Description));
-        // Guard.IsNotNull(Traits, nameof(Traits));
+        Guard.IsNotNullOrWhiteSpace(Name, nameof(Name));
+        Guard.IsNotNullOrWhiteSpace(Description, nameof(Description));
+        Guard.IsTrue(Enum.IsDefined(typeof(FactionType), Type), nameof(Type));
+        Guard.IsTrue(Enum.IsDefined(typeof(FactionStatus), Status), nameof(Status));
+        Guard.IsNotNull(Traits, nameof(Traits));
     }
 
     /// <summary>
@@ -37,7 +40,35 @@ public class Faction
     /// </summary>
     public void ClampResources()
     {
-        // Defensive: Clamp, but do not throw, to avoid breaking game flow
+        Guard.IsTrue(
+            Population >= GameConstants.MinStat && Population <= GameConstants.MaxStat,
+            nameof(Population)
+        );
+        Guard.IsTrue(
+            Military >= GameConstants.MinStat && Military <= GameConstants.MaxStat,
+            nameof(Military)
+        );
+        Guard.IsTrue(
+            Technology >= GameConstants.MinStat && Technology <= GameConstants.MaxStat,
+            nameof(Technology)
+        );
+        Guard.IsTrue(
+            Influence >= GameConstants.MinStat && Influence <= GameConstants.MaxStat,
+            nameof(Influence)
+        );
+        Guard.IsTrue(
+            Resources >= GameConstants.MinStat && Resources <= GameConstants.MaxStat,
+            nameof(Resources)
+        );
+        Guard.IsTrue(
+            Stability >= GameConstants.MinStat && Stability <= GameConstants.MaxStat,
+            nameof(Stability)
+        );
+        Guard.IsTrue(
+            Reputation >= GameConstants.MinReputation && Reputation <= GameConstants.MaxReputation,
+            nameof(Reputation)
+        );
+
         Population = Math.Max(GameConstants.MinStat, Math.Min(Population, GameConstants.MaxStat));
         Military = Math.Max(GameConstants.MinStat, Math.Min(Military, GameConstants.MaxStat));
         Technology = Math.Max(GameConstants.MinStat, Math.Min(Technology, GameConstants.MaxStat));

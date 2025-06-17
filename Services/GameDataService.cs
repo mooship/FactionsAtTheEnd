@@ -10,14 +10,20 @@ namespace FactionsAtTheEnd.Services;
 /// <summary>
 /// Handles saving, loading, deleting, exporting, and importing game state data using LiteDB.
 /// </summary>
-public class GameDataService(ILiteDatabase db) : IGameDataService
+public class GameDataService : IGameDataService
 {
-    private readonly ILiteDatabase _db = db;
+    private readonly ILiteDatabase _db;
     private readonly GameStateValidator _gameStateValidator = new();
     private static readonly JsonSerializerOptions CachedJsonOptions = new()
     {
         WriteIndented = true,
     };
+
+    public GameDataService(ILiteDatabase db)
+    {
+        Guard.IsNotNull(db, nameof(db));
+        _db = db;
+    }
 
     /// <summary>
     /// Asynchronously saves the current game state to the database.
@@ -45,6 +51,7 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
     /// </summary>
     public async Task<List<GameState>> GetSavedGamesAsync()
     {
+        Guard.IsNotNull(_db, nameof(_db));
         try
         {
             return await Task.Run(() =>
@@ -66,6 +73,7 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
     public async Task<GameState?> LoadGameAsync(string gameId)
     {
         Guard.IsNotNullOrWhiteSpace(gameId, nameof(gameId));
+        Guard.IsNotNull(_db, nameof(_db));
         try
         {
             return await Task.Run(() =>
@@ -87,6 +95,7 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
     public async Task DeleteGameAsync(string gameId)
     {
         Guard.IsNotNullOrWhiteSpace(gameId, nameof(gameId));
+        Guard.IsNotNull(_db, nameof(_db));
         try
         {
             await Task.Run(() =>

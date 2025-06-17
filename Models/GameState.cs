@@ -1,5 +1,7 @@
 namespace FactionsAtTheEnd.Models;
 
+using CommunityToolkit.Diagnostics;
+
 /// <summary>
 /// Holds all persistent and transient data for a single game session.
 /// </summary>
@@ -41,5 +43,15 @@ public class GameState
     /// </summary>
     public List<string> GalacticNews { get; set; } = [];
 
-    public GameState() { }
+    public GameState()
+    {
+        Guard.IsNotNullOrWhiteSpace(Id, nameof(Id));
+        Guard.IsNotNullOrWhiteSpace(SaveName, nameof(SaveName));
+        Guard.IsNotNull(PlayerFaction, nameof(PlayerFaction));
+        Guard.IsNotNull(RecentEvents, nameof(RecentEvents));
+        Guard.IsNotNull(GalacticHistory, nameof(GalacticHistory));
+        Guard.IsNotNull(BlockedActions, nameof(BlockedActions));
+        Guard.IsNotNull(RecentActionCounts, nameof(RecentActionCounts));
+        Guard.IsNotNull(GalacticNews, nameof(GalacticNews));
+    }
 }

@@ -180,6 +180,7 @@ public class EventService : IEventService
     private static GameEvent? GenerateEventByType(EventType eventType, GameState gameState)
     {
         Guard.IsNotNull(gameState, nameof(gameState));
+        Guard.IsTrue(Enum.IsDefined(typeof(EventType), eventType), nameof(eventType));
 
         return eventType switch
         {
@@ -790,7 +791,8 @@ public class EventService : IEventService
     /// </summary>
     public List<string> GenerateGalacticNews(GameState gameState, List<GameEvent> recentEvents)
     {
-        Guard.IsNotNull(gameState.PlayerFaction);
+        Guard.IsNotNull(gameState, nameof(gameState));
+        Guard.IsNotNull(recentEvents, nameof(recentEvents));
         var news = new List<string>();
         var player = gameState.PlayerFaction;
 
