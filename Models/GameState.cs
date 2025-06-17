@@ -11,23 +11,33 @@ public class GameState
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime LastPlayed { get; set; } = DateTime.UtcNow;
 
-    // World state variables (affect events, win/lose, and narrative)
-    public int GalacticStability { get; set; } = 40; // 0-100, starts deteriorating
-    public int GateNetworkIntegrity { get; set; } = 60; // 0-100, affects travel/trade
-    public int AncientTechDiscovery { get; set; } = 10; // 0-100, unlocks events
+    /// <summary>
+    /// World state variables affecting events, win/lose, and narrative.
+    /// </summary>
+    public int GalacticStability { get; set; } = 40;
+    public int GateNetworkIntegrity { get; set; } = 60;
+    public int AncientTechDiscovery { get; set; } = 10;
 
     public Faction PlayerFaction { get; set; } = new Faction();
 
-    // Recent events (for event log and turn feedback)
+    /// <summary>
+    /// Recent events for event log and turn feedback.
+    /// </summary>
     public List<GameEvent> RecentEvents { get; set; } = [];
     public List<string> GalacticHistory { get; set; } = [];
 
-    // Actions blocked for the next turn due to events
+    /// <summary>
+    /// Actions blocked for the next turn due to events.
+    /// </summary>
     public List<PlayerActionType> BlockedActions { get; set; } = [];
 
-    // Rolling action counts for anti-spam and event logic
+    /// <summary>
+    /// Rolling action counts for anti-spam and event logic.
+    /// </summary>
     public Dictionary<PlayerActionType, int> RecentActionCounts { get; set; } = [];
 
-    // Emergent galactic news for narrative flavor
+    /// <summary>
+    /// Emergent galactic news for narrative flavor.
+    /// </summary>
     public List<string> GalacticNews { get; set; } = [];
 }

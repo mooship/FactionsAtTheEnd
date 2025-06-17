@@ -52,7 +52,6 @@ public class GameEngine(
             CurrentCycle = 1,
         };
 
-        // Add initial crisis event for narrative context
         var initialEvents = new List<GameEvent>
         {
             new()
@@ -88,7 +87,7 @@ public class GameEngine(
     public async Task LoadGameAsync(string gameId)
     {
         var loaded = await _gameDataService.LoadGameAsync(gameId);
-        Guard.IsNotNull(loaded, nameof(loaded)); // Ensure the loaded game state is not null.
+        Guard.IsNotNull(loaded, nameof(loaded));
         CurrentGame = loaded;
     }
 
@@ -105,27 +104,25 @@ public class GameEngine(
         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
 
         var (validActions, actionCounts) = ValidateAndCountActions(playerActions);
-        UpdateActionCounts(actionCounts); // Update counts of how often each action type has been recently used.
-        await ApplyPlayerActionsAsync(validActions); // Apply the effects of the player's actions.
-        await UpdateWorldStateAsync(); // Update global game parameters like stability and tech discovery.
-        var newEvents = (await _eventService.GenerateRandomEventsAsync(CurrentGame)).ToList(); // Generate random events for the turn.
+        UpdateActionCounts(actionCounts);
+        await ApplyPlayerActionsAsync(validActions);
+        await UpdateWorldStateAsync();
+        var newEvents = (await _eventService.GenerateRandomEventsAsync(CurrentGame)).ToList();
         CurrentGame.RecentEvents.AddRange(newEvents);
 
-        // Generate and add galactic news headlines based on recent events.
         var newNews = _eventService.GenerateGalacticNews(CurrentGame, newEvents);
         if (newNews.Count != 0)
         {
             CurrentGame.GalacticNews.AddRange(newNews);
-            // Keep only the most recent 15 news items to prevent the list from growing indefinitely.
             CurrentGame.GalacticNews =
             [
                 .. CurrentGame.GalacticNews.Skip(Math.Max(0, CurrentGame.GalacticNews.Count - 15)),
             ];
         }
-        ApplyEventEffects(newEvents); // Apply the statistical and gameplay effects of the new events.
-        await _gameDataService.SaveGameAsync(CurrentGame); // Persist the current game state.
-        CheckWinLoseConditions(); // Determine if any win or loss conditions have been met.
-        CurrentGame.CurrentCycle++; // Advance to the next game cycle.
+        ApplyEventEffects(newEvents);
+        await _gameDataService.SaveGameAsync(CurrentGame);
+        CheckWinLoseConditions();
+        CurrentGame.CurrentCycle++;
     }
 
     /// <summary>
@@ -172,7 +169,6 @@ public class GameEngine(
         Guard.IsNotNull(actionCounts, nameof(actionCounts));
         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
 
-        // Add current turn's action counts to the persistent recent action counts.
         foreach (var key in actionCounts.Keys)
         {
             if (!CurrentGame.RecentActionCounts.ContainsKey(key))
@@ -182,9 +178,7 @@ public class GameEngine(
             CurrentGame.RecentActionCounts[key] += actionCounts[key];
         }
 
-        // Decay all recent action counts by 1, ensuring they don't go below 0.
-        // This simulates the diminishing relevance of past actions.
-        var keys = CurrentGame.RecentActionCounts.Keys.ToList(); // ToList() is used to avoid modification during iteration issues.
+        var keys = CurrentGame.RecentActionCounts.Keys.ToList();
         foreach (var key in keys)
         {
             CurrentGame.RecentActionCounts[key] = Math.Max(
@@ -217,14 +211,13 @@ public class GameEngine(
         Guard.IsNotNull(newEvents, nameof(newEvents));
         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
         var player = CurrentGame.PlayerFaction;
-        CurrentGame.BlockedActions?.Clear(); // Clear any actions blocked from previous turns.
+        CurrentGame.BlockedActions?.Clear();
 
         foreach (var gameEvent in newEvents)
         {
-            Guard.IsNotNull(player, nameof(player)); // Ensure player faction exists.
+            Guard.IsNotNull(player, nameof(player));
             foreach (var effect in gameEvent.Effects)
             {
-                // Apply stat changes based on the event effect.
                 switch (effect.Key)
                 {
                     case StatKey.Population:
@@ -243,22 +236,15 @@ public class GameEngine(
                         player.Resources += effect.Value;
                         break;
                     case StatKey.Stability:
-                        // Note: This currently modifies GalacticStability, not player faction's stability.
                         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
                         CurrentGame.GalacticStability += effect.Value;
                         break;
                     case StatKey.Reputation:
                         player.Reputation += effect.Value;
-                        // Clamp reputation within defined min/max bounds.
-                        player.Reputation = Math.Max(
-                            GameConstants.MinReputation,
-                            Math.Min(player.Reputation, GameConstants.MaxReputation)
-                        );
                         break;
                 }
             }
 
-            // Add any actions that this event blocks for the next turn.
             if (gameEvent.BlockedActions != null && CurrentGame.BlockedActions != null)
             {
                 foreach (var blocked in gameEvent.BlockedActions)
@@ -281,12 +267,10 @@ public class GameEngine(
         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
         var player = CurrentGame.PlayerFaction;
 
-        // Example Win Condition: Survive 20 cycles or achieve 100 Technology.
         if (player != null && (CurrentGame.CurrentCycle > 20 || player.Technology >= 100))
         {
-            CurrentGame.SaveName = "WINNER"; // Mark the game as won.
+            CurrentGame.SaveName = "WINNER";
         }
-        // TODO: Implement Lose Conditions (e.g., player stability at 0, critical resource depletion).
     }
 
     /// <summary>
@@ -301,7 +285,6 @@ public class GameEngine(
         Guard.IsNotNull(CurrentGame.PlayerFaction, nameof(CurrentGame.PlayerFaction));
         var player = CurrentGame.PlayerFaction;
 
-        // Apply action effects within the ApplyToFactionAsync to ensure resource clamping.
         await ApplyToFactionAsync(
             player.Id,
             async f =>
@@ -309,66 +292,61 @@ public class GameEngine(
                 switch (action.ActionType)
                 {
                     case PlayerActionType.BuildDefenses:
-                        f.Military += 5; // Increase military strength.
-                        f.Stability += 2; // Increase faction stability.
+                        f.Military += 5;
+                        f.Stability += 2;
                         break;
                     case PlayerActionType.RecruitTroops:
-                        f.Military += 7; // Increase military strength.
-                        f.Resources -= 3; // Decrease resources (cost of recruitment).
+                        f.Military += 7;
+                        f.Resources -= 3;
                         break;
                     case PlayerActionType.DevelopInfrastructure:
-                        f.Resources += 5; // Increase resource generation/capacity.
-                        f.Stability += 2; // Increase faction stability.
+                        f.Resources += 5;
+                        f.Stability += 2;
                         break;
                     case PlayerActionType.ExploitResources:
-                        f.Resources += 8; // Increase resources.
-                        f.Stability -= 1; // Slightly decrease stability (potential unrest or environmental impact).
+                        f.Resources += 8;
+                        f.Stability -= 1;
                         break;
                     case PlayerActionType.MilitaryTech:
-                        f.Technology += 4; // Increase technology level.
-                        f.Military += 2; // Increase military strength due to tech.
+                        f.Technology += 4;
+                        f.Military += 2;
                         break;
                     case PlayerActionType.EconomicTech:
-                        f.Technology += 4; // Increase technology level.
-                        f.Resources += 2; // Increase resources due to tech.
+                        f.Technology += 4;
+                        f.Resources += 2;
                         break;
                     case PlayerActionType.AncientStudies:
-                        f.Technology += 2; // Increase technology level.
+                        f.Technology += 2;
                         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
-                        CurrentGame.AncientTechDiscovery += 5; // Increase discovery of ancient technology.
+                        CurrentGame.AncientTechDiscovery += 5;
                         break;
                     case PlayerActionType.GateNetworkResearch:
-                        f.Technology += 2; // Increase technology level.
+                        f.Technology += 2;
                         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
-                        CurrentGame.GateNetworkIntegrity += 3; // Improve gate network integrity.
+                        CurrentGame.GateNetworkIntegrity += 3;
                         break;
                     case PlayerActionType.Diplomacy:
                         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
-                        CurrentGame.GalacticStability += 3; // Increase overall galactic stability.
-                        player.Influence += 2; // Increase player faction's influence.
-                        player.Reputation += 5; // Increase player faction's reputation.
-                        // Clamp reputation within defined min/max bounds.
+                        CurrentGame.GalacticStability += 3;
+                        player.Influence += 2;
+                        player.Reputation += 5;
                         player.Reputation = Math.Max(
                             GameConstants.MinReputation,
                             Math.Min(player.Reputation, GameConstants.MaxReputation)
                         );
                         break;
                     case PlayerActionType.Espionage:
-                        // Successful espionage might yield technology and resources.
                         player.Technology += 1;
                         player.Resources += 2;
                         break;
                     case PlayerActionType.Sabotage:
-                        // Sabotage actions might slightly increase galactic stability if targeting destabilizing elements,
-                        // or decrease it if targeting stable factions. This implementation assumes the former.
                         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
                         CurrentGame.GalacticStability += 1;
                         break;
                     default:
-                        // No operation for undefined or unhandled action types.
                         break;
                 }
-                await Task.CompletedTask; // Mark the inner async lambda as complete.
+                await Task.CompletedTask;
             }
         );
     }
@@ -386,12 +364,11 @@ public class GameEngine(
         Guard.IsNotNull(update, nameof(update));
         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
 
-        // TODO: This method currently only targets the PlayerFaction. It should be generalized if actions can affect other factions.
         var faction = CurrentGame.PlayerFaction;
-        Guard.IsNotNull(faction, nameof(faction)); // Ensure the faction to be updated exists.
+        Guard.IsNotNull(faction, nameof(faction));
 
-        await update(faction); // Execute the provided update logic on the faction.
-        faction.ClampResources(); // Ensure faction resources and stats are within valid game limits after the update.
+        await update(faction);
+        faction.ClampResources();
     }
 
     /// <summary>
@@ -403,25 +380,22 @@ public class GameEngine(
     {
         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
 
-        // Simulate gradual decay of galactic stability and gate network integrity.
-        // Values are reduced by a small random amount each turn, with a minimum of 0.
-        await Task.Run(() => // Offload to a background thread if potentially long-running, though current logic is quick.
+        await Task.Run(() =>
         {
             CurrentGame.GalacticStability = Math.Max(
-                0, // Prevent stability from going below 0.
-                CurrentGame.GalacticStability - Random.Shared.Next(0, 3) // Subtract a random value between 0 and 2.
+                0,
+                CurrentGame.GalacticStability - Random.Shared.Next(0, 3)
             );
             CurrentGame.GateNetworkIntegrity = Math.Max(
-                0, // Prevent integrity from going below 0.
-                CurrentGame.GateNetworkIntegrity - Random.Shared.Next(0, 2) // Subtract a random value between 0 and 1.
+                0,
+                CurrentGame.GateNetworkIntegrity - Random.Shared.Next(0, 2)
             );
 
-            // There's a 15% chance each turn to make progress in Ancient Tech Discovery.
-            if (Random.Shared.Next(1, 101) <= 15) // Random.Shared.Next(1, 101) gives a range of 1 to 100 inclusive.
+            if (Random.Shared.Next(1, 101) <= 15)
             {
                 CurrentGame.AncientTechDiscovery = Math.Min(
-                    100, // Prevent ancient tech discovery from exceeding 100.
-                    CurrentGame.AncientTechDiscovery + Random.Shared.Next(1, 5) // Add a random value between 1 and 4.
+                    100,
+                    CurrentGame.AncientTechDiscovery + Random.Shared.Next(1, 5)
                 );
             }
         });

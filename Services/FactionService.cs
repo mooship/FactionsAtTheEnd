@@ -21,13 +21,11 @@ public class FactionService : IFactionService
             IsPlayer = isPlayer,
             Description = GenerateFactionDescription(type),
             Traits = GenerateFactionTraits(type),
-            Reputation = 25, // Default starting reputation
+            Reputation = 25,
         };
 
-        // Set starting resources based on faction type
         SetStartingResources(faction);
 
-        // Unique ability: passive stat bonus
         switch (type)
         {
             case FactionType.MilitaryJunta:
@@ -103,7 +101,6 @@ public class FactionService : IFactionService
 
     private static void SetStartingResources(Faction faction)
     {
-        // Base starting resources
         faction.Population = Random.Shared.Next(
             GameConstants.StartingPopulationMin,
             GameConstants.StartingPopulationMax + 1
@@ -125,7 +122,6 @@ public class FactionService : IFactionService
             GameConstants.StartingResourcesMax + 1
         );
 
-        // Faction type bonuses
         switch (faction.Type)
         {
             case FactionType.MilitaryJunta:
@@ -158,7 +154,6 @@ public class FactionService : IFactionService
                 break;
         }
 
-        // Player factions get a slight bonus
         if (faction.IsPlayer)
         {
             faction.Population += 10;

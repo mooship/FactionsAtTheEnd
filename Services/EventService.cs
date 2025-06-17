@@ -47,7 +47,6 @@ public class EventService : IEventService
     {
         Guard.IsNotNull(gameState);
         var events = new List<GameEvent>();
-        // If player repeats an action 3+ times in recent turns, trigger a negative event
         foreach (var kvp in gameState.RecentActionCounts)
         {
             if (kvp.Value >= 3)
@@ -67,20 +66,16 @@ public class EventService : IEventService
             }
         }
 
-        // Reputation-based event chance adjustment
         int baseChance = 40;
         int rep = gameState.PlayerFaction.Reputation;
-        // For every 20 reputation above 0, +5% chance for a positive event, -5% for negative; below 0, the reverse
         int positiveBonus = rep > 0 ? rep / 20 * 5 : 0;
         int negativeBonus = rep < 0 ? Math.Abs(rep) / 20 * 5 : 0;
-        // Clamp bonuses to a reasonable range
-        positiveBonus = Math.Min(positiveBonus, 25); // max +25%
-        negativeBonus = Math.Min(negativeBonus, 25); // max +25%
+        positiveBonus = Math.Min(positiveBonus, 25);
+        negativeBonus = Math.Min(negativeBonus, 25);
         int eventRoll = Random.Shared.Next(1, 101);
         bool forcePositive = eventRoll <= (baseChance + positiveBonus);
         bool forceNegative = eventRoll > (100 - negativeBonus);
 
-        // 40% base chance of a random event each cycle, modified by reputation
         if (forcePositive || forceNegative || eventRoll <= baseChance)
         {
             var eventType = GetRandomEventType(gameState, forcePositive, forceNegative);
@@ -89,8 +84,7 @@ public class EventService : IEventService
             events.Add(gameEvent);
         }
 
-        // Stability-based positive event
-        if (gameState.PlayerFaction.Stability > 75 && Random.Shared.Next(1, 101) <= 20) // 20% chance if stability > 75
+        if (gameState.PlayerFaction.Stability > 75 && Random.Shared.Next(1, 101) <= 20)
         {
             events.Add(
                 new GameEvent
@@ -104,7 +98,6 @@ public class EventService : IEventService
             );
         }
 
-        // Special events based on world state
         if (gameState.GalacticStability <= 20 && Random.Shared.Next(1, 101) <= 30)
         {
             events.Add(GenerateCrisisEvent(gameState));
@@ -137,7 +130,6 @@ public class EventService : IEventService
     public async Task<List<GameEvent>> GenerateRandomEventsAsync(GameState gameState)
     {
         Guard.IsNotNull(gameState);
-        // 10% chance to generate a random choice event by type
         if (Random.Shared.Next(1, 101) <= 10)
         {
             var choiceGenerators = new Func<GameState, GameEvent>[]
@@ -157,7 +149,6 @@ public class EventService : IEventService
         return await Task.Run(() => GenerateRandomEvents(gameState));
     }
 
-    // Overload: GetRandomEventType with reputation influence
     private static EventType GetRandomEventType(
         GameState gameState,
         bool forcePositive = false,
@@ -173,12 +164,10 @@ public class EventService : IEventService
             EventType.Natural,
         };
 
-        // Crisis events become more likely as stability decreases or if forced negative
         if (forceNegative || (gameState.GalacticStability < 30 && Random.Shared.Next(1, 101) <= 30))
         {
             return EventType.Crisis;
         }
-        // If forced positive, bias toward Discovery or Technological
         if (forcePositive)
         {
             return Random.Shared.Next(2) == 0 ? EventType.Discovery : EventType.Technological;
@@ -207,7 +196,6 @@ public class EventService : IEventService
     {
         var player = gameState.PlayerFaction;
         var index = Random.Shared.Next(10);
-        // Faction-specific positive event for Military Junta
         if (player?.Type == FactionType.MilitaryJunta && Random.Shared.Next(1, 101) <= 20)
         {
             return new GameEvent
@@ -219,7 +207,6 @@ public class EventService : IEventService
                 Effects = new() { { StatKey.Military, 8 }, { StatKey.Stability, 4 } },
             };
         }
-        // Faction-specific event for Pirate Alliance
         if (player?.Type == FactionType.PirateAlliance && Random.Shared.Next(1, 101) <= 20)
         {
             return new GameEvent
@@ -236,7 +223,6 @@ public class EventService : IEventService
                 },
             };
         }
-        // Faction-specific event for Rebellion Cell
         if (player?.Type == FactionType.RebellionCell && Random.Shared.Next(1, 101) <= 20)
         {
             return new GameEvent
@@ -332,7 +318,6 @@ public class EventService : IEventService
     {
         var player = gameState.PlayerFaction;
         var index = Random.Shared.Next(8);
-        // Faction-specific positive event for Corporate Council
         if (player?.Type == FactionType.CorporateCouncil && Random.Shared.Next(1, 101) <= 20)
         {
             return new GameEvent
@@ -344,7 +329,6 @@ public class EventService : IEventService
                 Effects = new() { { StatKey.Resources, 12 }, { StatKey.Influence, 4 } },
             };
         }
-        // Faction-specific event for Religious Order
         if (player?.Type == FactionType.ReligiousOrder && Random.Shared.Next(1, 101) <= 20)
         {
             return new GameEvent
@@ -434,7 +418,6 @@ public class EventService : IEventService
     {
         var player = gameState.PlayerFaction;
         var index = Random.Shared.Next(8);
-        // Faction-specific positive event for Technocratic Union
         if (player?.Type == FactionType.TechnocraticUnion && Random.Shared.Next(1, 101) <= 20)
         {
             return new GameEvent
@@ -446,7 +429,6 @@ public class EventService : IEventService
                 Effects = new() { { StatKey.Technology, 15 }, { StatKey.Stability, 3 } },
             };
         }
-        // Faction-specific event for Imperial Remnant
         if (player?.Type == FactionType.ImperialRemnant && Random.Shared.Next(1, 101) <= 20)
         {
             return new GameEvent
@@ -537,7 +519,6 @@ public class EventService : IEventService
     {
         var player = gameState.PlayerFaction;
         var index = Random.Shared.Next(8);
-        // Faction-specific positive event for Ancient Awakened
         if (player?.Type == FactionType.AncientAwakened && Random.Shared.Next(1, 101) <= 20)
         {
             return new GameEvent
@@ -549,7 +530,6 @@ public class EventService : IEventService
                 Effects = new() { { StatKey.Technology, 10 }, { StatKey.Stability, 5 } },
             };
         }
-        // Rare story-driven event for Ancient Awakened
         if (player?.Type == FactionType.AncientAwakened && Random.Shared.Next(1, 101) <= 5)
         {
             return new GameEvent
@@ -639,7 +619,6 @@ public class EventService : IEventService
     {
         var player = gameState.PlayerFaction;
         var index = Random.Shared.Next(8);
-        // Faction-specific positive event for Religious Order
         if (player?.Type == FactionType.ReligiousOrder && Random.Shared.Next(1, 101) <= 20)
         {
             return new GameEvent
@@ -728,7 +707,6 @@ public class EventService : IEventService
     private static GameEvent GenerateCrisisEvent(GameState gameState)
     {
         var player = gameState.PlayerFaction;
-        // Soft-fail warning if a stat is about to hit 0
         Guard.IsNotNull(player);
         if (player.Population <= 5)
         {
@@ -779,7 +757,6 @@ public class EventService : IEventService
                 ],
             };
         }
-        // Default major crisis
         return new GameEvent
         {
             Title = MajorCrisisTitle,
@@ -792,8 +769,6 @@ public class EventService : IEventService
 
     private static GameEvent GenerateAncientTechEvent(GameState gameState)
     {
-        // Rare beneficial event, can unlock Ancient Studies if previously blocked
-        // Remove Ancient_Studies from BlockedActions if present (unblock for next turn)
         gameState.BlockedActions.Remove(PlayerActionType.AncientStudies);
         return new GameEvent
         {
@@ -815,7 +790,6 @@ public class EventService : IEventService
         var news = new List<string>();
         var player = gameState.PlayerFaction;
 
-        // Major event headlines
         foreach (var gameEvent in recentEvents)
         {
             switch (gameEvent.Type)
@@ -841,7 +815,6 @@ public class EventService : IEventService
             }
         }
 
-        // Reputation-based news
         if (player.Reputation >= 80)
         {
             news.Add(string.Format(LegendaryReputation, player.Name));
@@ -863,7 +836,6 @@ public class EventService : IEventService
             news.Add($"Notorious: {player.Name} is gaining a dark reputation.");
         }
 
-        // Galactic state news
         if (gameState.GalacticStability < 20)
         {
             news.Add(TurmoilNews);
@@ -877,7 +849,6 @@ public class EventService : IEventService
             news.Add(AncientTechNews);
         }
 
-        // Limit to 3-5 headlines per cycle
         return [.. news.Take(5)];
     }
 

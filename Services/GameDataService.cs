@@ -103,30 +103,45 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
         var validation = _gameStateValidator.Validate(gameState);
         if (!validation.IsValid)
         {
-            throw new ApplicationException(
-                $"Cannot export: GameState is invalid.\n{string.Join("\n", validation.Errors.Select(e => e.ErrorMessage))}"
-            );
+            var errors = string.Join("; ", validation.Errors.Select(e => e.ErrorMessage));
+            throw new ArgumentException($"Invalid game state for export: {errors}");
         }
-        var options = new JsonSerializerOptions { WriteIndented = true };
-        return System.Text.Json.JsonSerializer.Serialize(gameState, options);
+
+        try
+        {
+            return System.Text.Json.JsonSerializer.Serialize(gameState, new JsonSerializerOptions { WriteIndented = true });
+        }
+        catch (JsonException ex)
+        {
+            Console.Error.WriteLine($"[GameDataService] Error exporting game state: {ex.Message}");
+            throw new ApplicationException("Failed to export game data.", ex);
+        }
     }
 
     /// <summary>
     /// Import a game state from a JSON string.
     /// </summary>
-    public GameState ImportGameState(string json)
+    public GameState? ImportGameState(string json)
     {
         Guard.IsNotNullOrWhiteSpace(json);
-        var gameState =
-            System.Text.Json.JsonSerializer.Deserialize<GameState>(json)
-            ?? throw new ApplicationException("Failed to import game state from JSON.");
-        var validation = _gameStateValidator.Validate(gameState);
-        if (!validation.IsValid)
+        try
         {
-            throw new ApplicationException(
-                $"Imported GameState is invalid.\n{string.Join("\n", validation.Errors.Select(e => e.ErrorMessage))}"
-            );
+            var gameState = System.Text.Json.JsonSerializer.Deserialize<GameState>(json);
+            if (gameState == null) return null;
+
+            var validation = _gameStateValidator.Validate(gameState);
+            if (!validation.IsValid)
+            {
+                var errors = string.Join("; ", validation.Errors.Select(e => e.ErrorMessage));
+                Console.Error.WriteLine($"[GameDataService] Invalid game state from import: {errors}");
+                return null;
+            }
+            return gameState;
         }
-        return gameState;
+        catch (JsonException ex)
+        {
+            Console.Error.WriteLine($"[GameDataService] Error importing game state: {ex.Message}");
+            return null;
+        }
     }
 }

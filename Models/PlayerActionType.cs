@@ -2,9 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FactionsAtTheEnd.Models;
 
-// <summary>
-// All possible actions a player can take each turn.
-// </summary>
+/// <summary>
+/// All possible actions a player can take each turn.
+/// </summary>
 public enum PlayerActionType
 {
     [Display(Name = "Build Defenses")]

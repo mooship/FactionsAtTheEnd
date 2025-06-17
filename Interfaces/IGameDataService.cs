@@ -52,7 +52,7 @@ namespace FactionsAtTheEnd.Interfaces
         /// Imports a game state from a string format (e.g., JSON).
         /// </summary>
         /// <param name="json">The string representation of the game state to import.</param>
-        /// <returns>The imported <see cref="GameState"/>.</returns>
-        GameState ImportGameState(string json);
+        /// <returns>The imported <see cref="GameState"/>, or null if deserialization fails or the data is invalid.</returns>
+        GameState? ImportGameState(string json);
     }
 }
