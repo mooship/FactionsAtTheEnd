@@ -3,8 +3,8 @@ namespace FactionsAtTheEnd.UI;
 public static class EventTemplates
 {
     // Initial events
-    public const string CollapseTitle = "Collapse";
-    public const string CollapseDescription =
+    public const string InitialCrisisTitle = "Collapse";
+    public const string InitialCrisisDescription =
         "The imperial government has fallen. You lead the last organized group in your region. Survival is up to you.";
 
     // Military events

@@ -57,9 +57,8 @@ public class GameEngine(
         {
             new()
             {
-                Title = "Collapse",
-                Description =
-                    "The imperial government has fallen. You lead the last organized group in your region. Survival is up to you.",
+                Title = EventTemplates.InitialCrisisTitle,
+                Description = EventTemplates.InitialCrisisDescription,
                 Type = EventType.Crisis,
                 Cycle = gameState.CurrentCycle,
             },

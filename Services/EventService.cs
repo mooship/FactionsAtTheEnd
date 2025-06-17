@@ -13,20 +13,34 @@ namespace FactionsAtTheEnd.Services;
 /// </summary>
 public class EventService : IEventService
 {
+    private static readonly Random Random = new();
+
+    /// <summary>
+    /// Generates the initial set of events when a new game starts.
+    /// This typically includes a major crisis event to kick off the narrative.
+    /// </summary>
+    /// <param name="gameState">The current game state.</param>
+    /// <returns>A list of initial game events.</returns>
     public static List<GameEvent> GenerateInitialEvents(GameState gameState)
     {
-        Guard.IsNotNull(gameState);
-        var events = new List<GameEvent>
+        Guard.IsNotNull(gameState, nameof(gameState));
+
+        var initialEvents = new List<GameEvent>
         {
             new()
             {
-                Title = CollapseTitle,
-                Description = CollapseDescription,
+                Title = InitialCrisisTitle,
+                Description = InitialCrisisDescription,
                 Type = EventType.Crisis,
                 Cycle = gameState.CurrentCycle,
+                Effects = new Dictionary<StatKey, int>
+                {
+                    { StatKey.Stability, -20 },
+                    { StatKey.Reputation, -10 },
+                },
             },
         };
-        return events;
+        return initialEvents;
     }
 
     public static List<GameEvent> GenerateRandomEvents(GameState gameState)
