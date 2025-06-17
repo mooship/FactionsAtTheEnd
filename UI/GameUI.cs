@@ -824,6 +824,7 @@ public class GameUI
         try
         {
             var imported = _gameEngine.GameDataService.ImportGameState(json);
+            Guard.IsNotNull(imported, "Failed to import game state from JSON.");
             await _gameEngine.GameDataService.SaveGameAsync(imported);
             _gameEngine.SetCurrentGame(imported);
             AnsiConsole.MarkupLine("[green]Game imported and loaded successfully![/]");

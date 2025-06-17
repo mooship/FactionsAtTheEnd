@@ -260,10 +260,23 @@ public class GameEngine(
     {
         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
         var player = CurrentGame.PlayerFaction;
+        Guard.IsNotNull(player);
 
-        if (player != null && (CurrentGame.CurrentCycle > 20 || player.Technology >= 100))
+        // Win condition
+        if (CurrentGame.CurrentCycle > 20 || player.Technology >= 100)
         {
             CurrentGame.SaveName = "WINNER";
+        }
+
+        // Lose conditions
+        if (
+            CurrentGame.GalacticStability <= 0
+            || player.Population <= 0
+            || player.Resources <= 0
+            || player.Stability <= 0
+        )
+        {
+            CurrentGame.SaveName = "LOSER";
         }
     }
 

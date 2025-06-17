@@ -108,11 +108,10 @@ public class GameDataService(ILiteDatabase db) : IGameDataService
     {
         Guard.IsNotNull(gameState);
         var validation = _gameStateValidator.Validate(gameState);
-        if (!validation.IsValid)
-        {
-            var errors = string.Join("; ", validation.Errors.Select(e => e.ErrorMessage));
-            throw new ArgumentException($"Invalid game state for export: {errors}");
-        }
+        Guard.IsTrue(
+            validation.IsValid,
+            $"Invalid game state for export: {string.Join("; ", validation.Errors.Select(e => e.ErrorMessage))}"
+        );
 
         try
         {
