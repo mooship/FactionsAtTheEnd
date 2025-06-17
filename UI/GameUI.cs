@@ -289,8 +289,44 @@ public class GameUI
 
             AnsiConsole.Clear();
             // Display current turn number
-            AnsiConsole.MarkupLine($"[bold blue]Turn {game.CurrentCycle}[/]");
-            DisplayGameState();
+            AnsiConsole.MarkupLine($"[bold blue]Turn:[/] {game.CurrentCycle}");
+            AnsiConsole.MarkupLine("");
+            AnsiConsole.MarkupLine(
+                $"[bold]Faction:[/] {playerFaction?.Name} ({playerFaction?.Type.GetDisplayName()})"
+            );
+            AnsiConsole.MarkupLine($"[bold]Population:[/] {playerFaction?.Population}");
+            AnsiConsole.MarkupLine($"[bold]Military:[/] {playerFaction?.Military}");
+            AnsiConsole.MarkupLine($"[bold]Technology:[/] {playerFaction?.Technology}");
+            AnsiConsole.MarkupLine($"[bold]Influence:[/] {playerFaction?.Influence}");
+            AnsiConsole.MarkupLine($"[bold]Resources:[/] {playerFaction?.Resources}");
+            AnsiConsole.MarkupLine($"[bold]Stability:[/] {playerFaction?.Stability}");
+            AnsiConsole.MarkupLine(
+                $"[bold]Reputation:[/] {playerFaction?.Reputation} {GetReputationDescription(playerFaction?.Reputation ?? 0)}"
+            );
+            AnsiConsole.MarkupLine("");
+            // Show Galactic News
+            if (game.GalacticNews.Count > 0)
+            {
+                AnsiConsole.MarkupLine("[bold underline]Galactic News:[/]");
+                foreach (var news in game.GalacticNews.TakeLast(5))
+                {
+                    AnsiConsole.MarkupLine($"[aqua]{news}[/]");
+                }
+                AnsiConsole.MarkupLine("");
+            }
+            // Show Galactic History snippet
+            if (game.GalacticHistory.Count > 0)
+            {
+                AnsiConsole.MarkupLine("[bold underline]Galactic History:[/]");
+                AnsiConsole.MarkupLine($"[grey]{game.GalacticHistory.Last()}[/]");
+                AnsiConsole.MarkupLine("");
+            }
+            if (game.BlockedActions.Count > 0)
+            {
+                AnsiConsole.MarkupLine(
+                    "[yellow]Some actions are unavailable due to recent overuse. Your rivals are watching your every move...[/]"
+                );
+            }
 
             var playerActions = new List<PlayerAction>();
 
@@ -494,6 +530,7 @@ public class GameUI
             ShowStatChange("Influence", preStats.Influence, postStats.Influence);
             ShowStatChange("Resources", preStats.Resources, postStats.Resources);
             ShowStatChange("Stability", preStats.Stability, postStats.Stability);
+            ShowStatChange("Reputation", preStats.Reputation, postStats.Reputation);
             AnsiConsole.MarkupLine("Press any key to continue...");
             Console.ReadKey();
 
@@ -563,6 +600,7 @@ public class GameUI
         var game = _gameEngine.CurrentGame!;
         var playerFaction = game.PlayerFaction;
         AnsiConsole.MarkupLine($"[bold]Cycle:[/] {game.CurrentCycle}");
+        AnsiConsole.MarkupLine("");
         AnsiConsole.MarkupLine(
             $"[bold]Faction:[/] {playerFaction?.Name} ({playerFaction?.Type.GetDisplayName()})"
         );
@@ -572,8 +610,6 @@ public class GameUI
         AnsiConsole.MarkupLine($"[bold]Influence:[/] {playerFaction?.Influence}");
         AnsiConsole.MarkupLine($"[bold]Resources:[/] {playerFaction?.Resources}");
         AnsiConsole.MarkupLine($"[bold]Stability:[/] {playerFaction?.Stability}");
-        AnsiConsole.MarkupLine("");
-        // Show Reputation
         AnsiConsole.MarkupLine(
             $"[bold]Reputation:[/] {playerFaction?.Reputation} {GetReputationDescription(playerFaction?.Reputation ?? 0)}"
         );

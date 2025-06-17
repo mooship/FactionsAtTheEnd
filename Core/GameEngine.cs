@@ -163,6 +163,7 @@ public class GameEngine(
         Guard.IsNotNull(actionCounts, nameof(actionCounts));
         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
 
+        // Increment counts for actions performed this turn
         foreach (var key in actionCounts.Keys)
         {
             if (!CurrentGame.RecentActionCounts.ContainsKey(key))
@@ -172,13 +173,17 @@ public class GameEngine(
             CurrentGame.RecentActionCounts[key] += actionCounts[key];
         }
 
+        // Decay only actions NOT performed this turn
         var keys = CurrentGame.RecentActionCounts.Keys.ToList();
         foreach (var key in keys)
         {
-            CurrentGame.RecentActionCounts[key] = Math.Max(
-                0,
-                CurrentGame.RecentActionCounts[key] - 1
-            );
+            if (!actionCounts.ContainsKey(key))
+            {
+                CurrentGame.RecentActionCounts[key] = Math.Max(
+                    0,
+                    CurrentGame.RecentActionCounts[key] - 1
+                );
+            }
         }
     }
 
