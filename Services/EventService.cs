@@ -2,6 +2,7 @@ using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using FactionsAtTheEnd.UI;
+using static FactionsAtTheEnd.UI.ChoiceEventTemplates;
 using static FactionsAtTheEnd.UI.EventTemplates;
 using static FactionsAtTheEnd.UI.NewsTemplates;
 
@@ -852,21 +853,20 @@ public class EventService : IEventService
     {
         return new GameEvent
         {
-            Title = "A Fork in the Road",
-            Description = "A crisis forces your faction to choose a path.",
+            Title = CrisisChoiceTitle,
+            Description = CrisisChoiceDescription,
             Type = EventType.Crisis,
             Cycle = gameState.CurrentCycle,
             Choices =
             [
                 new EventChoice
                 {
-                    Description =
-                        "Send aid to a neighboring world (lose resources, gain stability)",
+                    Description = CrisisChoiceAidDescription,
                     Effects = new() { { StatKey.Resources, -10 }, { StatKey.Stability, +5 } },
                 },
                 new EventChoice
                 {
-                    Description = "Ignore their plea (risk unrest, save resources)",
+                    Description = CrisisChoiceIgnoreDescription,
                     Effects = new() { { StatKey.Stability, -5 } },
                 },
             ],
@@ -877,21 +877,20 @@ public class EventService : IEventService
     {
         return new GameEvent
         {
-            Title = "Mercenary Dilemma",
-            Description =
-                "A group of mercenaries offers their services for a steep price. Do you hire them to bolster your military, or refuse and risk their wrath?",
+            Title = MilitaryChoiceTitle,
+            Description = MilitaryChoiceDescription,
             Type = EventType.Military,
             Cycle = gameState.CurrentCycle,
             Choices =
             [
                 new EventChoice
                 {
-                    Description = "Hire the mercenaries",
+                    Description = MilitaryChoiceHireDescription,
                     Effects = new() { { StatKey.Resources, -12 }, { StatKey.Military, +8 } },
                 },
                 new EventChoice
                 {
-                    Description = "Refuse their offer",
+                    Description = MilitaryChoiceRefuseDescription,
                     Effects = new() { { StatKey.Stability, -4 }, { StatKey.Resources, +2 } },
                     BlockedActions = [PlayerActionType.RecruitTroops],
                 },
@@ -903,21 +902,20 @@ public class EventService : IEventService
     {
         return new GameEvent
         {
-            Title = "Corporate Investment",
-            Description =
-                "A mega-corporation offers to invest in your infrastructure, but demands a share of your resources. Do you accept the deal or maintain independence?",
+            Title = EconomicChoiceTitle,
+            Description = EconomicChoiceDescription,
             Type = EventType.Economic,
             Cycle = gameState.CurrentCycle,
             Choices =
             [
                 new EventChoice
                 {
-                    Description = "Accept the investment",
+                    Description = EconomicChoiceAcceptDescription,
                     Effects = new() { { StatKey.Resources, +10 }, { StatKey.Influence, -5 } },
                 },
                 new EventChoice
                 {
-                    Description = "Refuse the deal",
+                    Description = EconomicChoiceRefuseDescription,
                     Effects = new() { { StatKey.Stability, +3 } },
                 },
             ],
@@ -928,21 +926,20 @@ public class EventService : IEventService
     {
         return new GameEvent
         {
-            Title = "Experimental Technology",
-            Description =
-                "Scientists propose deploying untested technology. Do you approve the risky experiment or play it safe?",
+            Title = TechnologicalChoiceTitle,
+            Description = TechnologicalChoiceDescription,
             Type = EventType.Technological,
             Cycle = gameState.CurrentCycle,
             Choices =
             [
                 new EventChoice
                 {
-                    Description = "Approve the experiment",
+                    Description = TechnologicalChoiceApproveDescription,
                     Effects = new() { { StatKey.Technology, +12 }, { StatKey.Stability, -6 } },
                 },
                 new EventChoice
                 {
-                    Description = "Reject the proposal",
+                    Description = TechnologicalChoiceRejectDescription,
                     Effects = new() { { StatKey.Technology, +2 } },
                 },
             ],
@@ -953,21 +950,20 @@ public class EventService : IEventService
     {
         return new GameEvent
         {
-            Title = "Alien Relic Discovered",
-            Description =
-                "An ancient alien relic is found. Do you study it for potential breakthroughs or sell it to collectors?",
+            Title = DiscoveryChoiceTitle,
+            Description = DiscoveryChoiceDescription,
             Type = EventType.Discovery,
             Cycle = gameState.CurrentCycle,
             Choices =
             [
                 new EventChoice
                 {
-                    Description = "Study the relic",
+                    Description = DiscoveryChoiceStudyDescription,
                     Effects = new() { { StatKey.Technology, +8 }, { StatKey.Stability, -3 } },
                 },
                 new EventChoice
                 {
-                    Description = "Sell the relic",
+                    Description = DiscoveryChoiceSellDescription,
                     Effects = new() { { StatKey.Resources, +10 } },
                 },
             ],
@@ -978,21 +974,20 @@ public class EventService : IEventService
     {
         return new GameEvent
         {
-            Title = "Natural Disaster Response",
-            Description =
-                "A natural disaster strikes a colony. Do you divert resources to help, or focus on your core worlds?",
+            Title = NaturalChoiceTitle,
+            Description = NaturalChoiceDescription,
             Type = EventType.Natural,
             Cycle = gameState.CurrentCycle,
             Choices =
             [
                 new EventChoice
                 {
-                    Description = "Send aid",
+                    Description = NaturalChoiceAidDescription,
                     Effects = new() { { StatKey.Resources, -8 }, { StatKey.Stability, +5 } },
                 },
                 new EventChoice
                 {
-                    Description = "Focus on core worlds",
+                    Description = NaturalChoiceFocusDescription,
                     Effects = new() { { StatKey.Stability, -4 }, { StatKey.Resources, +2 } },
                 },
             ],
@@ -1003,21 +998,20 @@ public class EventService : IEventService
     {
         return new GameEvent
         {
-            Title = "Espionage Opportunity",
-            Description =
-                "A rival faction's secrets are within your grasp. Do you attempt a risky infiltration or play it safe?",
+            Title = EspionageChoiceTitle,
+            Description = EspionageChoiceDescription,
             Type = EventType.Crisis,
             Cycle = gameState.CurrentCycle,
             Choices =
             [
                 new EventChoice
                 {
-                    Description = "Attempt infiltration (gain tech, risk stability)",
+                    Description = EspionageChoiceAttemptDescription,
                     Effects = new() { { StatKey.Technology, +6 }, { StatKey.Stability, -4 } },
                 },
                 new EventChoice
                 {
-                    Description = "Play it safe (minor influence gain)",
+                    Description = EspionageChoiceSafeDescription,
                     Effects = new() { { StatKey.Influence, +3 } },
                 },
             ],
@@ -1028,21 +1022,20 @@ public class EventService : IEventService
     {
         return new GameEvent
         {
-            Title = "Public Scandal",
-            Description =
-                "A scandal threatens your reputation. Do you launch a cover-up or accept responsibility?",
+            Title = ReputationChoiceTitle,
+            Description = ReputationChoiceDescription,
             Type = EventType.Crisis,
             Cycle = gameState.CurrentCycle,
             Choices =
             [
                 new EventChoice
                 {
-                    Description = "Cover it up (lose resources, avoid reputation loss)",
+                    Description = ReputationChoiceCoverupDescription,
                     Effects = new() { { StatKey.Resources, -7 } },
                 },
                 new EventChoice
                 {
-                    Description = "Accept responsibility (lose reputation, gain stability)",
+                    Description = ReputationChoiceAcceptDescription,
                     Effects = new() { { StatKey.Reputation, -6 }, { StatKey.Stability, +4 } },
                 },
             ],
