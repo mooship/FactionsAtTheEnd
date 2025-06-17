@@ -42,10 +42,15 @@ public class GameEngine(
             playerFactionType,
             true
         );
+        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmm");
+        var safeFactionName = string.Join(
+            "",
+            playerFactionName.Split(System.IO.Path.GetInvalidFileNameChars())
+        );
         var gameState = new GameState
         {
             PlayerFaction = playerFaction,
-            SaveName = $"Game Started {DateTime.Now:yyyy-MM-dd HH:mm}",
+            SaveName = $"{safeFactionName}_{timestamp}",
             CurrentCycle = 1,
         };
 
