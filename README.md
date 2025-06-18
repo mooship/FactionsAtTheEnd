@@ -41,7 +41,13 @@ A single-player, single-faction survival strategy game.
 
 ## Contributing
 
-We welcome contributions to make **Factions at the End** even better! Whether you're a developer, designer, or tester, your input is valuable.
+We welcome contributions to make **Factions at the End** even better! Whether you're a developer, designer, writer, or translator, your input is valuable.
+
+### How You Can Contribute
+- **Code:** Help improve gameplay, fix bugs, or add new features.
+- **Events:** Create new in-game events or expand narrative content.
+- **Translations:** Help localize the game for more players.
+- **Testing & Feedback:** Play the game and suggest improvements.
 
 ### How to Get Started
 1. Fork the repository and clone it locally.
@@ -54,9 +60,6 @@ We welcome contributions to make **Factions at the End** even better! Whether yo
 - Write clear and concise commit messages.
 - Ensure your changes do not introduce bugs or regressions.
 - Provide tests for any new functionality.
-
-### Need Help?
-Feel free to open a discussion or reach out via GitHub issues. We'd love to hear your thoughts and answer any questions.
 
 ---
 
