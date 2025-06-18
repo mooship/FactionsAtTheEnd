@@ -42,6 +42,16 @@ public class GameState
     public List<string> GalacticNews { get; set; } = [];
 
     /// <summary>
+    /// Indicates if the player has won the game.
+    /// </summary>
+    public bool HasWon { get; set; } = false;
+
+    /// <summary>
+    /// Indicates if the player has lost the game.
+    /// </summary>
+    public bool HasLost { get; set; } = false;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="GameState"/> class with the specified id, save name, and player faction.
     /// </summary>
     public GameState(string id, string saveName, Faction playerFaction)

@@ -298,7 +298,7 @@ public class GameEngine(
         // Win condition
         if (CurrentGame.CurrentCycle > 20 || player.Technology >= 100)
         {
-            CurrentGame.SaveName = "WINNER";
+            CurrentGame.HasWon = true;
         }
 
         // Lose conditions
@@ -309,7 +309,7 @@ public class GameEngine(
             || player.Stability <= 0
         )
         {
-            CurrentGame.SaveName = "LOSER";
+            CurrentGame.HasLost = true;
         }
     }
 

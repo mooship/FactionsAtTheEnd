@@ -262,11 +262,7 @@ public class GameUI
             AnsiConsole.MarkupLine("[grey]Press [b]H[/] at any time for help.[/]");
 
             // Game over condition
-            if (
-                playerFaction.Population <= 0
-                || playerFaction.Resources <= 0
-                || playerFaction.Stability <= 0
-            )
+            if (game.HasLost)
             {
                 AnsiConsole.MarkupLine("[bold red]Your faction has collapsed![/]");
                 AnsiConsole.MarkupLine(
@@ -276,11 +272,7 @@ public class GameUI
                 break;
             }
             // Win condition
-            if (
-                game.SaveName == "WINNER"
-                || playerFaction.Technology >= 100
-                || game.CurrentCycle > 20
-            )
+            if (game.HasWon || playerFaction.Technology >= 100 || game.CurrentCycle > 20)
             {
                 AnsiConsole.MarkupLine(
                     "[bold green]Congratulations! You have survived and triumphed in the dying galaxy![/]"
