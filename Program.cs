@@ -56,11 +56,16 @@ class Program
         services.AddSingleton<IEventService, EventService>();
         services.AddSingleton<IFactionService, FactionService>();
         services.AddSingleton<IGameDataService, GameDataService>();
+        services.AddSingleton<IGlobalAchievementService, GlobalAchievementService>();
+        services.AddTransient(sp => new GameUI(
+            sp.GetRequiredService<GameEngine>(),
+            sp.GetRequiredService<IValidator<Faction>>(),
+            sp.GetRequiredService<IValidator<PlayerAction>>(),
+            sp.GetRequiredService<IGlobalAchievementService>()
+        ));
         services.AddSingleton<GameEngine>();
         // Register validators
         services.AddTransient<IValidator<Faction>, FactionValidator>();
         services.AddTransient<IValidator<PlayerAction>, PlayerActionValidator>();
-        // Register UI
-        services.AddTransient<GameUI>();
     }
 }

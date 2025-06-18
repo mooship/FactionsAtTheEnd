@@ -3,6 +3,7 @@ using FactionsAtTheEnd.Constants;
 using FactionsAtTheEnd.Core;
 using FactionsAtTheEnd.Enums;
 using FactionsAtTheEnd.Extensions;
+using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using FluentValidation;
 using Spectre.Console;
@@ -10,26 +11,43 @@ using TextCopy;
 
 namespace FactionsAtTheEnd.UI;
 
+/// <summary>
+/// Handles all user interface and game loop logic for Factions at the End, including menus, turn flow, and achievement display.
+/// </summary>
 public class GameUI
 {
     private readonly GameEngine _gameEngine;
     private readonly IValidator<Faction> _factionValidator;
     private readonly IValidator<PlayerAction> _playerActionValidator;
+    private readonly IGlobalAchievementService _globalAchievementService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GameUI"/> class.
+    /// </summary>
+    /// <param name="gameEngine">The main game engine instance.</param>
+    /// <param name="factionValidator">Validator for faction creation.</param>
+    /// <param name="playerActionValidator">Validator for player actions.</param>
+    /// <param name="globalAchievementService">Service for global achievements.</param>
     public GameUI(
         GameEngine gameEngine,
         IValidator<Faction> factionValidator,
-        IValidator<PlayerAction> playerActionValidator
+        IValidator<PlayerAction> playerActionValidator,
+        IGlobalAchievementService globalAchievementService
     )
     {
         Guard.IsNotNull(gameEngine, nameof(gameEngine));
         Guard.IsNotNull(factionValidator, nameof(factionValidator));
         Guard.IsNotNull(playerActionValidator, nameof(playerActionValidator));
+        Guard.IsNotNull(globalAchievementService, nameof(globalAchievementService));
         _gameEngine = gameEngine;
         _factionValidator = factionValidator;
         _playerActionValidator = playerActionValidator;
+        _globalAchievementService = globalAchievementService;
     }
 
+    /// <summary>
+    /// Runs the main menu loop, allowing the player to start/load games, view achievements, or exit.
+    /// </summary>
     public async Task RunMainMenuAsync()
     {
         while (true)
@@ -44,25 +62,15 @@ public class GameUI
                 MenuOption.LoadGame,
                 MenuOption.Help,
                 MenuOption.Exit,
-                (MenuOption)1000,
-                (MenuOption)1001,
-            };
-            var menuLabels = new Dictionary<MenuOption, string>
-            {
-                { MenuOption.NewGame, "New Game" },
-                { MenuOption.LoadGame, "Load Game" },
-                { MenuOption.Help, "Help" },
-                { MenuOption.Exit, "Exit" },
-                { (MenuOption)1000, "Export Save (JSON)" },
-                { (MenuOption)1001, "Import Save (JSON)" },
+                MenuOption.ExportSave,
+                MenuOption.ImportSave,
+                MenuOption.ShowGlobalAchievements,
             };
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<MenuOption>()
                     .Title("What would you like to do?")
                     .AddChoices(menuOptions)
-                    .UseConverter(opt =>
-                        menuLabels.TryGetValue(opt, out string? value) ? value : opt.ToString()
-                    )
+                    .UseConverter(opt => opt.GetDisplayName())
             );
 
             switch (choice)
@@ -79,16 +87,22 @@ public class GameUI
                 case MenuOption.Exit:
                     AnsiConsole.MarkupLine("[yellow]May your faction survive the darkness...[/]");
                     return;
-                case (MenuOption)1000:
+                case MenuOption.ExportSave:
                     ExportSave();
                     break;
-                case (MenuOption)1001:
+                case MenuOption.ImportSave:
                     await ImportSaveAsync();
+                    break;
+                case MenuOption.ShowGlobalAchievements:
+                    ShowGlobalAchievements();
                     break;
             }
         }
     }
 
+    /// <summary>
+    /// Displays help and gameplay tips to the player.
+    /// </summary>
     private static void ShowHelp()
     {
         AnsiConsole.MarkupLine("[bold yellow]Help & Tips[/]");
@@ -117,13 +131,18 @@ public class GameUI
             "- [green]Win/Lose[/]: Survive 20 cycles or reach 100 Technology to win. Lose if Population, Resources, or Stability hit zero."
         );
         AnsiConsole.MarkupLine(
-            "- [green]Achievements[/]: Special milestones will be announced as you play."
+            "- [green]Achievements[/]: Special milestones will be announced as you play. View your global achievements from the main menu."
         );
         AnsiConsole.MarkupLine("- [green]Tooltips[/]: Hover or select actions for more info.");
         AnsiConsole.MarkupLine("\nPress any key to return...");
         Console.ReadKey();
     }
 
+    /// <summary>
+    /// Gets a description for a given player action type.
+    /// </summary>
+    /// <param name="action">The action type.</param>
+    /// <returns>Description string.</returns>
     private static string GetActionDescription(PlayerActionType action)
     {
         return action switch
@@ -142,6 +161,9 @@ public class GameUI
         };
     }
 
+    /// <summary>
+    /// Starts a new game, prompting the user for faction details and launching the game loop.
+    /// </summary>
     private async Task StartNewGameAsync()
     {
         AnsiConsole.Clear();
@@ -202,6 +224,9 @@ public class GameUI
         await RunGameLoopAsync();
     }
 
+    /// <summary>
+    /// Loads a saved game and launches the game loop.
+    /// </summary>
     private async Task LoadGameAsync()
     {
         var savedGames = await _gameEngine.GetSavedGamesAsync();
@@ -231,6 +256,9 @@ public class GameUI
         await RunGameLoopAsync();
     }
 
+    /// <summary>
+    /// Runs the main game loop, handling turns, actions, and win/loss conditions.
+    /// </summary>
     private async Task RunGameLoopAsync()
     {
         while (true)
@@ -598,6 +626,12 @@ public class GameUI
         }
     }
 
+    /// <summary>
+    /// Displays stat changes after a turn.
+    /// </summary>
+    /// <param name="stat">Stat name.</param>
+    /// <param name="before">Value before the turn.</param>
+    /// <param name="after">Value after the turn.</param>
     private static void ShowStatChange(string stat, int before, int after)
     {
         int diff = after - before;
@@ -619,6 +653,9 @@ public class GameUI
         }
     }
 
+    /// <summary>
+    /// Shows a detailed view of the current game state.
+    /// </summary>
     private void DisplayGameState()
     {
         var game = _gameEngine.CurrentGame!;
@@ -666,6 +703,9 @@ public class GameUI
         }
     }
 
+    /// <summary>
+    /// Shows a table overview of the player's faction.
+    /// </summary>
     private void DisplayFactionsOverview()
     {
         var game = _gameEngine.CurrentGame!;
@@ -690,6 +730,10 @@ public class GameUI
         AnsiConsole.Write(table);
     }
 
+    /// <summary>
+    /// Validates and processes player actions for the current turn.
+    /// </summary>
+    /// <param name="playerActions">Actions to process.</param>
     private async Task ProcessTurnAsync(List<PlayerAction> playerActions)
     {
         if (_gameEngine.CurrentGame == null)
@@ -718,6 +762,11 @@ public class GameUI
         Console.ReadKey();
     }
 
+    /// <summary>
+    /// Gets a description for a faction type.
+    /// </summary>
+    /// <param name="type">Faction type.</param>
+    /// <returns>Description string.</returns>
     private static string GetFactionTypeDescription(FactionType type)
     {
         return type switch
@@ -734,6 +783,10 @@ public class GameUI
         };
     }
 
+    /// <summary>
+    /// Shows a tooltip if an action is currently blocked.
+    /// </summary>
+    /// <param name="actionType">The action type to check.</param>
     private void ShowActionTooltip(PlayerActionType actionType)
     {
         if (
@@ -762,7 +815,11 @@ public class GameUI
         AnsiConsole.MarkupLine($"[grey]{desc}[/]");
     }
 
-    // Returns a short description for the player's reputation
+    /// <summary>
+    /// Gets a short reputation description for a given value.
+    /// </summary>
+    /// <param name="reputation">Reputation value.</param>
+    /// <returns>Description string.</returns>
     private static string GetReputationDescription(int reputation)
     {
         // Clamp reputation to -100 to 100
@@ -797,6 +854,10 @@ public class GameUI
         return NewsTemplates.NeutralDesc;
     }
 
+    /// <summary>
+    /// Displays the effects of a game event.
+    /// </summary>
+    /// <param name="gameEvent">The event to display.</param>
     private static void ShowEventEffects(GameEvent gameEvent)
     {
         // Show stat/resource changes
@@ -822,6 +883,10 @@ public class GameUI
         }
     }
 
+    /// <summary>
+    /// Shows the event log for the current game.
+    /// </summary>
+    /// <param name="game">The game state to show events for.</param>
     private static void ShowEventLog(GameState? game)
     {
         if (game == null || (game.GalacticHistory.Count == 0 && game.RecentEvents.Count == 0))
@@ -851,6 +916,9 @@ public class GameUI
         Console.ReadKey(true);
     }
 
+    /// <summary>
+    /// Exports the current game save as JSON.
+    /// </summary>
     private void ExportSave()
     {
         var game = _gameEngine.CurrentGame;
@@ -877,6 +945,9 @@ public class GameUI
         Console.ReadKey();
     }
 
+    /// <summary>
+    /// Imports a game save from JSON.
+    /// </summary>
     private async Task ImportSaveAsync()
     {
         AnsiConsole.MarkupLine(
@@ -900,5 +971,35 @@ public class GameUI
             AnsiConsole.MarkupLine("Press any key to return...");
             Console.ReadKey();
         }
+    }
+
+    /// <summary>
+    /// Displays all unlocked global achievements.
+    /// </summary>
+    private void ShowGlobalAchievements()
+    {
+        var achievements = _globalAchievementService.GetAllAchievements();
+        if (achievements.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[yellow]No global achievements unlocked yet.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("Press any key to return to the menu...");
+            Console.ReadKey(true);
+            return;
+        }
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .Title("[bold green]Global Achievements[/]");
+        table.AddColumn("Name");
+        table.AddColumn("Description");
+        table.AddColumn("Unlocked At");
+        foreach (var ach in achievements)
+        {
+            table.AddRow($"[bold]{ach.Name}[/]", ach.Description, ach.UnlockedAt.ToString("u"));
+        }
+        AnsiConsole.Write(table);
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("Press any key to return to the menu...");
+        Console.ReadKey(true);
     }
 }

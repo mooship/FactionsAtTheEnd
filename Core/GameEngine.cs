@@ -2,37 +2,40 @@ using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.Enums;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
+using FactionsAtTheEnd.Services;
 using FactionsAtTheEnd.UI;
 using FluentValidation;
 
 namespace FactionsAtTheEnd.Core;
 
 /// <summary>
-/// Main game engine for Factions at the End. Handles game state, turn processing, and win/lose conditions.
+/// Main game engine for Factions at the End. Orchestrates game state, turn logic, and achievement tracking.
 /// </summary>
 public class GameEngine(
     IEventService eventService,
     IFactionService factionService,
     IGameDataService gameDataService,
-    IValidator<PlayerAction> playerActionValidator
+    IValidator<PlayerAction> playerActionValidator,
+    IGlobalAchievementService globalAchievementService
 )
 {
     private readonly IEventService _eventService = eventService;
     private readonly IFactionService _factionService = factionService;
     private readonly IGameDataService _gameDataService = gameDataService;
     private readonly IValidator<PlayerAction> _playerActionValidator = playerActionValidator;
+    private readonly IGlobalAchievementService _globalAchievementService = globalAchievementService;
 
     /// <summary>
-    /// Gets the current game state. This is null if no game is loaded or before a new game starts.
+    /// The current game state, or null if no game is loaded.
     /// </summary>
     public GameState? CurrentGame { get; private set; }
 
     /// <summary>
-    /// Creates a new game session. Initializes a player faction and sets up the initial game state, including a starting crisis event.
+    /// Starts a new game session with the given player faction and initializes the first crisis event.
     /// </summary>
-    /// <param name="playerFactionName">The name of the player's faction.</param>
-    /// <param name="playerFactionType">The type of the player's faction.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the newly created <see cref="GameState"/>.</returns>
+    /// <param name="playerFactionName">Player's faction name.</param>
+    /// <param name="playerFactionType">Player's faction type.</param>
+    /// <returns>The initialized <see cref="GameState"/>.</returns>
     public async Task<GameState> CreateNewGameAsync(
         string playerFactionName,
         FactionType playerFactionType
@@ -83,7 +86,7 @@ public class GameEngine(
     /// <summary>
     /// Retrieves all saved games from persistent storage, ordered with the most recently played first.
     /// </summary>
-    /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="GameState"/> objects.</returns>
+    /// <returns>List of saved <see cref="GameState"/> objects.</returns>
     public async Task<List<GameState>> GetSavedGamesAsync()
     {
         Guard.IsNotNull(_gameDataService, nameof(_gameDataService));
@@ -91,9 +94,9 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Loads a saved game into the current game session using its unique ID.
+    /// Loads a saved game by its unique ID and sets it as the current session.
     /// </summary>
-    /// <param name="gameId">The unique identifier of the game to load.</param>
+    /// <param name="gameId">ID of the game to load.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task LoadGameAsync(string gameId)
     {
@@ -105,10 +108,9 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Processes a full turn in the game. This includes validating player actions, updating the world state, generating new events,
-    /// applying event effects, saving the game, checking win/loss conditions, and advancing the game cycle.
+    /// Processes a full turn: validates actions, updates world, generates events, applies effects, saves, checks win/loss, and advances the cycle.
     /// </summary>
-    /// <param name="playerActions">A list of actions taken by the player during this turn.</param>
+    /// <param name="playerActions">Actions taken by the player this turn.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task ProcessTurnAsync(List<PlayerAction> playerActions)
     {
@@ -142,11 +144,10 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Validates a list of player actions and counts the occurrences of each action type. Invalid actions are filtered out.
-    /// This count can be used for game mechanics like preventing action spam or triggering specific events.
+    /// Validates and counts player actions, filtering out invalid ones.
     /// </summary>
-    /// <param name="playerActions">The list of player actions to validate and count.</param>
-    /// <returns>A tuple containing a list of valid actions and a dictionary mapping action types to their counts.</returns>
+    /// <param name="playerActions">Actions to validate and count.</param>
+    /// <returns>Tuple of valid actions and their type counts.</returns>
     private (
         List<PlayerAction> validActions,
         Dictionary<PlayerActionType, int> actionCounts
@@ -176,10 +177,9 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Updates the rolling counts of recently performed actions. This involves adding the counts from the current turn and then decaying the counts from previous turns.
-    /// This mechanic can be used to influence event generation or impose temporary restrictions.
+    /// Updates rolling counts for recently performed actions, decaying unused ones.
     /// </summary>
-    /// <param name="actionCounts">A dictionary containing the counts of each action type performed in the current turn.</param>
+    /// <param name="actionCounts">Counts of each action type performed this turn.</param>
     private void UpdateActionCounts(Dictionary<PlayerActionType, int> actionCounts)
     {
         Guard.IsNotNull(actionCounts, nameof(actionCounts));
@@ -211,9 +211,9 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Applies the effects of all valid player actions to the player's faction.
+    /// Applies all valid player actions to the player's faction.
     /// </summary>
-    /// <param name="validActions">A list of validated player actions to be applied.</param>
+    /// <param name="validActions">Validated actions to apply.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task ApplyPlayerActionsAsync(List<PlayerAction> validActions)
     {
@@ -225,10 +225,9 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Applies the effects of new game events to the player's faction and updates the list of blocked actions for the next turn.
-    /// Effects can include changes to faction stats or global game parameters.
+    /// Applies effects from new game events and updates blocked actions for the next turn.
     /// </summary>
-    /// <param name="newEvents">A list of new game events that occurred this turn.</param>
+    /// <param name="newEvents">Events that occurred this turn.</param>
     private void ApplyEventEffects(List<GameEvent> newEvents)
     {
         Guard.IsNotNull(newEvents, nameof(newEvents));
@@ -286,8 +285,7 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Checks if any win or lose conditions have been met by the player.
-    /// Updates the game state (e.g., SaveName) if a condition is met.
+    /// Checks and updates win/lose conditions and unlocks achievements as needed.
     /// </summary>
     private void CheckWinLoseConditions()
     {
@@ -299,10 +297,65 @@ public class GameEngine(
         if (CurrentGame.CurrentCycle > 20 || player.Technology >= 100)
         {
             CurrentGame.HasWon = true;
-            if (!CurrentGame.Achievements.Contains("Victory"))
+            if (!CurrentGame.Achievements.Contains(AchievementTemplates.Names.Victory))
             {
-                CurrentGame.Achievements.Add("Victory");
+                CurrentGame.Achievements.Add(AchievementTemplates.Names.Victory);
+                _globalAchievementService.UnlockAchievement(
+                    AchievementTemplates.Names.Victory,
+                    AchievementTemplates.Descriptions.Victory
+                );
             }
+            // FirstWin: Only unlock if this is the player's first win globally
+            if (
+                !_globalAchievementService.IsAchievementUnlocked(
+                    AchievementTemplates.Names.FirstWin
+                )
+            )
+            {
+                _globalAchievementService.UnlockAchievement(
+                    AchievementTemplates.Names.FirstWin,
+                    AchievementTemplates.Descriptions.FirstWin
+                );
+            }
+        }
+
+        // Survivor: Survive 20 cycles in a single game
+        if (
+            CurrentGame.CurrentCycle >= 20
+            && !CurrentGame.Achievements.Contains(AchievementTemplates.Names.Survivor)
+        )
+        {
+            CurrentGame.Achievements.Add(AchievementTemplates.Names.Survivor);
+            _globalAchievementService.UnlockAchievement(
+                AchievementTemplates.Names.Survivor,
+                AchievementTemplates.Descriptions.Survivor
+            );
+        }
+
+        // TechMaster: Reach 100 Technology in a single game
+        if (
+            player.Technology >= 100
+            && !CurrentGame.Achievements.Contains(AchievementTemplates.Names.TechMaster)
+        )
+        {
+            CurrentGame.Achievements.Add(AchievementTemplates.Names.TechMaster);
+            _globalAchievementService.UnlockAchievement(
+                AchievementTemplates.Names.TechMaster,
+                AchievementTemplates.Descriptions.TechMaster
+            );
+        }
+
+        // TechAscendant: Reach 100 Technology in a single game (also unlock if not already)
+        if (
+            player.Technology >= 100
+            && !CurrentGame.Achievements.Contains(AchievementTemplates.Names.TechAscendant)
+        )
+        {
+            CurrentGame.Achievements.Add(AchievementTemplates.Names.TechAscendant);
+            _globalAchievementService.UnlockAchievement(
+                AchievementTemplates.Names.TechAscendant,
+                AchievementTemplates.Descriptions.TechAscendant
+            );
         }
 
         // Lose conditions
@@ -314,30 +367,42 @@ public class GameEngine(
         )
         {
             CurrentGame.HasLost = true;
-            if (!CurrentGame.Achievements.Contains("Defeat"))
+            if (!CurrentGame.Achievements.Contains(AchievementTemplates.Names.Defeat))
             {
-                CurrentGame.Achievements.Add("Defeat");
+                CurrentGame.Achievements.Add(AchievementTemplates.Names.Defeat);
+                _globalAchievementService.UnlockAchievement(
+                    AchievementTemplates.Names.Defeat,
+                    AchievementTemplates.Descriptions.Defeat
+                );
             }
         }
 
-        // Other achievements
-        if (player.Reputation >= 100 && !CurrentGame.Achievements.Contains("Legendary Reputation"))
+        if (
+            player.Reputation >= 100
+            && !CurrentGame.Achievements.Contains(AchievementTemplates.Names.LegendaryReputation)
+        )
         {
-            CurrentGame.Achievements.Add("Legendary Reputation");
+            CurrentGame.Achievements.Add(AchievementTemplates.Names.LegendaryReputation);
+            _globalAchievementService.UnlockAchievement(
+                AchievementTemplates.Names.LegendaryReputation,
+                AchievementTemplates.Descriptions.LegendaryReputation
+            );
         }
-        if (player.Military >= 100 && !CurrentGame.Achievements.Contains("Warlord"))
+        if (
+            player.Military >= 100
+            && !CurrentGame.Achievements.Contains(AchievementTemplates.Names.Warlord)
+        )
         {
-            CurrentGame.Achievements.Add("Warlord");
-        }
-        if (player.Technology >= 100 && !CurrentGame.Achievements.Contains("Tech Ascendant"))
-        {
-            CurrentGame.Achievements.Add("Tech Ascendant");
+            CurrentGame.Achievements.Add(AchievementTemplates.Names.Warlord);
+            _globalAchievementService.UnlockAchievement(
+                AchievementTemplates.Names.Warlord,
+                AchievementTemplates.Descriptions.Warlord
+            );
         }
     }
 
     /// <summary>
-    /// Applies a single player action to the player's faction, updating its statistics accordingly.
-    /// Each action type has a predefined set of effects on faction stats or global game parameters.
+    /// Applies a single player action to the player's faction, updating stats accordingly.
     /// </summary>
     /// <param name="action">The player action to process.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
@@ -407,11 +472,10 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Applies an update function to a specified faction and then clamps its resources to ensure they stay within valid game bounds.
-    /// This is a utility method to ensure that faction stats like resources, population, etc., do not go below zero or exceed defined maximums after an update.
+    /// Applies an update function to the player's faction and clamps its stats to valid bounds.
     /// </summary>
-    /// <param name="factionId">The ID of the faction to update. Currently, this method is hardcoded to update the player's faction.</param>
-    /// <param name="update">An asynchronous function that takes a <see cref="Faction"/> object and applies modifications to it.</param>
+    /// <param name="factionId">ID of the faction to update (currently only the player).</param>
+    /// <param name="update">Async function to modify the faction.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task ApplyToFactionAsync(string factionId, Func<Faction, Task> update)
     {
@@ -427,8 +491,7 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Updates the global world state at the end of each turn.
-    /// This can include gradual decay of galactic infrastructure, random discoveries, or other background changes.
+    /// Updates global world state at the end of each turn (e.g., decay, discoveries).
     /// </summary>
     /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task UpdateWorldStateAsync()
@@ -457,14 +520,14 @@ public class GameEngine(
     }
 
     /// <summary>
-    /// Provides access to the game data service for operations like saving or loading games.
+    /// Provides access to the game data service for save/load operations.
     /// </summary>
     public IGameDataService GameDataService => _gameDataService;
 
     /// <summary>
-    /// Sets the current game state. Primarily used for testing or specific game setup scenarios.
+    /// Sets the current game state (for testing or custom setup).
     /// </summary>
-    /// <param name="gameState">The <see cref="GameState"/> to set as the current game.</param>
+    /// <param name="gameState">The <see cref="GameState"/> to set as current.</param>
     public void SetCurrentGame(GameState gameState)
     {
         Guard.IsNotNull(gameState, nameof(gameState));

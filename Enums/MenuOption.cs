@@ -39,4 +39,13 @@ public enum MenuOption
 
     [Display(Name = "Import Save")]
     ImportSave,
+
+    [Display(Name = "Show Global Achievements")]
+    ShowGlobalAchievements,
+
+    [Display(Name = "Developer Tools")]
+    DeveloperTools,
+
+    [Display(Name = "Debug Menu")]
+    DebugMenu,
 }
