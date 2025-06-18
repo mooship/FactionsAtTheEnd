@@ -37,6 +37,6 @@ public enum MenuOption
     [Display(Name = "Export Save")]
     ExportSave,
 
-    [Display(Name = "MImport Save")]
+    [Display(Name = "Import Save")]
     ImportSave,
 }

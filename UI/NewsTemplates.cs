@@ -1,5 +1,8 @@
 namespace FactionsAtTheEnd.UI;
 
+/// <summary>
+/// Provides templates for galactic news headlines and reputation descriptions.
+/// </summary>
 public static class NewsTemplates
 {
     public const string CrisisHeadline = "Crisis: {0} shakes the {1}!";

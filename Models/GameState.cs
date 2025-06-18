@@ -41,6 +41,9 @@ public class GameState
     /// </summary>
     public List<string> GalacticNews { get; set; } = [];
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GameState"/> class with the specified id, save name, and player faction.
+    /// </summary>
     public GameState(string id, string saveName, Faction playerFaction)
     {
         Id = id;
@@ -55,5 +58,8 @@ public class GameState
         GalacticNews = [];
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GameState"/> class with default values.
+    /// </summary>
     public GameState() { }
 }

@@ -1,5 +1,8 @@
 namespace FactionsAtTheEnd.UI;
 
+/// <summary>
+/// Provides narrative descriptions for each faction type.
+/// </summary>
 public static class FactionDescriptions
 {
     public const string MilitaryJunta =

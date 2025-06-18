@@ -1,5 +1,8 @@
 namespace FactionsAtTheEnd.UI;
 
+/// <summary>
+/// Provides descriptions for each player action type.
+/// </summary>
 public static class ActionDescriptions
 {
     public const string BuildDefenses = "Increase your defenses to resist attacks.";

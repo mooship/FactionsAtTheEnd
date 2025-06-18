@@ -17,6 +17,9 @@ public class GameEvent
     public List<PlayerActionType> BlockedActions { get; set; } = [];
     public List<EventChoice>? Choices { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GameEvent"/> class with the specified title, description, type, and cycle.
+    /// </summary>
     public GameEvent(string title, string description, EventType type, int cycle)
     {
         Id = Guid.NewGuid().ToString();
@@ -29,5 +32,8 @@ public class GameEvent
         BlockedActions = [];
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GameEvent"/> class with default values.
+    /// </summary>
     public GameEvent() { }
 }
