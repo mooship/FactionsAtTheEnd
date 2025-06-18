@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using System.Reflection;
 using CommunityToolkit.Diagnostics;
+using FactionsAtTheEnd.Constants;
 using FactionsAtTheEnd.UI;
 
 namespace FactionsAtTheEnd.Models;
@@ -123,22 +123,4 @@ public enum FactionStatus
     Struggling,
     Desperate,
     Collapsing,
-}
-
-public static class FactionExtensions
-{
-    /// <summary>
-    /// Get the display name for a FactionType using its Display attribute.
-    /// </summary>
-    public static string GetDisplayName(this FactionType factionType)
-    {
-        var displayName = factionType
-            .GetType()
-            .GetMember(factionType.ToString())
-            .FirstOrDefault()
-            ?.GetCustomAttribute<DisplayAttribute>()
-            ?.Name;
-
-        return displayName ?? factionType.ToString();
-    }
 }

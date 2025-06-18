@@ -1,7 +1,8 @@
 using CommunityToolkit.Diagnostics;
+using FactionsAtTheEnd.Constants;
+using FactionsAtTheEnd.Extensions;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
-using FactionsAtTheEnd.UI;
 using static FactionsAtTheEnd.UI.ChoiceEventTemplates;
 using static FactionsAtTheEnd.UI.EventTemplates;
 using static FactionsAtTheEnd.UI.NewsTemplates;
@@ -13,8 +14,6 @@ namespace FactionsAtTheEnd.Services;
 /// </summary>
 public class EventService : IEventService
 {
-    private static readonly Random Random = new();
-
     /// <summary>
     /// Generates the initial set of events when a new game starts.
     /// This typically includes a major crisis event to kick off the narrative.

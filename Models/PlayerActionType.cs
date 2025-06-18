@@ -37,24 +37,3 @@ public enum PlayerActionType
     [Display(Name = "Espionage")]
     Espionage,
 }
-
-public static class PlayerActionTypeExtensions
-{
-    /// <summary>
-    /// Get the display name for a PlayerActionType using its Display attribute.
-    /// </summary>
-    public static string GetDisplayName(this PlayerActionType actionType)
-    {
-        var type = actionType.GetType();
-        var memInfo = type.GetMember(actionType.ToString());
-        if (memInfo.Length > 0)
-        {
-            var attrs = memInfo[0].GetCustomAttributes(typeof(DisplayAttribute), false);
-            if (attrs.Length > 0)
-            {
-                return ((DisplayAttribute)attrs[0]).Name ?? actionType.ToString();
-            }
-        }
-        return actionType.ToString();
-    }
-}

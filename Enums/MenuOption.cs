@@ -1,4 +1,4 @@
-namespace FactionsAtTheEnd.UI;
+namespace FactionsAtTheEnd.Enums;
 
 /// <summary>
 /// Main menu and in-game menu options for the UI.
@@ -17,8 +17,3 @@ public enum MenuOption
     ExportSave,
     ImportSave,
 }
-
-/// <summary>
-/// Used for stat display and event effects.
-/// </summary>
-// Removed StatKey enum. Use FactionsAtTheEnd.Constants.StatKey instead.
