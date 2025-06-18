@@ -40,6 +40,18 @@ public class Faction
     /// </summary>
     public void ClampResources()
     {
+        // Clamp all stats to valid bounds first
+        Population = Math.Max(GameConstants.MinStat, Math.Min(Population, GameConstants.MaxStat));
+        Military = Math.Max(GameConstants.MinStat, Math.Min(Military, GameConstants.MaxStat));
+        Technology = Math.Max(GameConstants.MinStat, Math.Min(Technology, GameConstants.MaxStat));
+        Influence = Math.Max(GameConstants.MinStat, Math.Min(Influence, GameConstants.MaxStat));
+        Resources = Math.Max(GameConstants.MinStat, Math.Min(Resources, GameConstants.MaxStat));
+        Stability = Math.Max(GameConstants.MinStat, Math.Min(Stability, GameConstants.MaxStat));
+        Reputation = Math.Max(
+            GameConstants.MinReputation,
+            Math.Min(Reputation, GameConstants.MaxReputation)
+        );
+
         Guard.IsTrue(
             Population >= GameConstants.MinStat && Population <= GameConstants.MaxStat,
             nameof(Population)
@@ -69,15 +81,36 @@ public class Faction
             nameof(Reputation)
         );
 
-        Population = Math.Max(GameConstants.MinStat, Math.Min(Population, GameConstants.MaxStat));
-        Military = Math.Max(GameConstants.MinStat, Math.Min(Military, GameConstants.MaxStat));
-        Technology = Math.Max(GameConstants.MinStat, Math.Min(Technology, GameConstants.MaxStat));
-        Influence = Math.Max(GameConstants.MinStat, Math.Min(Influence, GameConstants.MaxStat));
-        Resources = Math.Max(GameConstants.MinStat, Math.Min(Resources, GameConstants.MaxStat));
-        Stability = Math.Max(GameConstants.MinStat, Math.Min(Stability, GameConstants.MaxStat));
-        Reputation = Math.Max(
-            GameConstants.MinReputation,
-            Math.Min(Reputation, GameConstants.MaxReputation)
-        );
+        UpdateStatus();
+    }
+
+    /// <summary>
+    /// Updates the FactionStatus based on key stats (Stability, Population, Resources).
+    /// </summary>
+    public void UpdateStatus()
+    {
+        // Desperate or Collapsing if any critical stat is very low
+        if (Stability <= 10 || Population <= 10 || Resources <= 10)
+        {
+            Status =
+                (Stability <= 0 || Population <= 0 || Resources <= 0)
+                    ? FactionStatus.Collapsing
+                    : FactionStatus.Desperate;
+        }
+        // Struggling if stats are low but not critical
+        else if (Stability <= 25 || Population <= 25 || Resources <= 25)
+        {
+            Status = FactionStatus.Struggling;
+        }
+        // Thriving if all are high
+        else if (Stability >= 80 && Population >= 80 && Resources >= 80)
+        {
+            Status = FactionStatus.Thriving;
+        }
+        // Otherwise, stable
+        else
+        {
+            Status = FactionStatus.Stable;
+        }
     }
 }

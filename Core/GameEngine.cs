@@ -132,7 +132,10 @@ public class GameEngine(
                 .. CurrentGame.GalacticNews.Skip(Math.Max(0, CurrentGame.GalacticNews.Count - 15)),
             ];
         }
-        ApplyEventEffects(newEvents);
+        if (newEvents.Count > 0)
+        {
+            ApplyEventEffects(newEvents);
+        }
         await _gameDataService.SaveGameAsync(CurrentGame);
         CheckWinLoseConditions();
         CurrentGame.CurrentCycle++;
@@ -265,6 +268,9 @@ public class GameEngine(
                         break;
                 }
             }
+
+            // Update status after all effects
+            player.UpdateStatus();
 
             if (gameEvent.BlockedActions != null && CurrentGame.BlockedActions != null)
             {
