@@ -48,6 +48,14 @@ public static class EventTemplates
     public const string TrainingAccidentDescription =
         "A minor accident during training causes a brief setback.";
 
+    public const string SabotageDiscoveredTitle = "Sabotage Discovered";
+    public const string SabotageDiscoveredDescription =
+        "Saboteurs are caught damaging your military infrastructure. Losses are minimized, but morale suffers.";
+
+    public const string HeroicStandTitle = "Heroic Stand";
+    public const string HeroicStandDescription =
+        "A small unit makes a heroic stand, inspiring your forces and the populace.";
+
     // Economic events
     public const string MarketBoomTitle = "Market Boom";
     public const string MarketBoomDescription =
@@ -89,6 +97,14 @@ public static class EventTemplates
     public const string CharityDriveDescription =
         "A charity drive boosts morale and stability among the people.";
 
+    public const string ResourceCacheFoundTitle = "Resource Cache Found";
+    public const string ResourceCacheFoundDescription =
+        "A hidden cache of resources is discovered, providing a much-needed boost.";
+
+    public const string CorruptOfficialExposedTitle = "Corrupt Official Exposed";
+    public const string CorruptOfficialExposedDescription =
+        "A corrupt official is exposed, restoring some faith in your leadership but causing short-term instability.";
+
     // Technological events
     public const string BreakthroughAlgorithmTitle = "Breakthrough Algorithm";
     public const string BreakthroughAlgorithmDescription =
@@ -124,6 +140,14 @@ public static class EventTemplates
 
     public const string FailedExperimentTitle = "Failed Experiment";
     public const string FailedExperimentDescription = "A failed experiment causes a minor setback.";
+
+    public const string AIMalfunctionTitle = "AI Malfunction";
+    public const string AIMalfunctionDescription =
+        "A critical AI system malfunctions, disrupting research and operations.";
+
+    public const string EnergyBreakthroughTitle = "Energy Breakthrough";
+    public const string EnergyBreakthroughDescription =
+        "A breakthrough in energy technology increases your efficiency and output.";
 
     // Discovery events
     public const string AncientMemoryStirredTitle = "Ancient Memory Stirred";

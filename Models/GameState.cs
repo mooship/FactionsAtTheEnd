@@ -52,6 +52,16 @@ public class GameState
     public bool HasLost { get; set; } = false;
 
     /// <summary>
+    /// The version of the save file for compatibility and migration.
+    /// </summary>
+    public int SaveVersion { get; set; } = 1;
+
+    /// <summary>
+    /// List of achievement IDs or names unlocked in this game.
+    /// </summary>
+    public List<string> Achievements { get; set; } = [];
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="GameState"/> class with the specified id, save name, and player faction.
     /// </summary>
     public GameState(string id, string saveName, Faction playerFaction)
@@ -61,6 +71,8 @@ public class GameState
         PlayerFaction = playerFaction;
         CreatedAt = DateTime.UtcNow;
         LastPlayed = DateTime.UtcNow;
+        SaveVersion = 1;
+        Achievements = [];
         RecentEvents = [];
         GalacticHistory = [];
         BlockedActions = [];
@@ -71,5 +83,9 @@ public class GameState
     /// <summary>
     /// Initializes a new instance of the <see cref="GameState"/> class with default values.
     /// </summary>
-    public GameState() { }
+    public GameState()
+    {
+        SaveVersion = 1;
+        Achievements = [];
+    }
 }

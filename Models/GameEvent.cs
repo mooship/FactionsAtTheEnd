@@ -18,6 +18,11 @@ public class GameEvent
     public List<EventChoice>? Choices { get; set; }
 
     /// <summary>
+    /// Optional tags or categories for event variety and filtering.
+    /// </summary>
+    public List<string> Tags { get; set; } = [];
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="GameEvent"/> class with the specified title, description, type, and cycle.
     /// </summary>
     public GameEvent(string title, string description, EventType type, int cycle)
@@ -30,10 +35,14 @@ public class GameEvent
         Parameters = [];
         Effects = [];
         BlockedActions = [];
+        Tags = [];
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GameEvent"/> class with default values.
     /// </summary>
-    public GameEvent() { }
+    public GameEvent()
+    {
+        Tags = [];
+    }
 }

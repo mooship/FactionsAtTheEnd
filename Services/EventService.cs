@@ -46,6 +46,8 @@ public class EventService : IEventService
     {
         Guard.IsNotNull(gameState, nameof(gameState));
         var events = new List<GameEvent>();
+        var lastEventType = gameState.RecentEvents.LastOrDefault()?.Type;
+        var lastEventTags = gameState.RecentEvents.LastOrDefault()?.Tags ?? new List<string>();
         foreach (var kvp in gameState.RecentActionCounts)
         {
             if (kvp.Value >= 3)
@@ -60,6 +62,7 @@ public class EventService : IEventService
                         Cycle = gameState.CurrentCycle,
                         Effects = new() { { StatKey.Stability, -5 }, { StatKey.Resources, -3 } },
                         BlockedActions = [kvp.Key],
+                        Tags = ["Crisis", kvp.Key.ToString()],
                     }
                 );
             }
@@ -75,11 +78,20 @@ public class EventService : IEventService
         bool forcePositive = eventRoll <= (baseChance + positiveBonus);
         bool forceNegative = eventRoll > (100 - negativeBonus);
 
-        if (forcePositive || forceNegative || eventRoll <= baseChance)
+        GameEvent? gameEvent = null;
+        int attempts = 0;
+        do
         {
             var eventType = GetRandomEventType(gameState, forcePositive, forceNegative);
-            var gameEvent = GenerateEventByType(eventType, gameState);
-            Guard.IsNotNull(gameEvent);
+            gameEvent = GenerateEventByType(eventType, gameState);
+            attempts++;
+        } while (
+            gameEvent != null
+            && (gameEvent.Type == lastEventType || gameEvent.Tags.Any(lastEventTags.Contains))
+            && attempts < 5
+        );
+        if (gameEvent != null)
+        {
             events.Add(gameEvent);
         }
 
@@ -199,7 +211,7 @@ public class EventService : IEventService
     private static GameEvent GenerateMilitaryEvent(GameState gameState)
     {
         var player = gameState.PlayerFaction;
-        var index = Random.Shared.Next(10);
+        var index = Random.Shared.Next(12);
         if (player?.Type == FactionType.MilitaryJunta && Random.Shared.Next(1, 101) <= 20)
         {
             return new GameEvent
@@ -311,6 +323,23 @@ public class EventService : IEventService
                 Cycle = gameState.CurrentCycle,
                 Effects = new() { { StatKey.Military, -2 } },
             },
+            8 => new GameEvent
+            {
+                Title = SabotageDiscoveredTitle,
+                Description = SabotageDiscoveredDescription,
+                Type = EventType.Military,
+                Cycle = gameState.CurrentCycle,
+                Effects = new() { { StatKey.Military, -4 }, { StatKey.Stability, -2 } },
+                BlockedActions = [PlayerActionType.RecruitTroops],
+            },
+            9 => new GameEvent
+            {
+                Title = HeroicStandTitle,
+                Description = HeroicStandDescription,
+                Type = EventType.Military,
+                Cycle = gameState.CurrentCycle,
+                Effects = new() { { StatKey.Military, 6 }, { StatKey.Stability, 4 } },
+            },
             _ => new GameEvent(),
         };
     }
@@ -321,7 +350,7 @@ public class EventService : IEventService
     private static GameEvent GenerateEconomicEvent(GameState gameState)
     {
         var player = gameState.PlayerFaction;
-        var index = Random.Shared.Next(8);
+        var index = Random.Shared.Next(10);
         if (player?.Type == FactionType.CorporateCouncil && Random.Shared.Next(1, 101) <= 20)
         {
             return new GameEvent
@@ -411,6 +440,27 @@ public class EventService : IEventService
                 Cycle = gameState.CurrentCycle,
                 Effects = new() { { StatKey.Stability, 3 } },
             },
+            8 => new GameEvent
+            {
+                Title = ResourceCacheFoundTitle,
+                Description = ResourceCacheFoundDescription,
+                Type = EventType.Economic,
+                Cycle = gameState.CurrentCycle,
+                Effects = new() { { StatKey.Resources, 10 }, { StatKey.Stability, 1 } },
+            },
+            9 => new GameEvent
+            {
+                Title = CorruptOfficialExposedTitle,
+                Description = CorruptOfficialExposedDescription,
+                Type = EventType.Economic,
+                Cycle = gameState.CurrentCycle,
+                Effects = new()
+                {
+                    { StatKey.Stability, 3 },
+                    { StatKey.Influence, 2 },
+                    { StatKey.Resources, -2 },
+                },
+            },
             _ => new GameEvent(),
         };
     }
@@ -421,7 +471,7 @@ public class EventService : IEventService
     private static GameEvent GenerateTechnologicalEvent(GameState gameState)
     {
         var player = gameState.PlayerFaction;
-        var index = Random.Shared.Next(8);
+        var index = Random.Shared.Next(10);
         if (player?.Type == FactionType.TechnocraticUnion && Random.Shared.Next(1, 101) <= 20)
         {
             return new GameEvent
@@ -510,6 +560,22 @@ public class EventService : IEventService
                 Type = EventType.Technological,
                 Cycle = gameState.CurrentCycle,
                 Effects = new() { { StatKey.Technology, -2 } },
+            },
+            8 => new GameEvent
+            {
+                Title = AIMalfunctionTitle,
+                Description = AIMalfunctionDescription,
+                Type = EventType.Technological,
+                Cycle = gameState.CurrentCycle,
+                Effects = new() { { StatKey.Technology, -8 }, { StatKey.Stability, -2 } },
+            },
+            9 => new GameEvent
+            {
+                Title = EnergyBreakthroughTitle,
+                Description = EnergyBreakthroughDescription,
+                Type = EventType.Technological,
+                Cycle = gameState.CurrentCycle,
+                Effects = new() { { StatKey.Technology, 12 }, { StatKey.Resources, 5 } },
             },
             _ => new GameEvent(),
         };

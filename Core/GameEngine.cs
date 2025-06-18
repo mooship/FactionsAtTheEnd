@@ -299,6 +299,10 @@ public class GameEngine(
         if (CurrentGame.CurrentCycle > 20 || player.Technology >= 100)
         {
             CurrentGame.HasWon = true;
+            if (!CurrentGame.Achievements.Contains("Victory"))
+            {
+                CurrentGame.Achievements.Add("Victory");
+            }
         }
 
         // Lose conditions
@@ -310,6 +314,24 @@ public class GameEngine(
         )
         {
             CurrentGame.HasLost = true;
+            if (!CurrentGame.Achievements.Contains("Defeat"))
+            {
+                CurrentGame.Achievements.Add("Defeat");
+            }
+        }
+
+        // Other achievements
+        if (player.Reputation >= 100 && !CurrentGame.Achievements.Contains("Legendary Reputation"))
+        {
+            CurrentGame.Achievements.Add("Legendary Reputation");
+        }
+        if (player.Military >= 100 && !CurrentGame.Achievements.Contains("Warlord"))
+        {
+            CurrentGame.Achievements.Add("Warlord");
+        }
+        if (player.Technology >= 100 && !CurrentGame.Achievements.Contains("Tech Ascendant"))
+        {
+            CurrentGame.Achievements.Add("Tech Ascendant");
         }
     }
 

@@ -23,5 +23,7 @@ public class GameStateValidator : AbstractValidator<GameState>
         RuleForEach(g => g.BlockedActions).IsInEnum();
         RuleForEach(g => g.RecentActionCounts.Keys).IsInEnum();
         RuleForEach(g => g.GalacticNews).NotNull();
+        RuleFor(g => g.SaveVersion).GreaterThanOrEqualTo(1);
+        RuleForEach(g => g.Achievements).NotNull();
     }
 }
