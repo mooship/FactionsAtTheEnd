@@ -1,3 +1,4 @@
+using FactionsAtTheEnd.Enums;
 using FactionsAtTheEnd.Models;
 
 namespace FactionsAtTheEnd.Interfaces

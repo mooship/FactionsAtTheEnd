@@ -17,8 +17,3 @@ public enum MenuOption
     ExportSave,
     ImportSave,
 }
-
-/// <summary>
-/// Used for stat display and event effects.
-/// </summary>
-// Removed StatKey enum. Use FactionsAtTheEnd.Constants.StatKey instead.

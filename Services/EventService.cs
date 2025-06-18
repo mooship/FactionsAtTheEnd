@@ -1,5 +1,5 @@
 using CommunityToolkit.Diagnostics;
-using FactionsAtTheEnd.Constants;
+using FactionsAtTheEnd.Enums;
 using FactionsAtTheEnd.Extensions;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;

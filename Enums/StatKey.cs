@@ -1,4 +1,4 @@
-namespace FactionsAtTheEnd.Constants;
+namespace FactionsAtTheEnd.Enums;
 
 /// <summary>
 /// Used for stat display and event effects.

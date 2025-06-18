@@ -1,6 +1,4 @@
-using CommunityToolkit.Diagnostics;
-using FactionsAtTheEnd.Constants;
-using FactionsAtTheEnd.UI;
+using FactionsAtTheEnd.Enums;
 
 namespace FactionsAtTheEnd.Models;
 
