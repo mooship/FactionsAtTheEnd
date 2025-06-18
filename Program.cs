@@ -29,7 +29,6 @@ class Program
             var services = new ServiceCollection();
             ConfigureServices(services);
             var serviceProvider = services.BuildServiceProvider();
-
             var gameUI = serviceProvider.GetRequiredService<GameUI>();
 
             AnsiConsole.MarkupLine("[bold red]🔮 FACTIONS AT THE END 🔮[/]");
@@ -51,7 +50,6 @@ class Program
 
     private static void ConfigureServices(IServiceCollection services)
     {
-        // Register services and engine
         services.AddSingleton<ILiteDatabase>(sp => new LiteDatabase("factionsattheend.db"));
         services.AddSingleton<IEventService, EventService>();
         services.AddSingleton<IFactionService, FactionService>();
@@ -64,8 +62,7 @@ class Program
             sp.GetRequiredService<IGlobalAchievementService>()
         ));
         services.AddSingleton<GameEngine>();
-        // Register validators
-        services.AddTransient<IValidator<Faction>, FactionValidator>();
-        services.AddTransient<IValidator<PlayerAction>, PlayerActionValidator>();
+        services.AddSingleton<IValidator<Faction>, FactionValidator>();
+        services.AddSingleton<IValidator<PlayerAction>, PlayerActionValidator>();
     }
 }
