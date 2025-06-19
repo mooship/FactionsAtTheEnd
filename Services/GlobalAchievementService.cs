@@ -1,3 +1,4 @@
+using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using LiteDB;
@@ -18,6 +19,7 @@ public class GlobalAchievementService : IGlobalAchievementService
     /// <param name="db">The LiteDB database instance.</param>
     public GlobalAchievementService(ILiteDatabase db)
     {
+        Guard.IsNotNull(db, nameof(db));
         _db = db;
         _collection = _db.GetCollection<GlobalAchievement>("global_achievements");
         _collection.EnsureIndex(x => x.Name, true);
@@ -30,6 +32,8 @@ public class GlobalAchievementService : IGlobalAchievementService
     /// <param name="description">The achievement description.</param>
     public void UnlockAchievement(string name, string description)
     {
+        Guard.IsNotNullOrWhiteSpace(name, nameof(name));
+        Guard.IsNotNullOrWhiteSpace(description, nameof(description));
         if (!IsAchievementUnlocked(name))
         {
             var achievement = new GlobalAchievement
@@ -49,6 +53,7 @@ public class GlobalAchievementService : IGlobalAchievementService
     /// <returns>True if the achievement is unlocked; otherwise, false.</returns>
     public bool IsAchievementUnlocked(string name)
     {
+        Guard.IsNotNullOrWhiteSpace(name, nameof(name));
         return _collection.Exists(x => x.Name == name);
     }
 
@@ -58,6 +63,7 @@ public class GlobalAchievementService : IGlobalAchievementService
     /// <returns>List of unlocked <see cref="GlobalAchievement"/> objects.</returns>
     public List<GlobalAchievement> GetAllAchievements()
     {
-        return _collection.FindAll().ToList();
+        Guard.IsNotNull(_collection, nameof(_collection));
+        return [.. _collection.FindAll()];
     }
 }

@@ -64,5 +64,6 @@ class Program
         services.AddSingleton<GameEngine>();
         services.AddSingleton<IValidator<Faction>, FactionValidator>();
         services.AddSingleton<IValidator<PlayerAction>, PlayerActionValidator>();
+        services.AddSingleton<IValidator<GlobalAchievement>, GlobalAchievementValidator>();
     }
 }
