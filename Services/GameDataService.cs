@@ -18,11 +18,15 @@ public class GameDataService : IGameDataService
     {
         WriteIndented = true,
     };
+    private readonly IAppLogger _logger;
 
-    public GameDataService(ILiteDatabase db)
+    public GameDataService(ILiteDatabase db, IAppLogger logger)
     {
         Guard.IsNotNull(db, nameof(db));
+        Guard.IsNotNull(logger, nameof(logger));
         _db = db;
+        _logger = logger;
+        _logger.Information("GameDataService initialized with LiteDB instance.");
     }
 
     /// <summary>
@@ -41,7 +45,7 @@ public class GameDataService : IGameDataService
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"[GameDataService] Error saving game: {ex.Message}");
+            _logger.Error(ex, "[GameDataService] Error saving game");
             throw new ApplicationException("Failed to save game data.", ex);
         }
     }
@@ -62,7 +66,7 @@ public class GameDataService : IGameDataService
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"[GameDataService] Error loading saved games: {ex.Message}");
+            _logger.Error(ex, "[GameDataService] Error loading saved games");
             return [];
         }
     }
@@ -84,7 +88,7 @@ public class GameDataService : IGameDataService
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"[GameDataService] Error loading game: {ex.Message}");
+            _logger.Error(ex, "[GameDataService] Error loading game");
             return null;
         }
     }
@@ -106,7 +110,7 @@ public class GameDataService : IGameDataService
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"[GameDataService] Error deleting game: {ex.Message}");
+            _logger.Error(ex, "[GameDataService] Error deleting game");
         }
     }
 
@@ -128,7 +132,7 @@ public class GameDataService : IGameDataService
         }
         catch (JsonException ex)
         {
-            Console.Error.WriteLine($"[GameDataService] Error exporting game state: {ex.Message}");
+            _logger.Error(ex, "[GameDataService] Error exporting game state");
             throw new ApplicationException("Failed to export game data.", ex);
         }
     }
@@ -152,8 +156,9 @@ public class GameDataService : IGameDataService
             if (!validation.IsValid)
             {
                 var errors = string.Join("; ", validation.Errors.Select(e => e.ErrorMessage));
-                Console.Error.WriteLine(
-                    $"[GameDataService] Invalid game state from import: {errors}"
+                _logger.Warning(
+                    "[GameDataService] Invalid game state from import: {Errors}",
+                    errors
                 );
                 return null;
             }
@@ -161,7 +166,7 @@ public class GameDataService : IGameDataService
         }
         catch (JsonException ex)
         {
-            Console.Error.WriteLine($"[GameDataService] Error importing game state: {ex.Message}");
+            _logger.Error(ex, "[GameDataService] Error importing game state");
             return null;
         }
     }

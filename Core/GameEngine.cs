@@ -2,7 +2,6 @@ using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.Enums;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
-using FactionsAtTheEnd.Services;
 using FactionsAtTheEnd.UI;
 using FluentValidation;
 
@@ -56,6 +55,7 @@ public class GameEngine(
             playerFactionType,
             true
         );
+        Guard.IsNotNull(playerFaction, nameof(playerFaction));
         var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmm");
         var safeFactionName = string.Join(
             "",
@@ -67,6 +67,7 @@ public class GameEngine(
             SaveName = $"{safeFactionName}_{timestamp}",
             CurrentCycle = 1,
         };
+        Guard.IsNotNull(gameState, nameof(gameState));
 
         var initialEvents = new List<GameEvent>
         {
@@ -81,16 +82,24 @@ public class GameEngine(
         // Validate initial events and their choices
         foreach (var gameEvent in initialEvents)
         {
+            Guard.IsNotNull(gameEvent, nameof(gameEvent));
             var validationResult = _gameEventValidator.Validate(gameEvent);
             if (!validationResult.IsValid)
-                throw new ValidationException(validationResult.Errors);
+                throw new ArgumentException(
+                    $"Invalid initial event: {string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))}"
+                );
             if (gameEvent.Choices != null)
             {
                 foreach (var choice in gameEvent.Choices)
                 {
-                    var choiceResult = _eventChoiceValidator.Validate(choice);
-                    if (!choiceResult.IsValid)
-                        throw new ValidationException(choiceResult.Errors);
+                    Guard.IsNotNull(choice, nameof(choice));
+                    var choiceValidation = _eventChoiceValidator.Validate(choice);
+                    if (!choiceValidation.IsValid)
+                    {
+                        throw new ArgumentException(
+                            $"Invalid event choice: {string.Join(", ", choiceValidation.Errors.Select(e => e.ErrorMessage))}"
+                        );
+                    }
                 }
             }
         }
@@ -110,7 +119,9 @@ public class GameEngine(
     public async Task<List<GameState>> GetSavedGamesAsync()
     {
         Guard.IsNotNull(_gameDataService, nameof(_gameDataService));
-        return await _gameDataService.GetSavedGamesAsync();
+        var games = await _gameDataService.GetSavedGamesAsync();
+        Guard.IsNotNull(games, nameof(games));
+        return games;
     }
 
     /// <summary>
@@ -121,7 +132,6 @@ public class GameEngine(
     public async Task LoadGameAsync(string gameId)
     {
         Guard.IsNotNullOrWhiteSpace(gameId, nameof(gameId));
-
         var loaded = await _gameDataService.LoadGameAsync(gameId);
         Guard.IsNotNull(loaded, nameof(loaded));
         CurrentGame = loaded;

@@ -27,7 +27,8 @@ public class FactionService : IFactionService
             Traits = GenerateFactionTraits(type),
             Reputation = 25,
         };
-
+        Guard.IsNotNull(faction.Description, nameof(faction.Description));
+        Guard.IsNotNull(faction.Traits, nameof(faction.Traits));
         SetStartingResources(faction);
 
         switch (type)
