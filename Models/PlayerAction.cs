@@ -14,7 +14,7 @@ public class PlayerAction
     public PlayerAction(PlayerActionType actionType, Dictionary<string, object>? parameters = null)
     {
         ActionType = actionType;
-        Parameters = parameters ?? new Dictionary<string, object>();
+        Parameters = parameters ?? [];
     }
 
     /// <summary>

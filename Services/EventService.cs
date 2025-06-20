@@ -47,7 +47,7 @@ public class EventService : IEventService
         Guard.IsNotNull(gameState, nameof(gameState));
         var events = new List<GameEvent>();
         var lastEventType = gameState.RecentEvents.LastOrDefault()?.Type;
-        var lastEventTags = gameState.RecentEvents.LastOrDefault()?.Tags ?? new List<string>();
+        var lastEventTags = gameState.RecentEvents.LastOrDefault()?.Tags ?? [];
         var logger = Serilog.Log.Logger;
         logger.Debug("Generating random events for cycle {Cycle}", gameState.CurrentCycle);
 
@@ -141,6 +141,30 @@ public class EventService : IEventService
                 }
             );
             logger.Debug("Diplomatic Overture event added as a rare event.");
+        }
+
+        var multiStepEvents = new[]
+        {
+            (Event: AidRefugeesMultiStep, Tag: "MultiStep_AidRefugees"),
+            (Event: InvestigateAnomalyMultiStep, Tag: "MultiStep_InvestigateAnomaly"),
+            (Event: MilitaryDilemmaMultiStep, Tag: "MultiStep_MilitaryDilemma"),
+        };
+        var usedTags = new HashSet<string>(lastEventTags);
+        var availableMultiStep = multiStepEvents.Where(e => !usedTags.Contains(e.Tag)).ToList();
+        if (availableMultiStep.Count > 0 && Random.Shared.Next(1, 101) <= 10)
+        {
+            var selected = availableMultiStep[Random.Shared.Next(availableMultiStep.Count)];
+            events.Add(
+                new GameEvent
+                {
+                    Title = "Multi-Step Dilemma",
+                    Description = selected.Event.Description,
+                    Type = EventType.Crisis,
+                    Cycle = gameState.CurrentCycle,
+                    Choices = [selected.Event],
+                    Tags = [selected.Tag],
+                }
+            );
         }
         return events;
     }

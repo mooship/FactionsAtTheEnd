@@ -5,12 +5,10 @@ namespace FactionsAtTheEnd.UI;
 
 public static class EventTemplates
 {
-    // Initial events
     public const string InitialCrisisTitle = "Collapse";
     public const string InitialCrisisDescription =
         "The imperial government has fallen. You lead the last organized group in your region. Survival is up to you.";
 
-    // Military events
     public const string VeteranParadeTitle = "Veteran Parade";
     public const string VeteranParadeDescription =
         "A parade of veterans inspires your troops and citizens alike.";
@@ -59,7 +57,6 @@ public static class EventTemplates
     public const string HeroicStandDescription =
         "A small unit makes a heroic stand, inspiring your forces and the populace.";
 
-    // Economic events
     public const string MarketBoomTitle = "Market Boom";
     public const string MarketBoomDescription =
         "A surge in the market brings a windfall to your coffers.";
@@ -108,7 +105,6 @@ public static class EventTemplates
     public const string CorruptOfficialExposedDescription =
         "A corrupt official is exposed, restoring some faith in your leadership but causing short-term instability.";
 
-    // Technological events
     public const string BreakthroughAlgorithmTitle = "Breakthrough Algorithm";
     public const string BreakthroughAlgorithmDescription =
         "Your scientists develop a revolutionary algorithm, accelerating research.";
@@ -152,7 +148,6 @@ public static class EventTemplates
     public const string EnergyBreakthroughDescription =
         "A breakthrough in energy technology increases your efficiency and output.";
 
-    // Discovery events
     public const string AncientMemoryStirredTitle = "Ancient Memory Stirred";
     public const string AncientMemoryStirredDescription =
         "A memory from a forgotten age grants your people new insight.";
@@ -192,7 +187,6 @@ public static class EventTemplates
     public const string FalseLeadTitle = "False Lead";
     public const string FalseLeadDescription = "A promising lead turns out to be a dead end.";
 
-    // Natural events
     public const string PilgrimageMiracleTitle = "Pilgrimage Miracle";
     public const string PilgrimageMiracleDescription =
         "A miracle during a pilgrimage inspires hope and unity.";
@@ -248,7 +242,6 @@ public static class EventTemplates
     public const string MajorCrisisDescription =
         "A major crisis shakes your faction to its core, testing your leadership.";
 
-    // Special events
     public const string DiplomaticOvertureTitle = "Diplomatic Overture";
     public const string DiplomaticOvertureDescription =
         "A neighboring faction offers an alliance. Do you accept?";
@@ -265,75 +258,71 @@ public static class EventTemplates
     public const string UprisingIgnitedDescription =
         "Your agents inspire a local uprising, swelling your ranks and spreading hope among the oppressed.";
 
+    public const string AssignEscortPrompt = "Assign military escort to protect refugees?";
+    public const string AssignEscortYes = "Yes, assign escort (costs military, boosts reputation)";
+    public const string AssignEscortNo = "No, let them fend for themselves (risk minor loss)";
+    public const string RefuseFurtherInvolvement = "Refuse further involvement";
+
+    public const string ProceedWithDeepScan = "Proceed with deep scan";
+    public const string ScanSuccess = "Scan successful! Gain major tech.";
+    public const string ScanBackfire = "Scan backfires! Lose stability.";
+    public const string AbortScan = "Abort scan";
+
+    public const string CommitForcesToBattle = "Commit forces to battle";
+    public const string SeekDiplomaticSolution = "Seek diplomatic solution";
+    public const string OfferConcessions = "Offer concessions";
+    public const string RefuseToCompromise = "Refuse to compromise";
+
     public static readonly EventChoice AidRefugeesMultiStep = new(
         ChoiceEventTemplates.AidRefugeesDescription,
         new Dictionary<StatKey, int> { { StatKey.Reputation, 10 }, { StatKey.Resources, -10 } },
         null,
-        new List<EventChoice>
-        {
+        [
             new(
-                "Assign military escort to protect refugees?",
+                AssignEscortPrompt,
                 null,
                 null,
-                new List<EventChoice>
-                {
+                [
                     new(
-                        "Yes, assign escort (costs military, boosts reputation)",
+                        AssignEscortYes,
                         new Dictionary<StatKey, int>
                         {
                             { StatKey.Military, -5 },
                             { StatKey.Reputation, 5 },
                         }
                     ),
-                    new(
-                        "No, let them fend for themselves (risk minor loss)",
-                        new Dictionary<StatKey, int> { { StatKey.Stability, -3 } }
-                    ),
-                }
+                    new(AssignEscortNo, new Dictionary<StatKey, int> { { StatKey.Stability, -3 } }),
+                ]
             ),
-            new(
-                "Refuse further involvement (no additional effect)",
-                new Dictionary<StatKey, int>()
-            ),
-        }
+            new(RefuseFurtherInvolvement, []),
+        ]
     );
 
-    // Example: Multi-step event - "Investigate the Anomaly" with a risk/reward branch
     public static readonly EventChoice InvestigateAnomalyMultiStep = new(
         ChoiceEventTemplates.InvestigateAnomalyDescription,
         new Dictionary<StatKey, int> { { StatKey.Technology, 5 }, { StatKey.Stability, -2 } },
         null,
-        new List<EventChoice>
-        {
+        [
             new(
-                "Proceed with deep scan (risk damage for greater reward)",
+                ProceedWithDeepScan,
                 null,
                 null,
-                new List<EventChoice>
-                {
-                    new(
-                        "Scan successful! Gain major tech.",
-                        new Dictionary<StatKey, int> { { StatKey.Technology, 15 } }
-                    ),
-                    new(
-                        "Scan backfires! Lose stability.",
-                        new Dictionary<StatKey, int> { { StatKey.Stability, -10 } }
-                    ),
-                }
+                [
+                    new(ScanSuccess, new Dictionary<StatKey, int> { { StatKey.Technology, 15 } }),
+                    new(ScanBackfire, new Dictionary<StatKey, int> { { StatKey.Stability, -10 } }),
+                ]
             ),
-            new("Abort scan (no further risk or reward)", new Dictionary<StatKey, int>()),
-        }
+            new(AbortScan, []),
+        ]
     );
 
-    // Example: Multi-step event - "Military Dilemma" with a diplomatic branch
     public static readonly EventChoice MilitaryDilemmaMultiStep = new(
         ChoiceEventTemplates.MilitaryChoiceDescription,
         null,
         null,
-        new List<EventChoice>
-        {
+        [
             new(
-                "Commit forces to battle",
+                CommitForcesToBattle,
                 new Dictionary<StatKey, int>
                 {
                     { StatKey.Military, -10 },
@@ -341,13 +330,12 @@ public static class EventTemplates
                 }
             ),
             new(
-                "Seek diplomatic solution",
+                SeekDiplomaticSolution,
                 new Dictionary<StatKey, int> { { StatKey.Influence, -5 } },
                 null,
-                new List<EventChoice>
-                {
+                [
                     new(
-                        "Offer concessions (lose resources, gain stability)",
+                        OfferConcessions,
                         new Dictionary<StatKey, int>
                         {
                             { StatKey.Resources, -5 },
@@ -355,11 +343,11 @@ public static class EventTemplates
                         }
                     ),
                     new(
-                        "Refuse to compromise (risk reputation)",
+                        RefuseToCompromise,
                         new Dictionary<StatKey, int> { { StatKey.Reputation, -5 } }
                     ),
-                }
+                ]
             ),
-        }
+        ]
     );
 }
