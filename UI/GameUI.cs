@@ -151,29 +151,6 @@ public class GameUI
     }
 
     /// <summary>
-    /// Gets a description for a given player action type.
-    /// </summary>
-    /// <param name="action">The action type.</param>
-    /// <returns>Description string.</returns>
-    private static string GetActionDescription(PlayerActionType action)
-    {
-        return action switch
-        {
-            PlayerActionType.BuildDefenses => ActionDescriptions.BuildDefenses,
-            PlayerActionType.RecruitTroops => ActionDescriptions.RecruitTroops,
-            PlayerActionType.DevelopInfrastructure => ActionDescriptions.DevelopInfrastructure,
-            PlayerActionType.ExploitResources => ActionDescriptions.ExploitResources,
-            PlayerActionType.MilitaryTech => ActionDescriptions.MilitaryTech,
-            PlayerActionType.EconomicTech => ActionDescriptions.EconomicTech,
-            PlayerActionType.AncientStudies => ActionDescriptions.AncientStudies,
-            PlayerActionType.GateNetworkResearch => ActionDescriptions.GateNetworkResearch,
-            PlayerActionType.Diplomacy => ActionDescriptions.Diplomacy,
-            PlayerActionType.Espionage => ActionDescriptions.Espionage,
-            _ => ActionDescriptions.Default,
-        };
-    }
-
-    /// <summary>
     /// Starts a new game, prompting the user for faction details and launching the game loop.
     /// </summary>
     private async Task StartNewGameAsync()
@@ -184,7 +161,6 @@ public class GameUI
 
         var factionName = AnsiConsole.Ask<string>("What is your faction's [bold green]name[/]?");
 
-        // Prepare choices with both name and description
         var factionChoices = Enum.GetValues<FactionType>()
             .Select(type => new
             {
@@ -203,7 +179,6 @@ public class GameUI
         );
         var selectedFaction = factionChoices.First(fc => fc.Display == selectedDisplay).Type;
 
-        // Validate faction input
         var tempFaction = new Faction
         {
             Name = factionName,
@@ -279,7 +254,6 @@ public class GameUI
             var playerFaction = game.PlayerFaction;
             Guard.IsNotNull(playerFaction);
 
-            // Show blocked actions from events
             if (game.BlockedActions.Count > 0)
             {
                 AnsiConsole.MarkupLine(
@@ -290,7 +264,6 @@ public class GameUI
                     AnsiConsole.MarkupLine($"[red]- {blocked.GetDisplayName()}[/]");
                 }
             }
-            // Show tooltips for blocked actions
             if (game.BlockedActions.Count > 0)
             {
                 foreach (var blocked in game.BlockedActions)
@@ -300,7 +273,6 @@ public class GameUI
             }
             AnsiConsole.MarkupLine("[grey]Press [b]H[/] at any time for help.[/]");
 
-            // Game over condition
             if (game.HasLost)
             {
                 _logger.Information("Player has lost the game.");
