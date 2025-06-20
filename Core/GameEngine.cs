@@ -51,11 +51,17 @@ public class GameEngine(
             Enum.IsDefined(typeof(FactionType), playerFactionType),
             nameof(playerFactionType) + " must be a valid FactionType."
         );
+        _logger.Debug(
+            "Starting CreateNewGameAsync for {FactionName} ({FactionType})",
+            playerFactionName,
+            playerFactionType
+        );
         try
         {
             _logger.Information(
                 "Creating new game for faction: {FactionName} ({FactionType})",
-                [playerFactionName, playerFactionType]
+                playerFactionName,
+                playerFactionType
             );
             try
             {
@@ -131,6 +137,10 @@ public class GameEngine(
                     }
                 }
                 gameState.RecentEvents.AddRange(initialEvents);
+                _logger.Debug(
+                    "Initial events created for new game: {EventCount}",
+                    initialEvents.Count
+                );
 
                 CurrentGame = gameState;
                 Guard.IsNotNull(gameState, nameof(gameState));
@@ -138,10 +148,23 @@ public class GameEngine(
                 _logger.Information("New game created and saved: {SaveName}", gameState.SaveName);
                 return gameState;
             }
+            catch (ArgumentException argEx)
+            {
+                _logger.Warning(
+                    "Validation failed during new game creation for {FactionName}: {Error}",
+                    playerFactionName,
+                    argEx.Message
+                );
+                throw;
+            }
             catch (Exception ex)
             {
-                _logger.Error(ex, "[GameEngine] Error creating new game");
-                throw new ApplicationException("Failed to create new game.", ex);
+                _logger.Error(
+                    ex,
+                    "Failed to create new game for faction: {FactionName}",
+                    playerFactionName
+                );
+                throw;
             }
         }
         catch (Exception ex)
@@ -167,7 +190,7 @@ public class GameEngine(
         {
             var games = await _gameDataService.GetSavedGamesAsync();
             Guard.IsNotNull(games, nameof(games));
-            _logger.Information("Loaded {Count} saved games.", games.Count);
+            _logger.Information("Retrieved {Count} saved games.", games.Count);
             return games;
         }
         catch (Exception ex)
@@ -188,15 +211,28 @@ public class GameEngine(
         Guard.IsNotNullOrWhiteSpace(gameId, nameof(gameId));
         try
         {
-            var loaded = await _gameDataService.LoadGameAsync(gameId);
-            Guard.IsNotNull(loaded, nameof(loaded));
-            CurrentGame = loaded;
-            _logger.Information("Game loaded: {SaveName}", loaded.SaveName);
+            var game = await _gameDataService.LoadGameAsync(gameId);
+            if (game == null)
+            {
+                _logger.Warning("No game found with ID: {GameId}", gameId);
+                throw new ArgumentException($"No saved game found with ID: {gameId}");
+            }
+            CurrentGame = game;
+            _logger.Information("Game loaded successfully: {SaveName}", game.SaveName);
+        }
+        catch (ArgumentException argEx)
+        {
+            _logger.Warning(
+                "User error loading game with ID: {GameId}: {Error}",
+                gameId,
+                argEx.Message
+            );
+            throw;
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "[GameEngine] Error loading game");
-            throw new ApplicationException("Failed to load game.", ex);
+            _logger.Error(ex, "[GameEngine] Error loading game with ID: {GameId}", gameId);
+            throw;
         }
     }
 
@@ -208,9 +244,8 @@ public class GameEngine(
     public async Task ProcessTurnAsync(List<PlayerAction> playerActions)
     {
         _logger.Debug(
-            "Processing turn for game: {SaveName}, Cycle: {Cycle}",
-            CurrentGame?.SaveName ?? "<null>",
-            CurrentGame?.CurrentCycle ?? 0
+            "Processing turn with {ActionCount} player actions.",
+            playerActions?.Count ?? 0
         );
         Guard.IsNotNull(playerActions, nameof(playerActions));
         Guard.IsTrue(playerActions.Count > 0, "At least one player action must be provided.");
@@ -252,10 +287,15 @@ public class GameEngine(
             CheckWinLoseConditions();
             CurrentGame.CurrentCycle++;
         }
+        catch (ArgumentException argEx)
+        {
+            _logger.Warning("Validation failed during turn processing: {Error}", argEx.Message);
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.Error(ex, "[GameEngine] Error processing turn");
-            throw new ApplicationException("Failed to process turn.", ex);
+            throw;
         }
     }
 
