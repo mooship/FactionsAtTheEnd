@@ -6,6 +6,7 @@ using FactionsAtTheEnd.Extensions;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using FluentValidation;
+using Serilog;
 using Spectre.Console;
 using TextCopy;
 
@@ -20,6 +21,7 @@ public class GameUI
     private readonly IValidator<Faction> _factionValidator;
     private readonly IValidator<PlayerAction> _playerActionValidator;
     private readonly IGlobalAchievementService _globalAchievementService;
+    private static readonly ILogger _logger = Log.Logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GameUI"/> class.
@@ -43,6 +45,7 @@ public class GameUI
         _factionValidator = factionValidator;
         _playerActionValidator = playerActionValidator;
         _globalAchievementService = globalAchievementService;
+        _logger.Debug("GameUI initialized.");
     }
 
     /// <summary>
@@ -55,6 +58,7 @@ public class GameUI
             AnsiConsole.Clear();
             AnsiConsole.MarkupLine("[bold red]🔮 FACTIONS AT THE END 🔮[/]");
             AnsiConsole.WriteLine();
+            _logger.Debug("Main menu displayed.");
 
             var menuOptions = new[]
             {
@@ -73,29 +77,37 @@ public class GameUI
                     .UseConverter(opt => opt.GetDisplayName())
             );
 
-            switch (choice)
+            try
             {
-                case MenuOption.NewGame:
-                    await StartNewGameAsync();
-                    break;
-                case MenuOption.LoadGame:
-                    await LoadGameAsync();
-                    break;
-                case MenuOption.Help:
-                    ShowHelp();
-                    break;
-                case MenuOption.Exit:
-                    AnsiConsole.MarkupLine("[yellow]May your faction survive the darkness...[/]");
-                    return;
-                case MenuOption.ExportSave:
-                    ExportSave();
-                    break;
-                case MenuOption.ImportSave:
-                    await ImportSaveAsync();
-                    break;
-                case MenuOption.ShowGlobalAchievements:
-                    ShowGlobalAchievements();
-                    break;
+                switch (choice)
+                {
+                    case MenuOption.NewGame:
+                        await StartNewGameAsync();
+                        break;
+                    case MenuOption.LoadGame:
+                        await LoadGameAsync();
+                        break;
+                    case MenuOption.Help:
+                        ShowHelp();
+                        break;
+                    case MenuOption.Exit:
+                        _logger.Information("User exited the game from main menu.");
+                        return;
+                    case MenuOption.ExportSave:
+                        ExportSave();
+                        break;
+                    case MenuOption.ImportSave:
+                        await ImportSaveAsync();
+                        break;
+                    case MenuOption.ShowGlobalAchievements:
+                        ShowGlobalAchievements();
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error in main menu selection: {Choice}", choice);
+                AnsiConsole.MarkupLine($"[red]An error occurred: {ex.Message}[/]");
             }
         }
     }
@@ -201,13 +213,11 @@ public class GameUI
         var validationResult = _factionValidator.Validate(tempFaction);
         if (!validationResult.IsValid)
         {
-            foreach (var error in validationResult.Errors)
-            {
-                AnsiConsole.MarkupLine($"[red]{error.ErrorMessage}[/]");
-            }
-            AnsiConsole.MarkupLine("Press any key to try again...");
-            Console.ReadKey();
-            await StartNewGameAsync();
+            _logger.Warning(
+                "Invalid faction details provided: {Errors}",
+                string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))
+            );
+            AnsiConsole.MarkupLine("[red]Invalid faction details. Please try again.[/]");
             return;
         }
 
@@ -229,13 +239,13 @@ public class GameUI
     /// </summary>
     private async Task LoadGameAsync()
     {
+        _logger.Debug("Loading game from UI.");
         var savedGames = await _gameEngine.GetSavedGamesAsync();
 
         if (savedGames.Count == 0)
         {
-            AnsiConsole.MarkupLine("[red]No saved games found.[/]");
-            AnsiConsole.MarkupLine("Press any key to continue...");
-            Console.ReadKey();
+            _logger.Warning("No saved games found when attempting to load.");
+            AnsiConsole.MarkupLine("[yellow]No saved games found.[/]");
             return;
         }
 
@@ -261,6 +271,7 @@ public class GameUI
     /// </summary>
     private async Task RunGameLoopAsync()
     {
+        _logger.Debug("Game loop started.");
         while (true)
         {
             var game = _gameEngine.CurrentGame;
@@ -292,23 +303,15 @@ public class GameUI
             // Game over condition
             if (game.HasLost)
             {
-                AnsiConsole.MarkupLine("[bold red]Your faction has collapsed![/]");
-                AnsiConsole.MarkupLine(
-                    "[yellow]Game Over. Press any key to return to the main menu.[/]"
-                );
-                Console.ReadKey();
+                _logger.Information("Player has lost the game.");
+                AnsiConsole.MarkupLine("[red]You have lost the game![/]");
                 break;
             }
             // Win condition
             if (game.HasWon || playerFaction.Technology >= 100 || game.CurrentCycle > 20)
             {
-                AnsiConsole.MarkupLine(
-                    "[bold green]Congratulations! You have survived and triumphed in the dying galaxy![/]"
-                );
-                AnsiConsole.MarkupLine(
-                    "[yellow]You win! Press any key to return to the main menu.[/]"
-                );
-                Console.ReadKey();
+                _logger.Information("Player has won the game or met win conditions.");
+                AnsiConsole.MarkupLine("[green]Congratulations! You have won the game![/]");
                 break;
             }
 
@@ -963,6 +966,7 @@ public class GameUI
         }
         catch (Exception ex)
         {
+            _logger.Error(ex, "Error importing save JSON.");
             AnsiConsole.MarkupLine($"[red]Failed to import save: {ex.Message}[/]");
             AnsiConsole.MarkupLine("Press any key to return...");
             Console.ReadKey();
@@ -974,14 +978,12 @@ public class GameUI
     /// </summary>
     private void ShowGlobalAchievements()
     {
+        _logger.Debug("Displaying global achievements.");
         var achievements = _globalAchievementService.GetAllAchievements();
         if (achievements.Count == 0)
         {
+            _logger.Warning("No global achievements unlocked.");
             AnsiConsole.MarkupLine("[yellow]No global achievements unlocked yet.[/]");
-            AnsiConsole.WriteLine();
-            AnsiConsole.MarkupLine("Press any key to return to the menu...");
-            Console.ReadKey(true);
-            return;
         }
         var table = new Table()
             .Border(TableBorder.Rounded)

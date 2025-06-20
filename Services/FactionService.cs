@@ -4,11 +4,14 @@ using FactionsAtTheEnd.Enums;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using FactionsAtTheEnd.UI;
+using Serilog;
 
 namespace FactionsAtTheEnd.Services;
 
 public class FactionService : IFactionService
 {
+    private static readonly ILogger _logger = Log.Logger;
+
     public FactionService() { }
 
     public Faction CreateFaction(string name, FactionType type, bool isPlayer = false)
@@ -18,6 +21,7 @@ public class FactionService : IFactionService
             Enum.IsDefined(typeof(FactionType), type),
             nameof(type) + " must be a valid FactionType."
         );
+        _logger.Debug("Creating faction: {Name} ({Type})", name, type);
         try
         {
             var faction = new Faction
@@ -32,7 +36,7 @@ public class FactionService : IFactionService
             Guard.IsNotNull(faction.Description, nameof(faction.Description));
             Guard.IsNotNull(faction.Traits, nameof(faction.Traits));
             SetStartingResources(faction);
-
+            _logger.Information("Faction created: {Name}", name);
             switch (type)
             {
                 case FactionType.MilitaryJunta:
@@ -67,6 +71,7 @@ public class FactionService : IFactionService
         }
         catch (Exception ex)
         {
+            _logger.Error(ex, "Failed to create faction: {Name}", name);
             throw new ApplicationException($"Failed to create faction: {ex.Message}", ex);
         }
     }
@@ -140,7 +145,7 @@ public class FactionService : IFactionService
                 GameConstants.StartingResourcesMin,
                 GameConstants.StartingResourcesMax + 1
             );
-
+            _logger.Debug("Set starting resources for faction: {Name}", faction.Name);
             switch (faction.Type)
             {
                 case FactionType.MilitaryJunta:
@@ -190,6 +195,7 @@ public class FactionService : IFactionService
         }
         catch (Exception ex)
         {
+            _logger.Error(ex, "Failed to set starting resources for faction: {Name}", faction.Name);
             throw new ApplicationException($"Failed to set starting resources: {ex.Message}", ex);
         }
     }

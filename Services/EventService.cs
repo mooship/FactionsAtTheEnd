@@ -48,6 +48,9 @@ public class EventService : IEventService
         var events = new List<GameEvent>();
         var lastEventType = gameState.RecentEvents.LastOrDefault()?.Type;
         var lastEventTags = gameState.RecentEvents.LastOrDefault()?.Tags ?? new List<string>();
+        var logger = Serilog.Log.Logger;
+        logger.Debug("Generating random events for cycle {Cycle}", gameState.CurrentCycle);
+
         foreach (var kvp in gameState.RecentActionCounts)
         {
             if (kvp.Value >= 3)
@@ -93,6 +96,7 @@ public class EventService : IEventService
         if (gameEvent != null)
         {
             events.Add(gameEvent);
+            logger.Information("Random event generated: {Title}", gameEvent.Title);
         }
 
         if (gameState.PlayerFaction.Stability > 75 && Random.Shared.Next(1, 101) <= 20)
@@ -107,16 +111,19 @@ public class EventService : IEventService
                     Effects = new() { { StatKey.Resources, 2 }, { StatKey.Influence, 1 } },
                 }
             );
+            logger.Information("Prosperity Wave event added for high stability.");
         }
 
         if (gameState.GalacticStability <= 20 && Random.Shared.Next(1, 101) <= 30)
         {
             events.Add(GenerateCrisisEvent(gameState));
+            logger.Warning("Crisis event added due to low galactic stability.");
         }
 
         if (gameState.AncientTechDiscovery >= 70 && Random.Shared.Next(1, 101) <= 25)
         {
             events.Add(GenerateAncientTechEvent(gameState));
+            logger.Information("Ancient Tech event added due to high discovery.");
         }
 
         if (Random.Shared.Next(1, 101) <= 10)
@@ -133,8 +140,8 @@ public class EventService : IEventService
                     BlockedActions = [],
                 }
             );
+            logger.Debug("Diplomatic Overture event added as a rare event.");
         }
-
         return events;
     }
 

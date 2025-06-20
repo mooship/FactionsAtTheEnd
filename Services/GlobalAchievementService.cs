@@ -25,6 +25,7 @@ public class GlobalAchievementService : IGlobalAchievementService
         _db = db;
         _collection = _db.GetCollection<GlobalAchievement>("global_achievements");
         _collection.EnsureIndex(x => x.Name, true);
+        _logger.Debug("GlobalAchievementService initialized.");
     }
 
     /// <summary>
@@ -36,6 +37,7 @@ public class GlobalAchievementService : IGlobalAchievementService
     {
         Guard.IsNotNullOrWhiteSpace(name, nameof(name));
         Guard.IsNotNullOrWhiteSpace(description, nameof(description));
+        _logger.Debug("Unlocking achievement: {Name}", name);
         try
         {
             if (!IsAchievementUnlocked(name))
@@ -47,6 +49,11 @@ public class GlobalAchievementService : IGlobalAchievementService
                     UnlockedAt = DateTime.UtcNow,
                 };
                 _collection.Insert(achievement);
+                _logger.Information("Achievement unlocked: {Name}", name);
+            }
+            else
+            {
+                _logger.Debug("Achievement already unlocked: {Name}", name);
             }
         }
         catch (Exception ex)
@@ -68,6 +75,7 @@ public class GlobalAchievementService : IGlobalAchievementService
     public bool IsAchievementUnlocked(string name)
     {
         Guard.IsNotNullOrWhiteSpace(name, nameof(name));
+        _logger.Debug("Checking if achievement is unlocked: {Name}", name);
         try
         {
             return _collection.Exists(x => x.Name == name);
@@ -90,9 +98,12 @@ public class GlobalAchievementService : IGlobalAchievementService
     public List<GlobalAchievement> GetAllAchievements()
     {
         Guard.IsNotNull(_collection, nameof(_collection));
+        _logger.Debug("Retrieving all global achievements.");
         try
         {
-            return [.. _collection.FindAll()];
+            var achievements = _collection.FindAll().ToList();
+            _logger.Information("Retrieved {Count} global achievements.", achievements.Count);
+            return achievements;
         }
         catch (Exception ex)
         {
