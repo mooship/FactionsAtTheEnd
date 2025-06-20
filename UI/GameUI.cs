@@ -471,7 +471,6 @@ public class GameUI
             }
 
             Guard.IsNotNull(playerFaction);
-            // Show pre-turn stats for feedback
             var preStats = new
             {
                 playerFaction.Population,
@@ -503,20 +502,58 @@ public class GameUI
                 }
             }
 
-            // Handle player choice events
             var choiceEvent = game.RecentEvents.FirstOrDefault(e =>
                 e.Choices != null && e.Choices.Count > 0
             );
             if (choiceEvent?.Choices != null && choiceEvent.Choices.Count > 0)
             {
-                var choiceDescriptions = choiceEvent.Choices.Select(c => c.Description).ToList();
-                var choice = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title($"[yellow]{choiceEvent.Title}[/] - {choiceEvent.Description}")
-                        .AddChoices(choiceDescriptions)
-                );
-                var selectedChoice = choiceEvent.Choices.First(c => c.Description == choice);
-                // Apply effects
+                EventChoice? selectedChoice;
+                if (
+                    choiceEvent.Choices.Any(c =>
+                        c.NextStepChoices != null && c.NextStepChoices.Count > 0
+                    )
+                )
+                {
+                    var firstStepDescriptions = choiceEvent
+                        .Choices.Select((c, i) => $"[{i + 1}] {c.Description}")
+                        .ToList();
+                    int selectedIndex = 0;
+                    do
+                    {
+                        AnsiConsole.MarkupLine("\n[bold]Choose:[/]");
+                        for (int i = 0; i < firstStepDescriptions.Count; i++)
+                            AnsiConsole.MarkupLine(firstStepDescriptions[i]);
+                        var input = AnsiConsole.Ask<string>("[yellow]Enter choice number:[/]");
+                        if (
+                            int.TryParse(input, out int idx)
+                            && idx > 0
+                            && idx <= firstStepDescriptions.Count
+                        )
+                        {
+                            selectedIndex = idx - 1;
+                            break;
+                        }
+                        AnsiConsole.MarkupLine(
+                            "[red]Invalid input. Please enter a valid number.[/]"
+                        );
+                    } while (true);
+                    var initialChoice = choiceEvent.Choices[selectedIndex];
+                    selectedChoice = GameEngine.RunMultiStepChoice(initialChoice);
+                }
+                else
+                {
+                    var choiceDescriptions = choiceEvent
+                        .Choices.Select(c => c.Description)
+                        .ToList();
+                    var choice = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title($"[yellow]{choiceEvent.Title}[/] - {choiceEvent.Description}")
+                            .AddChoices(choiceDescriptions)
+                    );
+                    selectedChoice = choiceEvent.Choices.First(c => c.Description == choice);
+                }
+
+                Guard.IsNotNull(selectedChoice);
                 foreach (var effect in selectedChoice.Effects)
                 {
                     switch (effect.Key)
@@ -544,7 +581,6 @@ public class GameUI
                             break;
                     }
                 }
-                // Block actions if any
                 if (
                     selectedChoice.BlockedActions != null
                     && selectedChoice.BlockedActions.Count > 0
@@ -563,7 +599,6 @@ public class GameUI
                 game.RecentEvents.Remove(choiceEvent);
             }
 
-            // Show post-turn feedback
             var postStats = new
             {
                 playerFaction.Population,
@@ -585,13 +620,10 @@ public class GameUI
             AnsiConsole.MarkupLine("Press any key to continue...");
             Console.ReadKey();
 
-            // Check if "Ancient Studies" was just unblocked by an event this turn
             var unblockedActions = new List<PlayerActionType>();
             var prevBlocked = new HashSet<PlayerActionType>(game.BlockedActions);
-            // After processing turn, compare blocked actions before and after
             var blockedLastTurn = prevBlocked;
             var blockedThisTurn = new HashSet<PlayerActionType>(game.BlockedActions);
-            // Find actions that were blocked last turn but not this turn
             foreach (var action in Enum.GetValues<PlayerActionType>())
             {
                 if (blockedLastTurn.Contains(action) && !blockedThisTurn.Contains(action))
@@ -609,7 +641,6 @@ public class GameUI
                 }
             }
 
-            // Achievements
             if (playerFaction.Technology >= 50)
             {
                 AnsiConsole.MarkupLine("[aqua]Achievement unlocked: Tech Ascendant![/]");
@@ -677,7 +708,6 @@ public class GameUI
             $"[bold]Reputation:[/] {playerFaction?.Reputation} {GetReputationDescription(playerFaction?.Reputation ?? 0)}"
         );
         AnsiConsole.MarkupLine("");
-        // Show Galactic News
         if (game.GalacticNews.Count > 0)
         {
             AnsiConsole.MarkupLine("[bold underline]Galactic News:[/]");
@@ -687,7 +717,6 @@ public class GameUI
             }
             AnsiConsole.MarkupLine("");
         }
-        // Show Galactic History snippet
         if (game.GalacticHistory.Count > 0)
         {
             AnsiConsole.MarkupLine("[bold underline]Galactic History:[/]");
@@ -821,7 +850,6 @@ public class GameUI
     /// <returns>Description string.</returns>
     private static string GetReputationDescription(int reputation)
     {
-        // Clamp reputation to -100 to 100
         reputation = Math.Max(
             GameConstants.MinReputation,
             Math.Min(reputation, GameConstants.MaxReputation)
@@ -859,7 +887,6 @@ public class GameUI
     /// <param name="gameEvent">The event to display.</param>
     private static void ShowEventEffects(GameEvent gameEvent)
     {
-        // Show stat/resource changes
         if (gameEvent.Effects != null && gameEvent.Effects.Count > 0)
         {
             AnsiConsole.MarkupLine("[bold yellow]Effects:[/]");
@@ -871,7 +898,6 @@ public class GameUI
                 AnsiConsole.MarkupLine($"  [aqua]{statName}[/]: [bold]{sign}{value}[/]");
             }
         }
-        // Show blocked actions
         if (gameEvent.BlockedActions != null && gameEvent.BlockedActions.Count > 0)
         {
             AnsiConsole.MarkupLine("[bold orange1]Blocked Actions Next Turn:[/]");
@@ -896,7 +922,6 @@ public class GameUI
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[bold yellow]Event Log:[/]");
         int count = 1;
-        // Show all galactic history entries (narrative log)
         foreach (var entry in game.GalacticHistory)
         {
             AnsiConsole.MarkupLine($"[dim]{count++}.[/] {entry}");
@@ -935,7 +960,6 @@ public class GameUI
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[bold green]Exported Save (JSON):[/]");
         AnsiConsole.WriteLine(json);
-        // Copy to clipboard
         ClipboardService.SetText(json);
         AnsiConsole.MarkupLine(
             "[grey]Save JSON copied to clipboard! Paste it anywhere to back up or share.[/]"

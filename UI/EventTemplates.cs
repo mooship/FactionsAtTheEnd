@@ -1,3 +1,6 @@
+using FactionsAtTheEnd.Enums;
+using FactionsAtTheEnd.Models;
+
 namespace FactionsAtTheEnd.UI;
 
 public static class EventTemplates
@@ -261,4 +264,102 @@ public static class EventTemplates
     public const string UprisingIgnitedTitle = "Uprising Ignited";
     public const string UprisingIgnitedDescription =
         "Your agents inspire a local uprising, swelling your ranks and spreading hope among the oppressed.";
+
+    public static readonly EventChoice AidRefugeesMultiStep = new(
+        ChoiceEventTemplates.AidRefugeesDescription,
+        new Dictionary<StatKey, int> { { StatKey.Reputation, 10 }, { StatKey.Resources, -10 } },
+        null,
+        new List<EventChoice>
+        {
+            new(
+                "Assign military escort to protect refugees?",
+                null,
+                null,
+                new List<EventChoice>
+                {
+                    new(
+                        "Yes, assign escort (costs military, boosts reputation)",
+                        new Dictionary<StatKey, int>
+                        {
+                            { StatKey.Military, -5 },
+                            { StatKey.Reputation, 5 },
+                        }
+                    ),
+                    new(
+                        "No, let them fend for themselves (risk minor loss)",
+                        new Dictionary<StatKey, int> { { StatKey.Stability, -3 } }
+                    ),
+                }
+            ),
+            new(
+                "Refuse further involvement (no additional effect)",
+                new Dictionary<StatKey, int>()
+            ),
+        }
+    );
+
+    // Example: Multi-step event - "Investigate the Anomaly" with a risk/reward branch
+    public static readonly EventChoice InvestigateAnomalyMultiStep = new(
+        ChoiceEventTemplates.InvestigateAnomalyDescription,
+        new Dictionary<StatKey, int> { { StatKey.Technology, 5 }, { StatKey.Stability, -2 } },
+        null,
+        new List<EventChoice>
+        {
+            new(
+                "Proceed with deep scan (risk damage for greater reward)",
+                null,
+                null,
+                new List<EventChoice>
+                {
+                    new(
+                        "Scan successful! Gain major tech.",
+                        new Dictionary<StatKey, int> { { StatKey.Technology, 15 } }
+                    ),
+                    new(
+                        "Scan backfires! Lose stability.",
+                        new Dictionary<StatKey, int> { { StatKey.Stability, -10 } }
+                    ),
+                }
+            ),
+            new("Abort scan (no further risk or reward)", new Dictionary<StatKey, int>()),
+        }
+    );
+
+    // Example: Multi-step event - "Military Dilemma" with a diplomatic branch
+    public static readonly EventChoice MilitaryDilemmaMultiStep = new(
+        ChoiceEventTemplates.MilitaryChoiceDescription,
+        null,
+        null,
+        new List<EventChoice>
+        {
+            new(
+                "Commit forces to battle",
+                new Dictionary<StatKey, int>
+                {
+                    { StatKey.Military, -10 },
+                    { StatKey.Reputation, 5 },
+                }
+            ),
+            new(
+                "Seek diplomatic solution",
+                new Dictionary<StatKey, int> { { StatKey.Influence, -5 } },
+                null,
+                new List<EventChoice>
+                {
+                    new(
+                        "Offer concessions (lose resources, gain stability)",
+                        new Dictionary<StatKey, int>
+                        {
+                            { StatKey.Resources, -5 },
+                            { StatKey.Stability, 5 },
+                        }
+                    ),
+                    new(
+                        "Refuse to compromise (risk reputation)",
+                        new Dictionary<StatKey, int> { { StatKey.Reputation, -5 } }
+                    ),
+                }
+            ),
+        }
+    );
 }

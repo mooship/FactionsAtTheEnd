@@ -17,7 +17,6 @@ class Program
     static async Task Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
-            .WriteTo.Console()
             .WriteTo.File(".log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true)
             .MinimumLevel.Debug()
             .CreateLogger();

@@ -4,6 +4,7 @@ using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using FactionsAtTheEnd.UI;
 using FluentValidation;
+using Spectre.Console;
 
 namespace FactionsAtTheEnd.Core;
 
@@ -354,7 +355,6 @@ public class GameEngine(
             CurrentGame.RecentActionCounts[key] += actionCounts[key];
         }
 
-        // Decay only actions NOT performed this turn
         var keys = CurrentGame.RecentActionCounts.Keys.ToList();
         foreach (var key in keys)
         {
@@ -474,7 +474,6 @@ public class GameEngine(
         var player = CurrentGame.PlayerFaction;
         Guard.IsNotNull(player);
 
-        // Win condition
         if (CurrentGame.CurrentCycle > 20 || player.Technology >= 100)
         {
             CurrentGame.HasWon = true;
@@ -708,5 +707,37 @@ public class GameEngine(
     {
         Guard.IsNotNull(gameState, nameof(gameState));
         CurrentGame = gameState;
+    }
+
+    /// <summary>
+    /// Handles the logic for presenting and resolving multi-step event choices.
+    /// </summary>
+    /// <param name="initialChoice">The root EventChoice to present.</param>
+    /// <returns>The final EventChoice selected by the player (leaf node).</returns>
+    public static EventChoice? RunMultiStepChoice(EventChoice initialChoice)
+    {
+        Guard.IsNotNull(initialChoice, nameof(initialChoice));
+        var currentChoice = initialChoice;
+        while (currentChoice.NextStepChoices != null && currentChoice.NextStepChoices.Count > 0)
+        {
+            var options = currentChoice.NextStepChoices;
+            var descriptions = options.Select((c, i) => $"[{i + 1}] {c.Description}").ToList();
+            int selectedIndex = 0;
+            do
+            {
+                AnsiConsole.MarkupLine("\n[bold]Choose:[/]");
+                for (int i = 0; i < descriptions.Count; i++)
+                    AnsiConsole.MarkupLine(descriptions[i]);
+                var input = AnsiConsole.Ask<string>("[yellow]Enter choice number:[/]");
+                if (int.TryParse(input, out int idx) && idx > 0 && idx <= options.Count)
+                {
+                    selectedIndex = idx - 1;
+                    break;
+                }
+                AnsiConsole.MarkupLine("[red]Invalid input. Please enter a valid number.[/]");
+            } while (true);
+            currentChoice = options[selectedIndex];
+        }
+        return currentChoice;
     }
 }
