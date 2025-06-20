@@ -17,7 +17,8 @@ public class GameEngine(
     IValidator<PlayerAction> playerActionValidator,
     IValidator<GameEvent> gameEventValidator,
     IValidator<EventChoice> eventChoiceValidator,
-    IGlobalAchievementService globalAchievementService
+    IGlobalAchievementService globalAchievementService,
+    IAppLogger logger
 )
 {
     private readonly IEventService _eventService = eventService;
@@ -27,6 +28,7 @@ public class GameEngine(
     private readonly IValidator<GameEvent> _gameEventValidator = gameEventValidator;
     private readonly IValidator<EventChoice> _eventChoiceValidator = eventChoiceValidator;
     private readonly IGlobalAchievementService _globalAchievementService = globalAchievementService;
+    private readonly IAppLogger _logger = logger;
 
     /// <summary>
     /// The current game state, or null if no game is loaded.
@@ -47,69 +49,110 @@ public class GameEngine(
         Guard.IsNotNullOrWhiteSpace(playerFactionName, nameof(playerFactionName));
         Guard.IsTrue(
             Enum.IsDefined(typeof(FactionType), playerFactionType),
-            nameof(playerFactionType)
+            nameof(playerFactionType) + " must be a valid FactionType."
         );
-
-        var playerFaction = _factionService.CreateFaction(
-            playerFactionName,
-            playerFactionType,
-            true
-        );
-        Guard.IsNotNull(playerFaction, nameof(playerFaction));
-        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmm");
-        var safeFactionName = string.Join(
-            "",
-            playerFactionName.Split(Path.GetInvalidFileNameChars())
-        );
-        var gameState = new GameState
+        try
         {
-            PlayerFaction = playerFaction,
-            SaveName = $"{safeFactionName}_{timestamp}",
-            CurrentCycle = 1,
-        };
-        Guard.IsNotNull(gameState, nameof(gameState));
-
-        var initialEvents = new List<GameEvent>
-        {
-            new()
+            _logger.Information(
+                "Creating new game for faction: {FactionName} ({FactionType})",
+                [playerFactionName, playerFactionType]
+            );
+            try
             {
-                Title = EventTemplates.InitialCrisisTitle,
-                Description = EventTemplates.InitialCrisisDescription,
-                Type = EventType.Crisis,
-                Cycle = gameState.CurrentCycle,
-            },
-        };
-        // Validate initial events and their choices
-        foreach (var gameEvent in initialEvents)
-        {
-            Guard.IsNotNull(gameEvent, nameof(gameEvent));
-            var validationResult = _gameEventValidator.Validate(gameEvent);
-            if (!validationResult.IsValid)
-                throw new ArgumentException(
-                    $"Invalid initial event: {string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))}"
+                Guard.IsNotNullOrWhiteSpace(playerFactionName, nameof(playerFactionName));
+                Guard.IsTrue(
+                    Enum.IsDefined(typeof(FactionType), playerFactionType),
+                    nameof(playerFactionType)
                 );
-            if (gameEvent.Choices != null)
-            {
-                foreach (var choice in gameEvent.Choices)
+
+                var playerFaction = _factionService.CreateFaction(
+                    playerFactionName,
+                    playerFactionType,
+                    true
+                );
+                Guard.IsNotNull(playerFaction, nameof(playerFaction));
+                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmm");
+                var safeFactionName = string.Join(
+                    "",
+                    playerFactionName.Split(Path.GetInvalidFileNameChars())
+                );
+                var gameState = new GameState
                 {
-                    Guard.IsNotNull(choice, nameof(choice));
-                    var choiceValidation = _eventChoiceValidator.Validate(choice);
-                    if (!choiceValidation.IsValid)
+                    PlayerFaction = playerFaction,
+                    SaveName = $"{safeFactionName}_{timestamp}",
+                    CurrentCycle = 1,
+                };
+                Guard.IsNotNull(gameState, nameof(gameState));
+
+                var initialEvents = new List<GameEvent>
+                {
+                    new()
                     {
+                        Title = EventTemplates.InitialCrisisTitle,
+                        Description = EventTemplates.InitialCrisisDescription,
+                        Type = EventType.Crisis,
+                        Cycle = gameState.CurrentCycle,
+                    },
+                };
+                foreach (var gameEvent in initialEvents)
+                {
+                    Guard.IsNotNull(gameEvent, nameof(gameEvent));
+                    var validationResult = _gameEventValidator.Validate(gameEvent);
+                    if (!validationResult.IsValid)
+                    {
+                        _logger.Error(
+                            "Invalid initial event: {Errors}",
+                            string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))
+                        );
                         throw new ArgumentException(
-                            $"Invalid event choice: {string.Join(", ", choiceValidation.Errors.Select(e => e.ErrorMessage))}"
+                            $"Invalid initial event: {string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))}"
                         );
                     }
+                    if (gameEvent.Choices != null)
+                    {
+                        foreach (var choice in gameEvent.Choices)
+                        {
+                            Guard.IsNotNull(choice, nameof(choice));
+                            var choiceValidation = _eventChoiceValidator.Validate(choice);
+                            if (!choiceValidation.IsValid)
+                            {
+                                _logger.Error(
+                                    "Invalid event choice: {Errors}",
+                                    string.Join(
+                                        ", ",
+                                        choiceValidation.Errors.Select(e => e.ErrorMessage)
+                                    )
+                                );
+                                throw new ArgumentException(
+                                    $"Invalid event choice: {string.Join(", ", choiceValidation.Errors.Select(e => e.ErrorMessage))}"
+                                );
+                            }
+                        }
+                    }
                 }
+                gameState.RecentEvents.AddRange(initialEvents);
+
+                CurrentGame = gameState;
+                Guard.IsNotNull(gameState, nameof(gameState));
+                await _gameDataService.SaveGameAsync(gameState);
+                _logger.Information("New game created and saved: {SaveName}", gameState.SaveName);
+                return gameState;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "[GameEngine] Error creating new game");
+                throw new ApplicationException("Failed to create new game.", ex);
             }
         }
-        gameState.RecentEvents.AddRange(initialEvents);
-
-        CurrentGame = gameState;
-        Guard.IsNotNull(gameState, nameof(gameState));
-        await _gameDataService.SaveGameAsync(gameState);
-
-        return gameState;
+        catch (Exception ex)
+        {
+            _logger.Error(
+                ex,
+                "Failed to create new game for faction: {FactionName}",
+                playerFactionName
+            );
+            throw;
+        }
     }
 
     /// <summary>
@@ -118,10 +161,20 @@ public class GameEngine(
     /// <returns>A list of saved <see cref="GameState"/> objects.</returns>
     public async Task<List<GameState>> GetSavedGamesAsync()
     {
+        _logger.Debug("Retrieving all saved games.");
         Guard.IsNotNull(_gameDataService, nameof(_gameDataService));
-        var games = await _gameDataService.GetSavedGamesAsync();
-        Guard.IsNotNull(games, nameof(games));
-        return games;
+        try
+        {
+            var games = await _gameDataService.GetSavedGamesAsync();
+            Guard.IsNotNull(games, nameof(games));
+            _logger.Information("Loaded {Count} saved games.", games.Count);
+            return games;
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "[GameEngine] Error retrieving saved games");
+            return [];
+        }
     }
 
     /// <summary>
@@ -131,10 +184,20 @@ public class GameEngine(
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task LoadGameAsync(string gameId)
     {
+        _logger.Information("Loading game with ID: {GameId}", gameId);
         Guard.IsNotNullOrWhiteSpace(gameId, nameof(gameId));
-        var loaded = await _gameDataService.LoadGameAsync(gameId);
-        Guard.IsNotNull(loaded, nameof(loaded));
-        CurrentGame = loaded;
+        try
+        {
+            var loaded = await _gameDataService.LoadGameAsync(gameId);
+            Guard.IsNotNull(loaded, nameof(loaded));
+            CurrentGame = loaded;
+            _logger.Information("Game loaded: {SaveName}", loaded.SaveName);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "[GameEngine] Error loading game");
+            throw new ApplicationException("Failed to load game.", ex);
+        }
     }
 
     /// <summary>
@@ -144,33 +207,56 @@ public class GameEngine(
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task ProcessTurnAsync(List<PlayerAction> playerActions)
     {
+        _logger.Debug(
+            "Processing turn for game: {SaveName}, Cycle: {Cycle}",
+            CurrentGame?.SaveName ?? "<null>",
+            CurrentGame?.CurrentCycle ?? 0
+        );
         Guard.IsNotNull(playerActions, nameof(playerActions));
         Guard.IsTrue(playerActions.Count > 0, "At least one player action must be provided.");
         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
-
-        var (validActions, actionCounts) = ValidateAndCountActions(playerActions);
-        UpdateActionCounts(actionCounts);
-        await ApplyPlayerActionsAsync(validActions);
-        await UpdateWorldStateAsync();
-        var newEvents = (await _eventService.GenerateRandomEventsAsync(CurrentGame)).ToList();
-        CurrentGame.RecentEvents.AddRange(newEvents);
-
-        var newNews = _eventService.GenerateGalacticNews(CurrentGame, newEvents);
-        if (newNews.Count != 0)
+        try
         {
-            CurrentGame.GalacticNews.AddRange(newNews);
-            CurrentGame.GalacticNews =
-            [
-                .. CurrentGame.GalacticNews.Skip(Math.Max(0, CurrentGame.GalacticNews.Count - 15)),
-            ];
+            var (validActions, actionCounts) = ValidateAndCountActions(playerActions);
+            if (validActions.Count == 0)
+            {
+                _logger.Warning("No valid player actions provided for this turn.");
+            }
+            UpdateActionCounts(actionCounts);
+            await ApplyPlayerActionsAsync(validActions);
+            await UpdateWorldStateAsync();
+            var newEvents = (await _eventService.GenerateRandomEventsAsync(CurrentGame)).ToList();
+            CurrentGame.RecentEvents.AddRange(newEvents);
+            _logger.Information("{EventCount} new events generated this turn.", newEvents.Count);
+            var newNews = _eventService.GenerateGalacticNews(CurrentGame, newEvents);
+            if (newNews.Count != 0)
+            {
+                CurrentGame.GalacticNews.AddRange(newNews);
+                CurrentGame.GalacticNews =
+                [
+                    .. CurrentGame.GalacticNews.Skip(
+                        Math.Max(0, CurrentGame.GalacticNews.Count - 15)
+                    ),
+                ];
+                _logger.Debug("Added {NewsCount} new galactic news items.", newNews.Count);
+            }
+            if (newEvents.Count > 0)
+            {
+                ApplyEventEffects(newEvents);
+            }
+            await _gameDataService.SaveGameAsync(CurrentGame);
+            _logger.Information(
+                "Turn processed and game saved. Cycle: {Cycle}",
+                CurrentGame.CurrentCycle
+            );
+            CheckWinLoseConditions();
+            CurrentGame.CurrentCycle++;
         }
-        if (newEvents.Count > 0)
+        catch (Exception ex)
         {
-            ApplyEventEffects(newEvents);
+            _logger.Error(ex, "[GameEngine] Error processing turn");
+            throw new ApplicationException("Failed to process turn.", ex);
         }
-        await _gameDataService.SaveGameAsync(CurrentGame);
-        CheckWinLoseConditions();
-        CurrentGame.CurrentCycle++;
     }
 
     /// <summary>
@@ -185,7 +271,6 @@ public class GameEngine(
     {
         Guard.IsNotNull(playerActions, nameof(playerActions));
         Guard.IsTrue(playerActions.Count > 0, "At least one player action must be provided.");
-
         var validActions = new List<PlayerAction>();
         var actionCounts = new Dictionary<PlayerActionType, int>();
         foreach (var action in playerActions)
@@ -193,6 +278,10 @@ public class GameEngine(
             var validationResult = _playerActionValidator.Validate(action);
             if (!validationResult.IsValid)
             {
+                _logger.Warning(
+                    "Invalid player action: {Errors}",
+                    string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))
+                );
                 continue;
             }
             validActions.Add(action);
@@ -216,7 +305,6 @@ public class GameEngine(
         Guard.IsTrue(actionCounts.Count > 0, "At least one action count must be provided.");
         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
 
-        // Increment counts for actions performed this turn
         foreach (var key in actionCounts.Keys)
         {
             if (!CurrentGame.RecentActionCounts.ContainsKey(key))
@@ -265,20 +353,30 @@ public class GameEngine(
         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
         var player = CurrentGame.PlayerFaction;
         CurrentGame.BlockedActions?.Clear();
-
         foreach (var gameEvent in newEvents)
         {
-            // Validate event and choices
             var validationResult = _gameEventValidator.Validate(gameEvent);
             if (!validationResult.IsValid)
+            {
+                _logger.Error(
+                    "Invalid event during ApplyEventEffects: {Errors}",
+                    string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))
+                );
                 throw new ValidationException(validationResult.Errors);
+            }
             if (gameEvent.Choices != null)
             {
                 foreach (var choice in gameEvent.Choices)
                 {
                     var choiceResult = _eventChoiceValidator.Validate(choice);
                     if (!choiceResult.IsValid)
+                    {
+                        _logger.Error(
+                            "Invalid event choice during ApplyEventEffects: {Errors}",
+                            string.Join(", ", choiceResult.Errors.Select(e => e.ErrorMessage))
+                        );
                         throw new ValidationException(choiceResult.Errors);
+                    }
                 }
             }
 
@@ -312,7 +410,6 @@ public class GameEngine(
                 }
             }
 
-            // Update status after all effects
             player.UpdateStatus();
 
             if (gameEvent.BlockedActions != null && CurrentGame.BlockedActions != null)
@@ -349,7 +446,6 @@ public class GameEngine(
                     AchievementTemplates.Descriptions.Victory
                 );
             }
-            // FirstWin: Only unlock if this is the player's first win globally
             if (
                 !_globalAchievementService.IsAchievementUnlocked(
                     AchievementTemplates.Names.FirstWin
@@ -363,7 +459,6 @@ public class GameEngine(
             }
         }
 
-        // Survivor: Survive 20 cycles in a single game
         if (
             CurrentGame.CurrentCycle >= 20
             && !CurrentGame.Achievements.Contains(AchievementTemplates.Names.Survivor)
@@ -376,7 +471,6 @@ public class GameEngine(
             );
         }
 
-        // TechMaster: Reach 100 Technology in a single game
         if (
             player.Technology >= 100
             && !CurrentGame.Achievements.Contains(AchievementTemplates.Names.TechMaster)
@@ -389,7 +483,6 @@ public class GameEngine(
             );
         }
 
-        // TechAscendant: Reach 100 Technology in a single game (also unlock if not already)
         if (
             player.Technology >= 100
             && !CurrentGame.Achievements.Contains(AchievementTemplates.Names.TechAscendant)
@@ -402,7 +495,6 @@ public class GameEngine(
             );
         }
 
-        // Lose conditions
         if (
             CurrentGame.GalacticStability <= 0
             || player.Population <= 0

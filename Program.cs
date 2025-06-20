@@ -62,7 +62,16 @@ class Program
             sp.GetRequiredService<IValidator<PlayerAction>>(),
             sp.GetRequiredService<IGlobalAchievementService>()
         ));
-        services.AddSingleton<GameEngine>();
+        services.AddSingleton<GameEngine>(sp => new GameEngine(
+            sp.GetRequiredService<IEventService>(),
+            sp.GetRequiredService<IFactionService>(),
+            sp.GetRequiredService<IGameDataService>(),
+            sp.GetRequiredService<IValidator<PlayerAction>>(),
+            sp.GetRequiredService<IValidator<GameEvent>>(),
+            sp.GetRequiredService<IValidator<EventChoice>>(),
+            sp.GetRequiredService<IGlobalAchievementService>(),
+            sp.GetRequiredService<IAppLogger>()
+        ));
         services.AddSingleton<IValidator<Faction>, FactionValidator>();
         services.AddSingleton<IValidator<PlayerAction>, PlayerActionValidator>();
         services.AddSingleton<IValidator<GlobalAchievement>, GlobalAchievementValidator>();

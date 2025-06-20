@@ -2,6 +2,7 @@ using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using LiteDB;
+using Serilog;
 
 namespace FactionsAtTheEnd.Services;
 
@@ -12,6 +13,7 @@ public class GlobalAchievementService : IGlobalAchievementService
 {
     private readonly ILiteDatabase _db;
     private readonly ILiteCollection<GlobalAchievement> _collection;
+    private static readonly ILogger _logger = Log.Logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GlobalAchievementService"/> class.
@@ -34,15 +36,27 @@ public class GlobalAchievementService : IGlobalAchievementService
     {
         Guard.IsNotNullOrWhiteSpace(name, nameof(name));
         Guard.IsNotNullOrWhiteSpace(description, nameof(description));
-        if (!IsAchievementUnlocked(name))
+        try
         {
-            var achievement = new GlobalAchievement
+            if (!IsAchievementUnlocked(name))
             {
-                Name = name,
-                Description = description,
-                UnlockedAt = DateTime.UtcNow,
-            };
-            _collection.Insert(achievement);
+                var achievement = new GlobalAchievement
+                {
+                    Name = name,
+                    Description = description,
+                    UnlockedAt = DateTime.UtcNow,
+                };
+                _collection.Insert(achievement);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(
+                ex,
+                "[GlobalAchievementService] Failed to unlock achievement: {Name}",
+                name
+            );
+            throw new ApplicationException($"Failed to unlock achievement: {ex.Message}", ex);
         }
     }
 
@@ -54,7 +68,19 @@ public class GlobalAchievementService : IGlobalAchievementService
     public bool IsAchievementUnlocked(string name)
     {
         Guard.IsNotNullOrWhiteSpace(name, nameof(name));
-        return _collection.Exists(x => x.Name == name);
+        try
+        {
+            return _collection.Exists(x => x.Name == name);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(
+                ex,
+                "[GlobalAchievementService] Failed to check achievement: {Name}",
+                name
+            );
+            throw new ApplicationException($"Failed to check achievement: {ex.Message}", ex);
+        }
     }
 
     /// <summary>
@@ -64,6 +90,14 @@ public class GlobalAchievementService : IGlobalAchievementService
     public List<GlobalAchievement> GetAllAchievements()
     {
         Guard.IsNotNull(_collection, nameof(_collection));
-        return [.. _collection.FindAll()];
+        try
+        {
+            return [.. _collection.FindAll()];
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "[GlobalAchievementService] Failed to get all achievements");
+            throw new ApplicationException($"Failed to get achievements: {ex.Message}", ex);
+        }
     }
 }

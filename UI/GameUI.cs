@@ -329,7 +329,6 @@ public class GameUI
                 $"[bold]Reputation:[/] {playerFaction?.Reputation} {GetReputationDescription(playerFaction?.Reputation ?? 0)}"
             );
             AnsiConsole.MarkupLine("");
-            // Show Galactic News
             if (game.GalacticNews.Count > 0)
             {
                 AnsiConsole.MarkupLine("[bold underline]Galactic News:[/]");
@@ -339,7 +338,6 @@ public class GameUI
                 }
                 AnsiConsole.MarkupLine("");
             }
-            // Show Galactic History snippet
             if (game.GalacticHistory.Count > 0)
             {
                 AnsiConsole.MarkupLine("[bold underline]Galactic History:[/]");
@@ -484,13 +482,11 @@ public class GameUI
 
             await ProcessTurnAsync(playerActions);
 
-            // After turn processing, refresh game state
             game = _gameEngine.CurrentGame;
             Guard.IsNotNull(game, nameof(game));
             playerFaction = game.PlayerFaction;
             Guard.IsNotNull(playerFaction, nameof(playerFaction));
 
-            // Display events that occurred this turn (only once, after processing)
             var recentEvents = game.RecentEvents.Where(e => e.Cycle == game.CurrentCycle).ToList();
             if (recentEvents.Count > 0)
             {
