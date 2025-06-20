@@ -449,7 +449,10 @@ public class GameUI
                 actionDisplayNames.Add("Finish Turn");
                 var promptTitle = $"Choose action {i + 1} of 2 (Actions remaining: {2 - i})";
                 var selectedActionDisplay = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>().Title(promptTitle).AddChoices(actionDisplayNames)
+                    new SelectionPrompt<string>()
+                        .Title(promptTitle)
+                        .AddChoices(actionDisplayNames)
+                        .PageSize(11)
                 );
                 if (selectedActionDisplay == "Finish Turn")
                 {
