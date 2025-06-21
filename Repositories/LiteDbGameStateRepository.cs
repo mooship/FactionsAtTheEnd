@@ -7,8 +7,10 @@ namespace FactionsAtTheEnd.Repositories;
 
 /// <summary>
 /// LiteDB implementation of the IGameStateRepository interface for managing game state persistence.
-/// Initializes a new instance of the <see cref="LiteDbGameStateRepository"/> class.
 /// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="LiteDbGameStateRepository"/> class.
+/// </remarks>
 /// <param name="db">The LiteDB database instance.</param>
 public class LiteDbGameStateRepository(ILiteDatabase db) : IGameStateRepository
 {
