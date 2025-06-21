@@ -8,12 +8,40 @@ using Serilog;
 
 namespace FactionsAtTheEnd.Services;
 
+/// <summary>
+/// Service for creating and managing Faction entities.
+/// </summary>
 public class FactionService : IFactionService
 {
-    private static readonly ILogger _logger = Log.Logger;
+    /// <summary>
+    /// Application logger for diagnostic and informational messages.
+    /// </summary>
+    private readonly IAppLogger _logger;
 
-    public FactionService() { }
+    /// <summary>
+    /// Provider for faction-type-specific data and logic.
+    /// </summary>
+    private readonly IFactionTypeProvider _typeProvider;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FactionService"/> class.
+    /// </summary>
+    /// <param name="logger">The application logger.</param>
+    /// <param name="typeProvider">The provider for faction type data and logic.</param>
+    public FactionService(IAppLogger logger, IFactionTypeProvider typeProvider)
+    {
+        _logger = logger;
+        _typeProvider = typeProvider;
+    }
+
+    /// <summary>
+    /// Creates a new faction with the specified name, type, and player status.
+    /// </summary>
+    /// <param name="name">The name of the faction.</param>
+    /// <param name="type">The type of the faction.</param>
+    /// <param name="isPlayer">Whether the faction is controlled by the player.</param>
+    /// <returns>The created <see cref="Faction"/> instance.</returns>
+    /// <exception cref="ApplicationException">Thrown if faction creation fails.</exception>
     public Faction CreateFaction(string name, FactionType type, bool isPlayer = false)
     {
         Guard.IsNotNullOrWhiteSpace(name, nameof(name));
@@ -21,7 +49,7 @@ public class FactionService : IFactionService
             Enum.IsDefined(typeof(FactionType), type),
             nameof(type) + " must be a valid FactionType."
         );
-        _logger.Debug("Creating faction: {Name} ({Type})", name, type);
+        _logger.Debug($"Creating faction: {name} ({type})");
         try
         {
             var faction = new Faction
@@ -29,14 +57,14 @@ public class FactionService : IFactionService
                 Name = name,
                 Type = type,
                 IsPlayer = isPlayer,
-                Description = GenerateFactionDescription(type),
-                Traits = GenerateFactionTraits(type),
+                Description = _typeProvider.GetDescription(type),
+                Traits = _typeProvider.GetTraits(type),
                 Reputation = 25,
             };
             Guard.IsNotNull(faction.Description, nameof(faction.Description));
             Guard.IsNotNull(faction.Traits, nameof(faction.Traits));
-            SetStartingResources(faction);
-            _logger.Information("Faction created: {Name}", name);
+            _typeProvider.SetStartingResources(faction);
+            _logger.Information($"Faction created: {name}");
             switch (type)
             {
                 case FactionType.MilitaryJunta:
@@ -71,143 +99,19 @@ public class FactionService : IFactionService
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "Failed to create faction: {Name}", name);
+            _logger.Error(ex, $"Failed to create faction: {name}");
             throw new ApplicationException($"Failed to create faction: {ex.Message}", ex);
-        }
-    }
-
-    private static string GenerateFactionDescription(FactionType type)
-    {
-        Guard.IsTrue(
-            Enum.IsDefined(typeof(FactionType), type),
-            nameof(type) + " must be a valid FactionType."
-        );
-        return type switch
-        {
-            FactionType.MilitaryJunta => FactionDescriptions.MilitaryJunta,
-            FactionType.CorporateCouncil => FactionDescriptions.CorporateCouncil,
-            FactionType.ReligiousOrder => FactionDescriptions.ReligiousOrder,
-            FactionType.PirateAlliance => FactionDescriptions.PirateAlliance,
-            FactionType.TechnocraticUnion => FactionDescriptions.TechnocraticUnion,
-            FactionType.RebellionCell => FactionDescriptions.RebellionCell,
-            FactionType.ImperialRemnant => FactionDescriptions.ImperialRemnant,
-            FactionType.AncientAwakened => FactionDescriptions.AncientAwakened,
-            _ => FactionDescriptions.Default,
-        };
-    }
-
-    private static List<string> GenerateFactionTraits(FactionType type)
-    {
-        Guard.IsTrue(
-            Enum.IsDefined(typeof(FactionType), type),
-            nameof(type) + " must be a valid FactionType."
-        );
-        return type switch
-        {
-            FactionType.MilitaryJunta => ["Disciplined", "Aggressive", "Organized"],
-            FactionType.CorporateCouncil => ["Wealthy", "Calculating", "Opportunistic"],
-            FactionType.ReligiousOrder => ["Fanatical", "United", "Missionary"],
-            FactionType.PirateAlliance => ["Mobile", "Unpredictable", "Resourceful"],
-            FactionType.TechnocraticUnion => ["Innovative", "Logical", "Progressive"],
-            FactionType.RebellionCell => ["Idealistic", "Guerrilla", "Inspiring"],
-            FactionType.ImperialRemnant => ["Traditional", "Proud", "Declining"],
-            FactionType.AncientAwakened => ["Mysterious", "Powerful", "Alien"],
-            _ => ["Determined", "Adaptive"],
-        };
-    }
-
-    private static void SetStartingResources(Faction faction)
-    {
-        Guard.IsNotNull(faction, nameof(faction));
-        Guard.IsTrue(
-            Enum.IsDefined(typeof(FactionType), faction.Type),
-            nameof(faction.Type) + " must be a valid FactionType."
-        );
-        try
-        {
-            faction.Population = Random.Shared.Next(
-                GameConstants.StartingPopulationMin,
-                GameConstants.StartingPopulationMax + 1
-            );
-            faction.Military = Random.Shared.Next(
-                GameConstants.StartingMilitaryMin,
-                GameConstants.StartingMilitaryMax + 1
-            );
-            faction.Technology = Random.Shared.Next(
-                GameConstants.StartingTechnologyMin,
-                GameConstants.StartingTechnologyMax + 1
-            );
-            faction.Influence = Random.Shared.Next(
-                GameConstants.StartingInfluenceMin,
-                GameConstants.StartingInfluenceMax + 1
-            );
-            faction.Resources = Random.Shared.Next(
-                GameConstants.StartingResourcesMin,
-                GameConstants.StartingResourcesMax + 1
-            );
-            _logger.Debug("Set starting resources for faction: {Name}", faction.Name);
-            switch (faction.Type)
-            {
-                case FactionType.MilitaryJunta:
-                    faction.Military += 15;
-                    faction.Stability -= 10;
-                    break;
-                case FactionType.CorporateCouncil:
-                    faction.Resources += 15;
-                    faction.Reputation -= 10;
-                    break;
-                case FactionType.TechnocraticUnion:
-                    faction.Technology += 15;
-                    faction.Influence -= 10;
-                    break;
-                case FactionType.ReligiousOrder:
-                    faction.Population += 10;
-                    faction.Influence += 10;
-                    faction.Technology -= 10;
-                    break;
-                case FactionType.ImperialRemnant:
-                    faction.Influence += 10;
-                    faction.Military += 10;
-                    faction.Reputation += 10;
-                    faction.Resources -= 10;
-                    break;
-                case FactionType.AncientAwakened:
-                    faction.Technology += 20;
-                    faction.Population -= 20;
-                    break;
-                case FactionType.PirateAlliance:
-                    faction.Military += 10;
-                    faction.Resources += 10;
-                    faction.Stability -= 10;
-                    break;
-                case FactionType.RebellionCell:
-                    faction.Stability += 10;
-                    faction.Influence += 10;
-                    faction.Resources -= 10;
-                    break;
-            }
-
-            if (faction.IsPlayer)
-            {
-                faction.Population += 10;
-                faction.Resources += 10;
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.Error(ex, "Failed to set starting resources for faction: {Name}", faction.Name);
-            throw new ApplicationException($"Failed to set starting resources: {ex.Message}", ex);
         }
     }
 
     /// <summary>
     /// Rehydrates static/derived fields (Description, Traits) for a Faction after deserialization.
     /// </summary>
-    public static void RehydrateStaticFields(Faction faction)
+    /// <param name="faction">The faction to rehydrate.</param>
+    public void RehydrateStaticFields(Faction faction)
     {
-        if (faction == null)
-            return;
-        faction.Description = GenerateFactionDescription(faction.Type);
-        faction.Traits = GenerateFactionTraits(faction.Type);
+        Guard.IsNotNull(faction, nameof(faction));
+        faction.Description = _typeProvider.GetDescription(faction.Type);
+        faction.Traits = _typeProvider.GetTraits(faction.Type);
     }
 }

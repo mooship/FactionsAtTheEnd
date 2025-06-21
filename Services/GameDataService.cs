@@ -21,13 +21,16 @@ public class GameDataService : IGameDataService
     };
     private readonly IAppLogger _logger;
     private static readonly ILogger _serilog = Log.Logger;
+    private readonly IFactionService _factionService;
 
-    public GameDataService(ILiteDatabase db, IAppLogger logger)
+    public GameDataService(ILiteDatabase db, IAppLogger logger, IFactionService factionService)
     {
         Guard.IsNotNull(db, nameof(db));
         Guard.IsNotNull(logger, nameof(logger));
+        Guard.IsNotNull(factionService, nameof(factionService));
         _db = db;
         _logger = logger;
+        _factionService = factionService;
         _logger.Information("GameDataService initialized with LiteDB instance.");
         _serilog.Debug("GameDataService constructed.");
     }
@@ -102,7 +105,7 @@ public class GameDataService : IGameDataService
             });
             if (game != null)
             {
-                FactionService.RehydrateStaticFields(game.PlayerFaction);
+                _factionService.RehydrateStaticFields(game.PlayerFaction);
                 _serilog.Information("Game loaded: {SaveName}", game.SaveName);
             }
             else

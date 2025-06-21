@@ -49,6 +49,7 @@ class Program
 
     private static void ConfigureServices(IServiceCollection services)
     {
+        services.AddSingleton<IFactionTypeProvider, FactionTypeProvider>();
         services.AddSingleton<IAppLogger>(sp => new AppLogger(Log.Logger));
         services.AddSingleton<ILiteDatabase>(sp => new LiteDatabase("factionsattheend.db"));
         services.AddSingleton<IEventService, EventService>();

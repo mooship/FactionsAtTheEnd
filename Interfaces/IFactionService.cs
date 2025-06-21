@@ -12,5 +12,10 @@ namespace FactionsAtTheEnd.Interfaces
         /// Creates a new faction with specified attributes.
         /// </summary>
         Faction CreateFaction(string name, FactionType type, bool isPlayer = false);
+
+        /// <summary>
+        /// Rehydrates the static fields of the given faction.
+        /// </summary>
+        void RehydrateStaticFields(Faction faction);
     }
 }
