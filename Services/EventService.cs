@@ -10,20 +10,24 @@ using static FactionsAtTheEnd.UI.NewsTemplates;
 namespace FactionsAtTheEnd.Services;
 
 /// <summary>
-/// Handles all event generation.
+/// Handles all event generation. Initializes a new instance of the <see cref="EventService"/> class.
 /// </summary>
-public class EventService : IEventService
+/// <param name="logger">The application logger.</param>
+/// <param name="random">The random provider for event generation.</param>
+public class EventService(IAppLogger logger, IRandomProvider random) : IEventService
 {
+    private readonly IAppLogger _logger = logger;
+    private readonly IRandomProvider _random = random;
+
     /// <summary>
     /// Generates the initial set of events when a new game starts.
     /// This typically includes a major crisis event to kick off the narrative.
     /// </summary>
     /// <param name="gameState">The current game state.</param>
     /// <returns>A list of initial game events.</returns>
-    public static List<GameEvent> GenerateInitialEvents(GameState gameState)
+    public List<GameEvent> GenerateInitialEvents(GameState gameState)
     {
         Guard.IsNotNull(gameState, nameof(gameState));
-
         var initialEvents = new List<GameEvent>
         {
             new()
@@ -42,14 +46,18 @@ public class EventService : IEventService
         return initialEvents;
     }
 
-    public static List<GameEvent> GenerateRandomEvents(GameState gameState)
+    /// <summary>
+    /// Generates a list of random events for the current game state.
+    /// </summary>
+    /// <param name="gameState">The current game state.</param>
+    /// <returns>A list of random game events.</returns>
+    public List<GameEvent> GenerateRandomEvents(GameState gameState)
     {
         Guard.IsNotNull(gameState, nameof(gameState));
         var events = new List<GameEvent>();
         var lastEventType = gameState.RecentEvents.LastOrDefault()?.Type;
         var lastEventTags = gameState.RecentEvents.LastOrDefault()?.Tags ?? [];
-        var logger = Serilog.Log.Logger;
-        logger.Debug("Generating random events for cycle {Cycle}", gameState.CurrentCycle);
+        _logger.Debug("Generating random events for cycle {Cycle}", gameState.CurrentCycle);
 
         foreach (var kvp in gameState.RecentActionCounts)
         {
@@ -77,7 +85,7 @@ public class EventService : IEventService
         int negativeBonus = rep < 0 ? Math.Abs(rep) / 20 * 5 : 0;
         positiveBonus = Math.Min(positiveBonus, 25);
         negativeBonus = Math.Min(negativeBonus, 25);
-        int eventRoll = Random.Shared.Next(1, 101);
+        int eventRoll = _random.Next(1, 101);
         bool forcePositive = eventRoll <= (baseChance + positiveBonus);
         bool forceNegative = eventRoll > (100 - negativeBonus);
 
@@ -96,10 +104,10 @@ public class EventService : IEventService
         if (gameEvent != null)
         {
             events.Add(gameEvent);
-            logger.Information("Random event generated: {Title}", gameEvent.Title);
+            _logger.Information("Random event generated: {Title}", gameEvent.Title);
         }
 
-        if (gameState.PlayerFaction.Stability > 75 && Random.Shared.Next(1, 101) <= 20)
+        if (gameState.PlayerFaction.Stability > 75 && _random.Next(1, 101) <= 20)
         {
             events.Add(
                 new GameEvent
@@ -111,22 +119,22 @@ public class EventService : IEventService
                     Effects = new() { { StatKey.Resources, 2 }, { StatKey.Influence, 1 } },
                 }
             );
-            logger.Information("Prosperity Wave event added for high stability.");
+            _logger.Information("Prosperity Wave event added for high stability.");
         }
 
-        if (gameState.GalacticStability <= 20 && Random.Shared.Next(1, 101) <= 30)
+        if (gameState.GalacticStability <= 20 && _random.Next(1, 101) <= 30)
         {
             events.Add(GenerateCrisisEvent(gameState));
-            logger.Warning("Crisis event added due to low galactic stability.");
+            _logger.Warning("Crisis event added due to low galactic stability.");
         }
 
-        if (gameState.AncientTechDiscovery >= 70 && Random.Shared.Next(1, 101) <= 25)
+        if (gameState.AncientTechDiscovery >= 70 && _random.Next(1, 101) <= 25)
         {
             events.Add(GenerateAncientTechEvent(gameState));
-            logger.Information("Ancient Tech event added due to high discovery.");
+            _logger.Information("Ancient Tech event added due to high discovery.");
         }
 
-        if (Random.Shared.Next(1, 101) <= 10)
+        if (_random.Next(1, 101) <= 10)
         {
             events.Add(
                 new GameEvent
@@ -140,7 +148,7 @@ public class EventService : IEventService
                     BlockedActions = [],
                 }
             );
-            logger.Debug("Diplomatic Overture event added as a rare event.");
+            _logger.Debug("Diplomatic Overture event added as a rare event.");
         }
 
         var multiStepEvents = new[]
@@ -151,9 +159,9 @@ public class EventService : IEventService
         };
         var usedTags = new HashSet<string>(lastEventTags);
         var availableMultiStep = multiStepEvents.Where(e => !usedTags.Contains(e.Tag)).ToList();
-        if (availableMultiStep.Count > 0 && Random.Shared.Next(1, 101) <= 10)
+        if (availableMultiStep.Count > 0 && _random.Next(1, 101) <= 10)
         {
-            var selected = availableMultiStep[Random.Shared.Next(availableMultiStep.Count)];
+            var selected = availableMultiStep[_random.Next(availableMultiStep.Count)];
             events.Add(
                 new GameEvent
                 {
@@ -169,10 +177,15 @@ public class EventService : IEventService
         return events;
     }
 
+    /// <summary>
+    /// Generates a list of random events for the current game state asynchronously.
+    /// </summary>
+    /// <param name="gameState">The current game state.</param>
+    /// <returns>A task that represents the asynchronous operation, containing a list of random game events.</returns>
     public async Task<List<GameEvent>> GenerateRandomEventsAsync(GameState gameState)
     {
         Guard.IsNotNull(gameState, nameof(gameState));
-        if (Random.Shared.Next(1, 101) <= 10)
+        if (_random.Next(1, 101) <= 10)
         {
             var choiceGenerators = new Func<GameState, GameEvent>[]
             {
@@ -185,13 +198,13 @@ public class EventService : IEventService
                 GenerateEspionageChoiceEvent,
                 GenerateReputationChoiceEvent,
             };
-            var selected = choiceGenerators[Random.Shared.Next(choiceGenerators.Length)];
+            var selected = choiceGenerators[_random.Next(choiceGenerators.Length)];
             return [selected(gameState)];
         }
         return await Task.Run(() => GenerateRandomEvents(gameState));
     }
 
-    private static EventType GetRandomEventType(
+    private EventType GetRandomEventType(
         GameState gameState,
         bool forcePositive = false,
         bool forceNegative = false
@@ -208,21 +221,21 @@ public class EventService : IEventService
             EventType.Natural,
         };
 
-        if (forceNegative || (gameState.GalacticStability < 30 && Random.Shared.Next(1, 101) <= 30))
+        if (forceNegative || (gameState.GalacticStability < 30 && _random.Next(1, 101) <= 30))
         {
             return EventType.Crisis;
         }
         if (forcePositive)
         {
-            return Random.Shared.Next(2) == 0 ? EventType.Discovery : EventType.Technological;
+            return _random.Next(2) == 0 ? EventType.Discovery : EventType.Technological;
         }
-        return eventTypes[Random.Shared.Next(eventTypes.Length)];
+        return eventTypes[_random.Next(eventTypes.Length)];
     }
 
-    private static GameEvent? GenerateEventByType(EventType eventType, GameState gameState)
+    private GameEvent? GenerateEventByType(EventType eventType, GameState gameState)
     {
         Guard.IsNotNull(gameState, nameof(gameState));
-        Guard.IsTrue(Enum.IsDefined(typeof(EventType), eventType), nameof(eventType));
+        Guard.IsTrue(Enum.IsDefined(eventType), nameof(eventType));
 
         return eventType switch
         {
@@ -239,11 +252,11 @@ public class EventService : IEventService
     /// <summary>
     /// Generates a military event, including positive and faction-specific outcomes.
     /// </summary>
-    private static GameEvent GenerateMilitaryEvent(GameState gameState)
+    private GameEvent GenerateMilitaryEvent(GameState gameState)
     {
         var player = gameState.PlayerFaction;
-        var index = Random.Shared.Next(12);
-        if (player?.Type == FactionType.MilitaryJunta && Random.Shared.Next(1, 101) <= 20)
+        var index = _random.Next(12);
+        if (player?.Type == FactionType.MilitaryJunta && _random.Next(1, 101) <= 20)
         {
             return new GameEvent
             {
@@ -254,7 +267,7 @@ public class EventService : IEventService
                 Effects = new() { { StatKey.Military, 8 }, { StatKey.Stability, 4 } },
             };
         }
-        if (player?.Type == FactionType.PirateAlliance && Random.Shared.Next(1, 101) <= 20)
+        if (player?.Type == FactionType.PirateAlliance && _random.Next(1, 101) <= 20)
         {
             return new GameEvent
             {
@@ -270,7 +283,7 @@ public class EventService : IEventService
                 },
             };
         }
-        if (player?.Type == FactionType.RebellionCell && Random.Shared.Next(1, 101) <= 20)
+        if (player?.Type == FactionType.RebellionCell && _random.Next(1, 101) <= 20)
         {
             return new GameEvent
             {
@@ -378,11 +391,11 @@ public class EventService : IEventService
     /// <summary>
     /// Generates an economic event, including positive and faction-specific outcomes.
     /// </summary>
-    private static GameEvent GenerateEconomicEvent(GameState gameState)
+    private GameEvent GenerateEconomicEvent(GameState gameState)
     {
         var player = gameState.PlayerFaction;
-        var index = Random.Shared.Next(10);
-        if (player?.Type == FactionType.CorporateCouncil && Random.Shared.Next(1, 101) <= 20)
+        var index = _random.Next(10);
+        if (player?.Type == FactionType.CorporateCouncil && _random.Next(1, 101) <= 20)
         {
             return new GameEvent
             {
@@ -393,7 +406,7 @@ public class EventService : IEventService
                 Effects = new() { { StatKey.Resources, 12 }, { StatKey.Influence, 4 } },
             };
         }
-        if (player?.Type == FactionType.ReligiousOrder && Random.Shared.Next(1, 101) <= 20)
+        if (player?.Type == FactionType.ReligiousOrder && _random.Next(1, 101) <= 20)
         {
             return new GameEvent
             {
@@ -499,11 +512,11 @@ public class EventService : IEventService
     /// <summary>
     /// Generates a technological event, including positive and faction-specific outcomes.
     /// </summary>
-    private static GameEvent GenerateTechnologicalEvent(GameState gameState)
+    private GameEvent GenerateTechnologicalEvent(GameState gameState)
     {
         var player = gameState.PlayerFaction;
-        var index = Random.Shared.Next(10);
-        if (player?.Type == FactionType.TechnocraticUnion && Random.Shared.Next(1, 101) <= 20)
+        var index = _random.Next(10);
+        if (player?.Type == FactionType.TechnocraticUnion && _random.Next(1, 101) <= 20)
         {
             return new GameEvent
             {
@@ -514,7 +527,7 @@ public class EventService : IEventService
                 Effects = new() { { StatKey.Technology, 15 }, { StatKey.Stability, 3 } },
             };
         }
-        if (player?.Type == FactionType.ImperialRemnant && Random.Shared.Next(1, 101) <= 20)
+        if (player?.Type == FactionType.ImperialRemnant && _random.Next(1, 101) <= 20)
         {
             return new GameEvent
             {
@@ -616,11 +629,11 @@ public class EventService : IEventService
     /// Generates a discovery event, including positive and faction-specific outcomes.
     /// Also includes rare story-driven content for Ancient Awakened.
     /// </summary>
-    private static GameEvent GenerateDiscoveryEvent(GameState gameState)
+    private GameEvent GenerateDiscoveryEvent(GameState gameState)
     {
         var player = gameState.PlayerFaction;
-        var index = Random.Shared.Next(8);
-        if (player?.Type == FactionType.AncientAwakened && Random.Shared.Next(1, 101) <= 20)
+        var index = _random.Next(8);
+        if (player?.Type == FactionType.AncientAwakened && _random.Next(1, 101) <= 20)
         {
             return new GameEvent
             {
@@ -631,7 +644,7 @@ public class EventService : IEventService
                 Effects = new() { { StatKey.Technology, 10 }, { StatKey.Stability, 5 } },
             };
         }
-        if (player?.Type == FactionType.AncientAwakened && Random.Shared.Next(1, 101) <= 5)
+        if (player?.Type == FactionType.AncientAwakened && _random.Next(1, 101) <= 5)
         {
             return new GameEvent
             {
@@ -716,11 +729,11 @@ public class EventService : IEventService
     /// <summary>
     /// Generates a natural event, including positive and faction-specific outcomes.
     /// </summary>
-    private static GameEvent GenerateNaturalEvent(GameState gameState)
+    private GameEvent GenerateNaturalEvent(GameState gameState)
     {
         var player = gameState.PlayerFaction;
-        var index = Random.Shared.Next(8);
-        if (player?.Type == FactionType.ReligiousOrder && Random.Shared.Next(1, 101) <= 20)
+        var index = _random.Next(8);
+        if (player?.Type == FactionType.ReligiousOrder && _random.Next(1, 101) <= 20)
         {
             return new GameEvent
             {
@@ -805,7 +818,7 @@ public class EventService : IEventService
     /// <summary>
     /// Generates a crisis event, including soft-fail warnings for low stats.
     /// </summary>
-    private static GameEvent GenerateCrisisEvent(GameState gameState)
+    private GameEvent GenerateCrisisEvent(GameState gameState)
     {
         var player = gameState.PlayerFaction;
         Guard.IsNotNull(player);
@@ -868,7 +881,7 @@ public class EventService : IEventService
         };
     }
 
-    private static GameEvent GenerateAncientTechEvent(GameState gameState)
+    private GameEvent GenerateAncientTechEvent(GameState gameState)
     {
         gameState.BlockedActions.Remove(PlayerActionType.AncientStudies);
         return new GameEvent

@@ -16,33 +16,46 @@ public class GameDataService : IGameDataService
     private readonly IValidator<GameState> _gameStateValidator;
     private readonly IAppLogger _logger;
     private readonly IFactionService _factionService;
+    private readonly IGameStateFactory _gameStateFactory;
 
     private static readonly JsonSerializerOptions CachedJsonOptions = new()
     {
         WriteIndented = true,
     };
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GameDataService"/> class.
+    /// </summary>
+    /// <param name="repository">The game state repository.</param>
+    /// <param name="logger">The application logger.</param>
+    /// <param name="factionService">The faction service.</param>
+    /// <param name="gameStateValidator">The validator for game state objects.</param>
+    /// <param name="gameStateFactory">The factory for rehydrating game state objects.</param>
     public GameDataService(
         IGameStateRepository repository,
         IAppLogger logger,
         IFactionService factionService,
-        IValidator<GameState> gameStateValidator
+        IValidator<GameState> gameStateValidator,
+        IGameStateFactory gameStateFactory
     )
     {
         Guard.IsNotNull(repository, nameof(repository));
         Guard.IsNotNull(logger, nameof(logger));
         Guard.IsNotNull(factionService, nameof(factionService));
         Guard.IsNotNull(gameStateValidator, nameof(gameStateValidator));
+        Guard.IsNotNull(gameStateFactory, nameof(gameStateFactory));
         _repository = repository;
         _logger = logger;
         _factionService = factionService;
         _gameStateValidator = gameStateValidator;
+        _gameStateFactory = gameStateFactory;
         _logger.Information("GameDataService initialized with repository instance.");
     }
 
     /// <summary>
     /// Asynchronously saves the current game state to the database.
     /// </summary>
+    /// <param name="gameState">The game state to save.</param>
     public async Task SaveGameAsync(GameState gameState)
     {
         Guard.IsNotNull(gameState, nameof(gameState));
@@ -91,6 +104,7 @@ public class GameDataService : IGameDataService
     /// <summary>
     /// Asynchronously loads a saved game by its unique ID.
     /// </summary>
+    /// <param name="gameId">The unique ID of the game to load.</param>
     public async Task<GameState?> LoadGameAsync(string gameId)
     {
         Guard.IsNotNullOrWhiteSpace(gameId, nameof(gameId));
@@ -103,7 +117,7 @@ public class GameDataService : IGameDataService
             });
             if (game != null)
             {
-                _factionService.RehydrateStaticFields(game.PlayerFaction);
+                _gameStateFactory.Rehydrate(game);
                 _logger.Information("Game loaded: {SaveName}", game.SaveName);
             }
             else
@@ -120,6 +134,7 @@ public class GameDataService : IGameDataService
     /// <summary>
     /// Asynchronously deletes a saved game by its unique ID.
     /// </summary>
+    /// <param name="gameId">The unique ID of the game to delete.</param>
     public async Task DeleteGameAsync(string gameId)
     {
         Guard.IsNotNullOrWhiteSpace(gameId, nameof(gameId));
@@ -141,6 +156,7 @@ public class GameDataService : IGameDataService
     /// <summary>
     /// Export a game state as a JSON string.
     /// </summary>
+    /// <param name="gameState">The game state to export.</param>
     public string ExportGameState(GameState gameState)
     {
         Guard.IsNotNull(gameState, nameof(gameState));
@@ -170,6 +186,7 @@ public class GameDataService : IGameDataService
     /// <summary>
     /// Import a game state from a JSON string.
     /// </summary>
+    /// <param name="json">The JSON string containing the game state data.</param>
     public GameState? ImportGameState(string json)
     {
         Guard.IsNotNullOrWhiteSpace(json, nameof(json));

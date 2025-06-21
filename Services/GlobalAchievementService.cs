@@ -2,7 +2,6 @@ using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using LiteDB;
-using Serilog;
 
 namespace FactionsAtTheEnd.Services;
 
@@ -13,16 +12,19 @@ public class GlobalAchievementService : IGlobalAchievementService
 {
     private readonly ILiteDatabase _db;
     private readonly ILiteCollection<GlobalAchievement> _collection;
-    private static readonly ILogger _logger = Log.Logger;
+    private readonly IAppLogger _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GlobalAchievementService"/> class.
     /// </summary>
     /// <param name="db">The LiteDB database instance.</param>
-    public GlobalAchievementService(ILiteDatabase db)
+    /// <param name="logger">The application logger instance.</param>
+    public GlobalAchievementService(ILiteDatabase db, IAppLogger logger)
     {
         Guard.IsNotNull(db, nameof(db));
+        Guard.IsNotNull(logger, nameof(logger));
         _db = db;
+        _logger = logger;
         _collection = _db.GetCollection<GlobalAchievement>("global_achievements");
         _collection.EnsureIndex(x => x.Name, true);
         _logger.Debug("GlobalAchievementService initialized.");

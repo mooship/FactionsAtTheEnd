@@ -1,10 +1,7 @@
 using CommunityToolkit.Diagnostics;
-using FactionsAtTheEnd.Constants;
 using FactionsAtTheEnd.Enums;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
-using FactionsAtTheEnd.UI;
-using Serilog;
 
 namespace FactionsAtTheEnd.Services;
 
@@ -18,14 +15,7 @@ namespace FactionsAtTheEnd.Services;
 /// <param name="typeProvider">The provider for faction type data and logic.</param>
 public class FactionService(IAppLogger logger, IFactionTypeProvider typeProvider) : IFactionService
 {
-    /// <summary>
-    /// Application logger for diagnostic and informational messages.
-    /// </summary>
     private readonly IAppLogger _logger = logger;
-
-    /// <summary>
-    /// Provider for faction-type-specific data and logic.
-    /// </summary>
     private readonly IFactionTypeProvider _typeProvider = typeProvider;
 
     /// <summary>
@@ -59,36 +49,6 @@ public class FactionService(IAppLogger logger, IFactionTypeProvider typeProvider
             Guard.IsNotNull(faction.Traits, nameof(faction.Traits));
             _typeProvider.SetStartingResources(faction);
             _logger.Information($"Faction created: {name}");
-            switch (type)
-            {
-                case FactionType.MilitaryJunta:
-                    faction.Military += 5;
-                    break;
-                case FactionType.CorporateCouncil:
-                    faction.Resources += 5;
-                    break;
-                case FactionType.ReligiousOrder:
-                    faction.Stability += 5;
-                    break;
-                case FactionType.PirateAlliance:
-                    faction.Influence += 5;
-                    break;
-                case FactionType.TechnocraticUnion:
-                    faction.Technology += 5;
-                    break;
-                case FactionType.RebellionCell:
-                    faction.Stability += 3;
-                    faction.Influence += 2;
-                    break;
-                case FactionType.ImperialRemnant:
-                    faction.Population += 4;
-                    faction.Reputation += 1;
-                    break;
-                case FactionType.AncientAwakened:
-                    faction.Technology += 3;
-                    faction.Stability += 2;
-                    break;
-            }
             return faction;
         }
         catch (Exception ex)
