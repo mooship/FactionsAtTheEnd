@@ -10,8 +10,14 @@ namespace FactionsAtTheEnd.Providers;
 /// <summary>
 /// Provides faction-type-specific data and logic such as descriptions, traits, and starting resources.
 /// </summary>
-public class FactionTypeProvider : IFactionTypeProvider
+/// <remarks>
+/// Initializes a new instance of the <see cref="FactionTypeProvider"/> class.
+/// </remarks>
+/// <param name="random">The random provider to use for resource generation.</param>
+public class FactionTypeProvider(IRandomProvider random) : IFactionTypeProvider
 {
+    private readonly IRandomProvider _random = random;
+
     /// <summary>
     /// Gets the description for a given faction type.
     /// </summary>
@@ -63,23 +69,23 @@ public class FactionTypeProvider : IFactionTypeProvider
     public void SetStartingResources(Faction faction)
     {
         Guard.IsNotNull(faction, nameof(faction));
-        faction.Population = Random.Shared.Next(
+        faction.Population = _random.Next(
             GameConstants.StartingPopulationMin,
             GameConstants.StartingPopulationMax + 1
         );
-        faction.Military = Random.Shared.Next(
+        faction.Military = _random.Next(
             GameConstants.StartingMilitaryMin,
             GameConstants.StartingMilitaryMax + 1
         );
-        faction.Technology = Random.Shared.Next(
+        faction.Technology = _random.Next(
             GameConstants.StartingTechnologyMin,
             GameConstants.StartingTechnologyMax + 1
         );
-        faction.Influence = Random.Shared.Next(
+        faction.Influence = _random.Next(
             GameConstants.StartingInfluenceMin,
             GameConstants.StartingInfluenceMax + 1
         );
-        faction.Resources = Random.Shared.Next(
+        faction.Resources = _random.Next(
             GameConstants.StartingResourcesMin,
             GameConstants.StartingResourcesMax + 1
         );
