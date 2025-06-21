@@ -199,4 +199,15 @@ public class FactionService : IFactionService
             throw new ApplicationException($"Failed to set starting resources: {ex.Message}", ex);
         }
     }
+
+    /// <summary>
+    /// Rehydrates static/derived fields (Description, Traits) for a Faction after deserialization.
+    /// </summary>
+    public static void RehydrateStaticFields(Faction faction)
+    {
+        if (faction == null)
+            return;
+        faction.Description = GenerateFactionDescription(faction.Type);
+        faction.Traits = GenerateFactionTraits(faction.Type);
+    }
 }

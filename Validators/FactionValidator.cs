@@ -26,7 +26,9 @@ public partial class FactionValidator : AbstractValidator<Faction>
 
         RuleFor(f => f.Description)
             .MaximumLength(256)
+            .When(f => !string.IsNullOrEmpty(f.Description))
             .WithMessage("Description must be 256 characters or fewer.");
+        // Traits and LastActive are not validated as they are not serialized.
 
         RuleFor(f => f.Population)
             .GreaterThanOrEqualTo(0)

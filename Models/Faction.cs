@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.Constants;
 using FactionsAtTheEnd.Enums;
@@ -11,6 +12,8 @@ public class Faction
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
     public string Name { get; set; } = string.Empty;
+
+    [JsonIgnore]
     public string Description { get; set; } = string.Empty;
     public FactionType Type { get; set; }
     public bool IsPlayer { get; set; }
@@ -20,9 +23,15 @@ public class Faction
     public int Influence { get; set; }
     public int Resources { get; set; }
     public int Reputation { get; set; } = 25;
+
+    [JsonIgnore]
     public FactionStatus Status { get; set; } = FactionStatus.Stable;
     public int Stability { get; set; } = 50;
+
+    [JsonIgnore]
     public List<string> Traits { get; set; } = [];
+
+    [JsonIgnore]
     public DateTime LastActive { get; set; } = DateTime.UtcNow;
 
     public Faction(string name, string description, FactionType type, bool isPlayer = false)
@@ -40,7 +49,6 @@ public class Faction
     /// </summary>
     public void ClampResources()
     {
-        // Clamp all stats to valid bounds first
         Population = Math.Max(GameConstants.MinStat, Math.Min(Population, GameConstants.MaxStat));
         Military = Math.Max(GameConstants.MinStat, Math.Min(Military, GameConstants.MaxStat));
         Technology = Math.Max(GameConstants.MinStat, Math.Min(Technology, GameConstants.MaxStat));
@@ -89,7 +97,6 @@ public class Faction
     /// </summary>
     public void UpdateStatus()
     {
-        // Desperate or Collapsing if any critical stat is very low
         if (Stability <= 10 || Population <= 10 || Resources <= 10)
         {
             Status =
@@ -97,17 +104,14 @@ public class Faction
                     ? FactionStatus.Collapsing
                     : FactionStatus.Desperate;
         }
-        // Struggling if stats are low but not critical
         else if (Stability <= 25 || Population <= 25 || Resources <= 25)
         {
             Status = FactionStatus.Struggling;
         }
-        // Thriving if all are high
         else if (Stability >= 80 && Population >= 80 && Resources >= 80)
         {
             Status = FactionStatus.Thriving;
         }
-        // Otherwise, stable
         else
         {
             Status = FactionStatus.Stable;

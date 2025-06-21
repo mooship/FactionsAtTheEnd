@@ -101,7 +101,10 @@ public class GameDataService : IGameDataService
                 return collection.FindById(gameId);
             });
             if (game != null)
+            {
+                FactionService.RehydrateStaticFields(game.PlayerFaction);
                 _serilog.Information("Game loaded: {SaveName}", game.SaveName);
+            }
             else
                 _serilog.Warning("No game found with ID: {GameId}", gameId);
             return game;
