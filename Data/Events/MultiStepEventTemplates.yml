@@ -1,0 +1,298 @@
+# Multi-step event templates (step 1)
+- id: aid_refugees_multistep
+  # Player faces a humanitarian crisis and must choose how to respond
+  title: "Aid the Refugees"
+  description: "Provide resources and shelter to refugees, improving your reputation but straining your supplies."
+  step: 1
+  requirements: []
+  tags: [crisis, humanitarian, multistep]
+  effects: {}
+  choices:
+    - id: crisis_choice_aid
+      description: "Send aid to a neighboring world"
+      requirements: []
+      effects:
+        Reputation: +2
+        Resources: -2
+      next_event: aid_refugees_multistep_result
+    - id: crisis_choice_ignore
+      description: "Ignore their plea"
+      requirements: []
+      effects:
+        Reputation: -2
+      next_event: aid_refugees_multistep_result
+
+- id: investigate_anomaly_multistep
+  # Player investigates a mysterious anomaly with risk/reward
+  title: "Investigate the Anomaly"
+  description: "Send a team to investigate the mysterious anomaly, risking danger for potential rewards."
+  step: 1
+  requirements: []
+  tags: [discovery, exploration, multistep]
+  effects: {}
+  choices:
+    - id: discovery_choice_study
+      description: "Study the relic"
+      requirements: []
+      effects:
+        Knowledge: +2
+        Danger: +1
+      next_event: investigate_anomaly_multistep_result
+    - id: discovery_choice_sell
+      description: "Sell the relic"
+      requirements: []
+      effects:
+        Wealth: +2
+      next_event: investigate_anomaly_multistep_result
+
+- id: military_dilemma_multistep
+  # Player must make a military or diplomatic decision
+  title: "Military Dilemma"
+  description: "A military crisis demands a difficult decision. Will you commit forces or seek a diplomatic solution?"
+  step: 1
+  requirements: []
+  tags: [military, diplomacy, multistep]
+  effects: {}
+  choices:
+    - id: military_choice_hire
+      description: "Hire the mercenaries"
+      requirements: []
+      effects:
+        Military_Strength: +3
+        Wealth: -3
+      next_event: military_dilemma_multistep_result
+    - id: military_choice_refuse
+      description: "Refuse their offer"
+      requirements: []
+      effects:
+        Reputation: -1
+      next_event: military_dilemma_multistep_result
+
+- id: economic_opportunity_multistep
+  # Player faces a risky trade deal
+  title: "Economic Opportunity"
+  description: "A lucrative but risky trade deal is on the table. Do you invest resources for potential gain or play it safe?"
+  step: 1
+  requirements: []
+  tags: [economy, trade, multistep]
+  effects: {}
+  choices:
+    - id: economic_choice_accept
+      description: "Accept the investment"
+      requirements: []
+      effects:
+        Wealth: +5
+        Resources: -5
+      next_event: economic_opportunity_multistep_result
+    - id: economic_choice_refuse
+      description: "Refuse the deal"
+      requirements: []
+      effects:
+        Reputation: +1
+      next_event: economic_opportunity_multistep_result
+
+- id: tech_breakthrough_multistep
+  # Player can approve or reject a risky experiment
+  title: "Tech Breakthrough"
+  description: "Scientists propose a radical experiment. Approve it for a chance at major progress, or avoid the risk?"
+  step: 1
+  requirements: []
+  tags: [technology, science, multistep]
+  effects: {}
+  choices:
+    - id: technological_choice_approve
+      description: "Approve the experiment"
+      requirements: []
+      effects:
+        Technology: +3
+        Resources: -1
+      next_event: tech_breakthrough_multistep_result
+    - id: technological_choice_reject
+      description: "Reject the proposal"
+      requirements: []
+      effects:
+        Reputation: -1
+      next_event: tech_breakthrough_multistep_result
+
+- id: mysterious_discovery_multistep
+  # Player finds an artifact and must choose what to do
+  title: "Mysterious Discovery"
+  description: "An ancient artifact is found. Study it for possible benefits, or sell it to fund your faction?"
+  step: 1
+  requirements: []
+  tags: [discovery, artifact, multistep]
+  effects: {}
+  choices:
+    - id: discovery_choice_study
+      description: "Study the relic"
+      requirements: []
+      effects:
+        Knowledge: +2
+        Danger: +1
+      next_event: mysterious_discovery_multistep_result
+    - id: discovery_choice_sell
+      description: "Sell the relic"
+      requirements: []
+      effects:
+        Wealth: +2
+      next_event: mysterious_discovery_multistep_result
+
+- id: natural_disaster_multistep
+  # Player must respond to a natural disaster
+  title: "Natural Disaster"
+  description: "A natural disaster strikes. Allocate resources to aid recovery, or focus on protecting your core assets?"
+  step: 1
+  requirements: []
+  tags: [crisis, disaster, multistep]
+  effects: {}
+  choices:
+    - id: natural_choice_aid
+      description: "Send aid"
+      requirements: []
+      effects:
+        Reputation: +2
+        Resources: -3
+      next_event: natural_disaster_multistep_result
+    - id: natural_choice_focus
+      description: "Focus on core worlds"
+      requirements: []
+      effects:
+        Resources: +1
+      next_event: natural_disaster_multistep_result
+
+- id: espionage_opportunity_multistep
+  # Player can attempt espionage or play it safe
+  title: "Espionage Opportunity"
+  description: "A chance arises to spy on a rival. Attempt espionage for potential rewards, or avoid the risk of exposure?"
+  step: 1
+  requirements: []
+  tags: [espionage, risk, multistep]
+  effects: {}
+  choices:
+    - id: espionage_choice_attempt
+      description: "Attempt infiltration"
+      requirements: []
+      effects:
+        Knowledge: +3
+        Danger: +2
+      next_event: espionage_opportunity_multistep_result
+    - id: espionage_choice_safe
+      description: "Play it safe"
+      requirements: []
+      effects:
+        Reputation: +1
+      next_event: espionage_opportunity_multistep_result
+
+- id: reputation_at_stake_multistep
+  # Player's reputation is challenged
+  title: "Reputation at Stake"
+  description: "Your reputation is challenged. Defend your honor at a cost, or ignore the slight and risk public opinion?"
+  step: 1
+  requirements: []
+  tags: [reputation, honor, multistep]
+  effects: {}
+  choices:
+    - id: reputation_choice_coverup
+      description: "Cover it up"
+      requirements: []
+      effects:
+        Reputation: -2
+        Resources: -1
+      next_event: reputation_at_stake_multistep_result
+    - id: reputation_choice_accept
+      description: "Accept responsibility"
+      requirements: []
+      effects:
+        Reputation: +3
+      next_event: reputation_at_stake_multistep_result
+
+# Step 2/result events for all multi-step chains
+- id: aid_refugees_multistep_result
+  # Outcome of the refugee crisis choice
+  title: "Refugee Outcome"
+  description: "The fate of the refugees is decided. Your people react to your choice."
+  step: 2
+  requirements: []
+  tags: [crisis, humanitarian, multistep, result]
+  effects: {}
+  choices: []
+
+- id: investigate_anomaly_multistep_result
+  # Outcome of the anomaly investigation
+  title: "Anomaly Outcome"
+  description: "The investigation yields results—positive or negative."
+  step: 2
+  requirements: []
+  tags: [discovery, exploration, multistep, result]
+  effects: {}
+  choices: []
+
+- id: military_dilemma_multistep_result
+  # Outcome of the military dilemma
+  title: "Military Dilemma Outcome"
+  description: "The consequences of your military decision unfold."
+  step: 2
+  requirements: []
+  tags: [military, diplomacy, multistep, result]
+  effects: {}
+  choices: []
+
+- id: economic_opportunity_multistep_result
+  # Outcome of the economic opportunity
+  title: "Economic Opportunity Outcome"
+  description: "The trade deal's outcome becomes clear."
+  step: 2
+  requirements: []
+  tags: [economy, trade, multistep, result]
+  effects: {}
+  choices: []
+
+- id: tech_breakthrough_multistep_result
+  # Outcome of the tech breakthrough
+  title: "Tech Breakthrough Outcome"
+  description: "The experiment's results are revealed."
+  step: 2
+  requirements: []
+  tags: [technology, science, multistep, result]
+  effects: {}
+  choices: []
+
+- id: mysterious_discovery_multistep_result
+  # Outcome of the mysterious discovery
+  title: "Discovery Outcome"
+  description: "The artifact's fate is decided."
+  step: 2
+  requirements: []
+  tags: [discovery, artifact, multistep, result]
+  effects: {}
+  choices: []
+
+- id: natural_disaster_multistep_result
+  # Outcome of the natural disaster response
+  title: "Disaster Recovery Outcome"
+  description: "The aftermath of the disaster is felt."
+  step: 2
+  requirements: []
+  tags: [crisis, disaster, multistep, result]
+  effects: {}
+  choices: []
+
+- id: espionage_opportunity_multistep_result
+  # Outcome of the espionage attempt
+  title: "Espionage Outcome"
+  description: "The results of your espionage attempt are revealed."
+  step: 2
+  requirements: []
+  tags: [espionage, risk, multistep, result]
+  effects: {}
+  choices: []
+
+- id: reputation_at_stake_multistep_result
+  # Outcome of the reputation challenge
+  title: "Reputation Outcome"
+  description: "Your reputation is affected by your decision."
+  step: 2
+  requirements: []
+  tags: [reputation, honor, multistep, result]
+  effects: {}
+  choices: []
