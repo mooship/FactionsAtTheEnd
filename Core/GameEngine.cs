@@ -19,7 +19,8 @@ public class GameEngine(
     IValidator<GameEvent> gameEventValidator,
     IValidator<EventChoice> eventChoiceValidator,
     IGlobalAchievementService globalAchievementService,
-    IAppLogger logger
+    IAppLogger logger,
+    IRandomProvider random
 )
 {
     private readonly IEventService _eventService = eventService;
@@ -30,6 +31,7 @@ public class GameEngine(
     private readonly IValidator<EventChoice> _eventChoiceValidator = eventChoiceValidator;
     private readonly IGlobalAchievementService _globalAchievementService = globalAchievementService;
     private readonly IAppLogger _logger = logger;
+    private readonly IRandomProvider _random = random;
 
     /// <summary>
     /// The current game state, or null if no game is loaded.
@@ -679,18 +681,18 @@ public class GameEngine(
         {
             CurrentGame.GalacticStability = Math.Max(
                 0,
-                CurrentGame.GalacticStability - Random.Shared.Next(0, 3)
+                CurrentGame.GalacticStability - _random.Next(0, 3)
             );
             CurrentGame.GateNetworkIntegrity = Math.Max(
                 0,
-                CurrentGame.GateNetworkIntegrity - Random.Shared.Next(0, 2)
+                CurrentGame.GateNetworkIntegrity - _random.Next(0, 2)
             );
 
-            if (Random.Shared.Next(1, 101) <= 15)
+            if (_random.Next(1, 101) <= 15)
             {
                 CurrentGame.AncientTechDiscovery = Math.Min(
                     100,
-                    CurrentGame.AncientTechDiscovery + Random.Shared.Next(1, 5)
+                    CurrentGame.AncientTechDiscovery + _random.Next(1, 5)
                 );
             }
         });
@@ -716,7 +718,7 @@ public class GameEngine(
     /// </summary>
     /// <param name="initialChoice">The root EventChoice to present.</param>
     /// <returns>The final EventChoice selected by the player (leaf node).</returns>
-    public static EventChoice? RunMultiStepChoice(EventChoice initialChoice)
+    public EventChoice? RunMultiStepChoice(EventChoice initialChoice)
     {
         Guard.IsNotNull(initialChoice, nameof(initialChoice));
         var currentChoice = initialChoice;
