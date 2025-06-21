@@ -1,3 +1,4 @@
+using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.Constants;
 using FactionsAtTheEnd.Enums;
 using FactionsAtTheEnd.Interfaces;
@@ -18,6 +19,7 @@ public class FactionTypeProvider : IFactionTypeProvider
     /// <returns>The description string for the faction type.</returns>
     public string GetDescription(FactionType type)
     {
+        Guard.IsNotNull(type, nameof(type));
         return type switch
         {
             FactionType.MilitaryJunta => FactionDescriptions.MilitaryJunta,
@@ -39,6 +41,7 @@ public class FactionTypeProvider : IFactionTypeProvider
     /// <returns>A list of trait strings for the faction type.</returns>
     public List<string> GetTraits(FactionType type)
     {
+        Guard.IsNotNull(type, nameof(type));
         return type switch
         {
             FactionType.MilitaryJunta => ["Disciplined", "Aggressive", "Organized"],
@@ -59,6 +62,7 @@ public class FactionTypeProvider : IFactionTypeProvider
     /// <param name="faction">The faction to initialize.</param>
     public void SetStartingResources(Faction faction)
     {
+        Guard.IsNotNull(faction, nameof(faction));
         faction.Population = Random.Shared.Next(
             GameConstants.StartingPopulationMin,
             GameConstants.StartingPopulationMax + 1
