@@ -279,7 +279,6 @@ public class GameUI
                 AnsiConsole.MarkupLine("[red]You have lost the game![/]");
                 break;
             }
-            // Win condition
             if (game.HasWon || playerFaction.Technology >= 100 || game.CurrentCycle > 20)
             {
                 _logger.Information("Player has won the game or met win conditions.");
@@ -288,7 +287,6 @@ public class GameUI
             }
 
             AnsiConsole.Clear();
-            // Display current turn number
             AnsiConsole.MarkupLine($"[bold blue]Turn:[/] {game.CurrentCycle}");
             AnsiConsole.MarkupLine("");
             AnsiConsole.MarkupLine(
