@@ -31,8 +31,8 @@ public class EventChoice
     )
     {
         Description = description;
-        Effects = effects ?? new Dictionary<StatKey, int>();
-        BlockedActions = blockedActions ?? new List<PlayerActionType>();
+        Effects = effects ?? [];
+        BlockedActions = blockedActions ?? [];
         NextStepChoices = nextStepChoices;
     }
 
