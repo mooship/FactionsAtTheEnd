@@ -88,7 +88,7 @@ public class GameUI
                         await LoadGameAsync();
                         break;
                     case MenuOption.Help:
-                        ShowHelp();
+                        this.ShowHelp();
                         break;
                     case MenuOption.Exit:
                         _logger.Information("User exited the game from main menu.");
@@ -115,7 +115,7 @@ public class GameUI
     /// <summary>
     /// Displays help and gameplay tips to the player.
     /// </summary>
-    private static void ShowHelp()
+    private void ShowHelp()
     {
         AnsiConsole.MarkupLine("[bold yellow]Help & Tips[/]");
         AnsiConsole.MarkupLine(
@@ -342,7 +342,7 @@ public class GameUI
             );
             if (mainChoice == MenuOption.Help)
             {
-                ShowHelp();
+                this.ShowHelp();
                 continue;
             }
             if (mainChoice == MenuOption.ViewFactionOverview)
@@ -511,7 +511,7 @@ public class GameUI
                         );
                     } while (true);
                     var initialChoice = choiceEvent.Choices[selectedIndex];
-                    selectedChoice = GameEngine.RunMultiStepChoice(initialChoice);
+                    selectedChoice = _gameEngine.RunMultiStepChoice(initialChoice);
                 }
                 else
                 {
