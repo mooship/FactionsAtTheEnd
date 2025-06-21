@@ -309,14 +309,14 @@ public class GameUI
                 AnsiConsole.MarkupLine("[bold underline]Galactic News:[/]");
                 foreach (var news in game.GalacticNews.TakeLast(5))
                 {
-                    AnsiConsole.MarkupLine($"[aqua]{news}[/]");
+                    AnsiConsole.MarkupLine($"[aqua]{Markup.Escape(news)}[/]");
                 }
                 AnsiConsole.MarkupLine("");
             }
             if (game.GalacticHistory.Count > 0)
             {
                 AnsiConsole.MarkupLine("[bold underline]Galactic History:[/]");
-                AnsiConsole.MarkupLine($"[grey]{game.GalacticHistory.Last()}[/]");
+                AnsiConsole.MarkupLine($"[grey]{Markup.Escape(game.GalacticHistory.Last())}[/]");
                 AnsiConsole.MarkupLine("");
             }
             if (game.BlockedActions.Count > 0)
@@ -470,8 +470,8 @@ public class GameUI
                 AnsiConsole.MarkupLine("[bold yellow]Events this turn:[/]");
                 foreach (var gameEvent in recentEvents)
                 {
-                    AnsiConsole.MarkupLine($"[bold]{gameEvent.Title}[/]");
-                    AnsiConsole.MarkupLine(gameEvent.Description);
+                    AnsiConsole.MarkupLine($"[bold]{Markup.Escape(gameEvent.Title)}[/]");
+                    AnsiConsole.MarkupLine(Markup.Escape(gameEvent.Description));
                     ShowEventEffects(gameEvent);
                     AnsiConsole.WriteLine();
                 }
@@ -490,7 +490,7 @@ public class GameUI
                 )
                 {
                     var firstStepDescriptions = choiceEvent
-                        .Choices.Select((c, i) => $"[{i + 1}] {c.Description}")
+                        .Choices.Select((c, i) => $"[{i + 1}] {Markup.Escape(c.Description)}")
                         .ToList();
                     int selectedIndex = 0;
                     do
@@ -518,7 +518,7 @@ public class GameUI
                 else
                 {
                     var choiceDescriptions = choiceEvent
-                        .Choices.Select(c => c.Description)
+                        .Choices.Select(c => Markup.Escape(c.Description))
                         .ToList();
                     var choice = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
@@ -646,15 +646,19 @@ public class GameUI
             : "[grey]=[/]";
         if (diff == 0)
         {
-            AnsiConsole.MarkupLine($"{icon} {stat}: {after}");
+            AnsiConsole.MarkupLine($"{icon} {Markup.Escape(stat)}: {after}");
         }
         else if (diff > 0)
         {
-            AnsiConsole.MarkupLine($"{icon} {stat}: {before} [green]+{diff}[/] = {after}");
+            AnsiConsole.MarkupLine(
+                $"{icon} {Markup.Escape(stat)}: {before} [green]+{diff}[/] = {after}"
+            );
         }
         else
         {
-            AnsiConsole.MarkupLine($"{icon} {stat}: {before} [red]{diff}[/] = {after}");
+            AnsiConsole.MarkupLine(
+                $"{icon} {Markup.Escape(stat)}: {before} [red]{diff}[/] = {after}"
+            );
         }
     }
 
@@ -688,14 +692,14 @@ public class GameUI
             AnsiConsole.MarkupLine("[bold underline]Galactic News:[/]");
             foreach (var news in game.GalacticNews.TakeLast(5))
             {
-                AnsiConsole.MarkupLine($"[aqua]{news}[/]");
+                AnsiConsole.MarkupLine($"[aqua]{Markup.Escape(news)}[/]");
             }
             AnsiConsole.MarkupLine("");
         }
         if (game.GalacticHistory.Count > 0)
         {
             AnsiConsole.MarkupLine("[bold underline]Galactic History:[/]");
-            AnsiConsole.MarkupLine($"[grey]{game.GalacticHistory.Last()}[/]");
+            AnsiConsole.MarkupLine($"[grey]{Markup.Escape(game.GalacticHistory.Last())}[/]");
             AnsiConsole.MarkupLine("");
         }
         if (game.BlockedActions.Count > 0)
@@ -716,10 +720,10 @@ public class GameUI
         var table = new Table().Border(TableBorder.Rounded).Title("[bold cyan]Faction Overview[/]");
         table.AddColumn("[bold]Property[/]");
         table.AddColumn("[bold]Value[/]");
-        table.AddRow("Name", playerFaction.Name);
-        table.AddRow("Type", playerFaction.Type.GetDisplayName());
-        table.AddRow("Description", playerFaction.Description);
-        table.AddRow("Traits", string.Join(", ", playerFaction.Traits));
+        table.AddRow("Name", Markup.Escape(playerFaction.Name));
+        table.AddRow("Type", Markup.Escape(playerFaction.Type.GetDisplayName()));
+        table.AddRow("Description", Markup.Escape(playerFaction.Description));
+        table.AddRow("Traits", Markup.Escape(string.Join(", ", playerFaction.Traits)));
         table.AddRow("Population", playerFaction.Population.ToString());
         table.AddRow("Military", playerFaction.Military.ToString());
         table.AddRow("Technology", playerFaction.Technology.ToString());
@@ -870,7 +874,9 @@ public class GameUI
                 var statName = effect.Key.GetDisplayName();
                 int value = effect.Value;
                 string sign = value > 0 ? "+" : "";
-                AnsiConsole.MarkupLine($"  [aqua]{statName}[/]: [bold]{sign}{value}[/]");
+                AnsiConsole.MarkupLine(
+                    $"  [aqua]{Markup.Escape(statName)}[/]: [bold]{sign}{value}[/]"
+                );
             }
         }
         if (gameEvent.BlockedActions != null && gameEvent.BlockedActions.Count > 0)
@@ -878,7 +884,7 @@ public class GameUI
             AnsiConsole.MarkupLine("[bold orange1]Blocked Actions Next Turn:[/]");
             foreach (var action in gameEvent.BlockedActions)
             {
-                AnsiConsole.MarkupLine($"  [red]{action.GetDisplayName()}[/]");
+                AnsiConsole.MarkupLine($"  [red]{Markup.Escape(action.GetDisplayName())}[/]");
             }
         }
     }
