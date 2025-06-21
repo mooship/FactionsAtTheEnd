@@ -8,6 +8,9 @@ namespace FactionsAtTheEnd.Validators;
 /// </summary>
 public class GlobalAchievementValidator : AbstractValidator<GlobalAchievement>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GlobalAchievementValidator"/> class.
+    /// </summary>
     public GlobalAchievementValidator()
     {
         RuleFor(a => a.Name)

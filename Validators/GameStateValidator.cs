@@ -9,6 +9,9 @@ namespace FactionsAtTheEnd.Validators;
 /// </summary>
 public class GameStateValidator : AbstractValidator<GameState>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GameStateValidator"/> class.
+    /// </summary>
     public GameStateValidator()
     {
         RuleFor(g => g.Id).NotEmpty();

@@ -8,6 +8,9 @@ namespace FactionsAtTheEnd.Validators;
 /// </summary>
 public class GameEventValidator : AbstractValidator<GameEvent>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GameEventValidator"/> class.
+    /// </summary>
     public GameEventValidator()
     {
         RuleFor(e => e.Title)

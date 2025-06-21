@@ -8,6 +8,9 @@ namespace FactionsAtTheEnd.Validators;
 /// </summary>
 public class PlayerActionValidator : AbstractValidator<PlayerAction>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PlayerActionValidator"/> class.
+    /// </summary>
     public PlayerActionValidator()
     {
         RuleFor(a => a.ActionType).Must(a => Enum.IsDefined(a)).WithMessage("Invalid action type.");

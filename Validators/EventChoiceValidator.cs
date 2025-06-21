@@ -8,6 +8,9 @@ namespace FactionsAtTheEnd.Validators;
 /// </summary>
 public class EventChoiceValidator : AbstractValidator<EventChoice>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EventChoiceValidator"/> class.
+    /// </summary>
     public EventChoiceValidator()
     {
         RuleFor(c => c.Description)
