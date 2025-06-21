@@ -5,25 +5,59 @@ namespace FactionsAtTheEnd.Models;
 /// </summary>
 public class GameState
 {
+    /// <summary>
+    /// Gets or sets the unique identifier for the game state.
+    /// </summary>
     public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    /// <summary>
+    /// Gets or sets the save name for the game state.
+    /// </summary>
     public string SaveName { get; set; } = "New Game";
+
+    /// <summary>
+    /// Gets or sets the current cycle of the game.
+    /// </summary>
     public int CurrentCycle { get; set; } = 1;
+
+    /// <summary>
+    /// Gets or sets the creation date of the game state.
+    /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Gets or sets the last played date of the game state.
+    /// </summary>
     public DateTime LastPlayed { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// World state variables affecting events, win/lose, and narrative.
     /// </summary>
     public int GalacticStability { get; set; } = 40;
+
+    /// <summary>
+    /// Gets or sets the integrity of the gate network.
+    /// </summary>
     public int GateNetworkIntegrity { get; set; } = 60;
+
+    /// <summary>
+    /// Gets or sets the level of ancient technology discovery.
+    /// </summary>
     public int AncientTechDiscovery { get; set; } = 10;
 
+    /// <summary>
+    /// Gets or sets the player's faction.
+    /// </summary>
     public Faction PlayerFaction { get; set; } = new Faction();
 
     /// <summary>
     /// Recent events for event log and turn feedback.
     /// </summary>
     public List<GameEvent> RecentEvents { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the galactic history log.
+    /// </summary>
     public List<string> GalacticHistory { get; set; } = [];
 
     /// <summary>
@@ -52,12 +86,12 @@ public class GameState
     public bool HasLost { get; set; } = false;
 
     /// <summary>
-    /// The version of the save file for compatibility and migration.
+    /// Gets or sets the save version.
     /// </summary>
     public int SaveVersion { get; set; } = 1;
 
     /// <summary>
-    /// List of achievement IDs or names unlocked in this game.
+    /// Gets or sets the list of achievements earned in this game state.
     /// </summary>
     public List<string> Achievements { get; set; } = [];
 
