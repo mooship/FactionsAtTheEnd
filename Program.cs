@@ -16,8 +16,17 @@ class Program
 {
     static async Task Main(string[] args)
     {
+        var logDir = Path.Combine(AppContext.BaseDirectory, "logs");
+        Directory.CreateDirectory(logDir);
+        var logFileName = $"game-{DateTime.Now:yyyyMMdd-HHmmss}.log";
+        var logFilePath = Path.Combine(logDir, logFileName);
+
         Log.Logger = new LoggerConfiguration()
-            .WriteTo.File(".log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true)
+            .WriteTo.File(
+                logFilePath,
+                rollingInterval: RollingInterval.Infinite,
+                rollOnFileSizeLimit: true
+            )
             .MinimumLevel.Debug()
             .CreateLogger();
 
