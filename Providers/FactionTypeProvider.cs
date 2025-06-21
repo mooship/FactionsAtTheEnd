@@ -5,7 +5,7 @@ using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using FactionsAtTheEnd.UI;
 
-namespace FactionsAtTheEnd.Services;
+namespace FactionsAtTheEnd.Providers;
 
 /// <summary>
 /// Provides faction-type-specific data and logic such as descriptions, traits, and starting resources.

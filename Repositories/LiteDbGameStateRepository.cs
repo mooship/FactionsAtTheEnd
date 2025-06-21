@@ -3,7 +3,7 @@ using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using LiteDB;
 
-namespace FactionsAtTheEnd.Services;
+namespace FactionsAtTheEnd.Repositories;
 
 /// <summary>
 /// LiteDB implementation of the IGameStateRepository interface for managing game state persistence.
