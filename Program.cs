@@ -24,7 +24,6 @@ class Program
         try
         {
             Log.Information("Starting Factions At The End");
-            // Setup DI
             var services = new ServiceCollection();
             ConfigureServices(services);
             var serviceProvider = services.BuildServiceProvider();
@@ -77,5 +76,7 @@ class Program
         services.AddSingleton<IValidator<GlobalAchievement>, GlobalAchievementValidator>();
         services.AddSingleton<IValidator<GameEvent>, GameEventValidator>();
         services.AddSingleton<IValidator<EventChoice>, EventChoiceValidator>();
+        services.AddSingleton<IValidator<GameState>, GameStateValidator>();
+        services.AddSingleton<IGameStateRepository, LiteDbGameStateRepository>();
     }
 }

@@ -11,28 +11,22 @@ namespace FactionsAtTheEnd.Services;
 /// <summary>
 /// Service for creating and managing Faction entities.
 /// </summary>
-public class FactionService : IFactionService
+/// <remarks>
+/// Initializes a new instance of the <see cref="FactionService"/> class.
+/// </remarks>
+/// <param name="logger">The application logger.</param>
+/// <param name="typeProvider">The provider for faction type data and logic.</param>
+public class FactionService(IAppLogger logger, IFactionTypeProvider typeProvider) : IFactionService
 {
     /// <summary>
     /// Application logger for diagnostic and informational messages.
     /// </summary>
-    private readonly IAppLogger _logger;
+    private readonly IAppLogger _logger = logger;
 
     /// <summary>
     /// Provider for faction-type-specific data and logic.
     /// </summary>
-    private readonly IFactionTypeProvider _typeProvider;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FactionService"/> class.
-    /// </summary>
-    /// <param name="logger">The application logger.</param>
-    /// <param name="typeProvider">The provider for faction type data and logic.</param>
-    public FactionService(IAppLogger logger, IFactionTypeProvider typeProvider)
-    {
-        _logger = logger;
-        _typeProvider = typeProvider;
-    }
+    private readonly IFactionTypeProvider _typeProvider = typeProvider;
 
     /// <summary>
     /// Creates a new faction with the specified name, type, and player status.

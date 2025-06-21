@@ -2,9 +2,8 @@ using System.Text.Json;
 using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
-using FactionsAtTheEnd.Validators;
+using FluentValidation;
 using LiteDB;
-using Serilog;
 
 namespace FactionsAtTheEnd.Services;
 
@@ -13,26 +12,32 @@ namespace FactionsAtTheEnd.Services;
 /// </summary>
 public class GameDataService : IGameDataService
 {
-    private readonly ILiteDatabase _db;
-    private readonly GameStateValidator _gameStateValidator = new();
+    private readonly IGameStateRepository _repository;
+    private readonly IValidator<GameState> _gameStateValidator;
+    private readonly IAppLogger _logger;
+    private readonly IFactionService _factionService;
+
     private static readonly JsonSerializerOptions CachedJsonOptions = new()
     {
         WriteIndented = true,
     };
-    private readonly IAppLogger _logger;
-    private static readonly ILogger _serilog = Log.Logger;
-    private readonly IFactionService _factionService;
 
-    public GameDataService(ILiteDatabase db, IAppLogger logger, IFactionService factionService)
+    public GameDataService(
+        IGameStateRepository repository,
+        IAppLogger logger,
+        IFactionService factionService,
+        IValidator<GameState> gameStateValidator
+    )
     {
-        Guard.IsNotNull(db, nameof(db));
+        Guard.IsNotNull(repository, nameof(repository));
         Guard.IsNotNull(logger, nameof(logger));
         Guard.IsNotNull(factionService, nameof(factionService));
-        _db = db;
+        Guard.IsNotNull(gameStateValidator, nameof(gameStateValidator));
+        _repository = repository;
         _logger = logger;
         _factionService = factionService;
-        _logger.Information("GameDataService initialized with LiteDB instance.");
-        _serilog.Debug("GameDataService constructed.");
+        _gameStateValidator = gameStateValidator;
+        _logger.Information("GameDataService initialized with repository instance.");
     }
 
     /// <summary>
@@ -41,24 +46,22 @@ public class GameDataService : IGameDataService
     public async Task SaveGameAsync(GameState gameState)
     {
         Guard.IsNotNull(gameState, nameof(gameState));
-        _serilog.Debug("Saving game: {SaveName}", gameState.SaveName);
+        _logger.Debug("Saving game: {SaveName}", gameState.SaveName);
         try
         {
             await Task.Run(() =>
             {
-                var collection = _db.GetCollection<GameState>("games");
-                collection.Upsert(gameState);
+                _repository.Upsert(gameState);
             });
-            _serilog.Information("Game saved: {SaveName}", gameState.SaveName);
+            _logger.Information("Game saved: {SaveName}", gameState.SaveName);
         }
         catch (Exception ex)
         {
-            _serilog.Error(
+            _logger.Error(
                 ex,
                 "[GameDataService] Error saving game: {SaveName}",
                 gameState.SaveName
             );
-            _logger.Error(ex, "[GameDataService] Error saving game");
             throw new ApplicationException("Failed to save game data.", ex);
         }
     }
@@ -68,21 +71,18 @@ public class GameDataService : IGameDataService
     /// </summary>
     public async Task<List<GameState>> GetSavedGamesAsync()
     {
-        Guard.IsNotNull(_db, nameof(_db));
-        _serilog.Debug("Loading all saved games.");
+        _logger.Debug("Loading all saved games.");
         try
         {
             var games = await Task.Run(() =>
             {
-                var collection = _db.GetCollection<GameState>("games");
-                return collection.FindAll().OrderByDescending(g => g.LastPlayed).ToList();
+                return _repository.GetAll().OrderByDescending(g => g.LastPlayed).ToList();
             });
-            _serilog.Information("Loaded {Count} saved games.", games.Count);
+            _logger.Information("Loaded {Count} saved games.", games.Count);
             return games;
         }
         catch (Exception ex)
         {
-            _serilog.Error(ex, "[GameDataService] Error loading saved games");
             _logger.Error(ex, "[GameDataService] Error loading saved games");
             return [];
         }
@@ -94,28 +94,25 @@ public class GameDataService : IGameDataService
     public async Task<GameState?> LoadGameAsync(string gameId)
     {
         Guard.IsNotNullOrWhiteSpace(gameId, nameof(gameId));
-        Guard.IsNotNull(_db, nameof(_db));
-        _serilog.Debug("Loading game with ID: {GameId}", gameId);
+        _logger.Debug("Loading game with ID: {GameId}", gameId);
         try
         {
             var game = await Task.Run(() =>
             {
-                var collection = _db.GetCollection<GameState>("games");
-                return collection.FindById(gameId);
+                return _repository.FindById(gameId);
             });
             if (game != null)
             {
                 _factionService.RehydrateStaticFields(game.PlayerFaction);
-                _serilog.Information("Game loaded: {SaveName}", game.SaveName);
+                _logger.Information("Game loaded: {SaveName}", game.SaveName);
             }
             else
-                _serilog.Warning("No game found with ID: {GameId}", gameId);
+                _logger.Warning("No game found with ID: {GameId}", gameId);
             return game;
         }
         catch (Exception ex)
         {
-            _serilog.Error(ex, "[GameDataService] Error loading game: {GameId}", gameId);
-            _logger.Error(ex, "[GameDataService] Error loading game");
+            _logger.Error(ex, "[GameDataService] Error loading game: {GameId}", gameId);
             return null;
         }
     }
@@ -126,21 +123,18 @@ public class GameDataService : IGameDataService
     public async Task DeleteGameAsync(string gameId)
     {
         Guard.IsNotNullOrWhiteSpace(gameId, nameof(gameId));
-        Guard.IsNotNull(_db, nameof(_db));
-        _serilog.Debug("Deleting game with ID: {GameId}", gameId);
+        _logger.Debug("Deleting game with ID: {GameId}", gameId);
         try
         {
             await Task.Run(() =>
             {
-                var collection = _db.GetCollection<GameState>("games");
-                collection.Delete(gameId);
+                _repository.Delete(gameId);
             });
-            _serilog.Information("Game deleted: {GameId}", gameId);
+            _logger.Information("Game deleted: {GameId}", gameId);
         }
         catch (Exception ex)
         {
-            _serilog.Error(ex, "[GameDataService] Error deleting game: {GameId}", gameId);
-            _logger.Error(ex, "[GameDataService] Error deleting game");
+            _logger.Error(ex, "[GameDataService] Error deleting game: {GameId}", gameId);
         }
     }
 
@@ -155,21 +149,20 @@ public class GameDataService : IGameDataService
             validation.IsValid,
             $"Invalid game state for export: {string.Join("; ", validation.Errors.Select(e => e.ErrorMessage))}"
         );
-        _serilog.Debug("Exporting game state: {SaveName}", gameState.SaveName);
+        _logger.Debug("Exporting game state: {SaveName}", gameState.SaveName);
         try
         {
             var json = System.Text.Json.JsonSerializer.Serialize(gameState, CachedJsonOptions);
-            _serilog.Information("Game state exported: {SaveName}", gameState.SaveName);
+            _logger.Information("Game state exported: {SaveName}", gameState.SaveName);
             return json;
         }
         catch (JsonException ex)
         {
-            _serilog.Error(
+            _logger.Error(
                 ex,
                 "[GameDataService] Error exporting game state: {SaveName}",
                 gameState.SaveName
             );
-            _logger.Error(ex, "[GameDataService] Error exporting game state");
             throw new ApplicationException("Failed to export game data.", ex);
         }
     }
@@ -180,7 +173,7 @@ public class GameDataService : IGameDataService
     public GameState? ImportGameState(string json)
     {
         Guard.IsNotNullOrWhiteSpace(json, nameof(json));
-        _serilog.Debug("Importing game state from JSON");
+        _logger.Debug("Importing game state from JSON");
         try
         {
             var gameState = System.Text.Json.JsonSerializer.Deserialize<GameState>(
@@ -189,29 +182,21 @@ public class GameDataService : IGameDataService
             );
             if (gameState == null)
             {
-                _serilog.Warning("Deserialized game state is null");
+                _logger.Warning("Deserialized game state is null");
                 return null;
             }
             var validation = _gameStateValidator.Validate(gameState);
             if (!validation.IsValid)
             {
                 var errors = string.Join("; ", validation.Errors.Select(e => e.ErrorMessage));
-                _serilog.Warning("Invalid game state from import: {Errors}", errors);
-                _logger.Warning(
-                    "[GameDataService] Invalid game state from import: {Errors}",
-                    errors
-                );
+                _logger.Warning("Invalid game state from import: {Errors}", errors);
                 return null;
             }
-            _serilog.Information(
-                "Game state imported successfully: {SaveName}",
-                gameState.SaveName
-            );
+            _logger.Information("Game state imported successfully: {SaveName}", gameState.SaveName);
             return gameState;
         }
         catch (JsonException ex)
         {
-            _serilog.Error(ex, "[GameDataService] Error importing game state");
             _logger.Error(ex, "[GameDataService] Error importing game state");
             return null;
         }
