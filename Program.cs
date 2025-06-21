@@ -1,6 +1,8 @@
 ﻿using FactionsAtTheEnd.Core;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
+using FactionsAtTheEnd.Providers;
+using FactionsAtTheEnd.Repositories;
 using FactionsAtTheEnd.Services;
 using FactionsAtTheEnd.UI;
 using FactionsAtTheEnd.Validators;
@@ -60,10 +62,15 @@ class Program
         services.AddSingleton<IFactionTypeProvider, FactionTypeProvider>();
         services.AddSingleton<IAppLogger>(sp => new AppLogger(Log.Logger));
         services.AddSingleton<ILiteDatabase>(sp => new LiteDatabase("factionsattheend.db"));
+        services.AddSingleton<IRandomProvider, RandomProvider>();
+        services.AddSingleton<IGameStateFactory, GameStateFactory>();
         services.AddSingleton<IEventService, EventService>();
         services.AddSingleton<IFactionService, FactionService>();
         services.AddSingleton<IGameDataService, GameDataService>();
-        services.AddSingleton<IGlobalAchievementService, GlobalAchievementService>();
+        services.AddSingleton<IGlobalAchievementService>(sp => new GlobalAchievementService(
+            sp.GetRequiredService<ILiteDatabase>(),
+            sp.GetRequiredService<IAppLogger>()
+        ));
         services.AddTransient(sp => new GameUI(
             sp.GetRequiredService<GameEngine>(),
             sp.GetRequiredService<IValidator<Faction>>(),
@@ -78,7 +85,8 @@ class Program
             sp.GetRequiredService<IValidator<GameEvent>>(),
             sp.GetRequiredService<IValidator<EventChoice>>(),
             sp.GetRequiredService<IGlobalAchievementService>(),
-            sp.GetRequiredService<IAppLogger>()
+            sp.GetRequiredService<IAppLogger>(),
+            sp.GetRequiredService<IRandomProvider>()
         ));
         services.AddSingleton<IValidator<Faction>, FactionValidator>();
         services.AddSingleton<IValidator<PlayerAction>, PlayerActionValidator>();
