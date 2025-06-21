@@ -249,7 +249,6 @@ public class GameEngine(
             playerActions?.Count ?? 0
         );
         Guard.IsNotNull(playerActions, nameof(playerActions));
-        Guard.IsTrue(playerActions.Count > 0, "At least one player action must be provided.");
         Guard.IsNotNull(CurrentGame, nameof(CurrentGame));
         try
         {
@@ -258,7 +257,10 @@ public class GameEngine(
             {
                 _logger.Warning("No valid player actions provided for this turn.");
             }
-            UpdateActionCounts(actionCounts);
+            if (actionCounts.Count > 0)
+            {
+                UpdateActionCounts(actionCounts);
+            }
             await ApplyPlayerActionsAsync(validActions);
             await UpdateWorldStateAsync();
             var newEvents = (await _eventService.GenerateRandomEventsAsync(CurrentGame)).ToList();
