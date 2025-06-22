@@ -7,7 +7,6 @@ using FactionsAtTheEnd.Services;
 using FactionsAtTheEnd.UI;
 using FactionsAtTheEnd.Validators;
 using FluentValidation;
-using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Spectre.Console;
@@ -37,7 +36,7 @@ class Program
             Log.Information("Starting Factions At The End");
             var services = new ServiceCollection();
             ConfigureServices(services);
-            var serviceProvider = services.BuildServiceProvider();
+            using var serviceProvider = services.BuildServiceProvider();
             var gameUI = serviceProvider.GetRequiredService<GameUI>();
 
             AnsiConsole.MarkupLine("[bold red]🔮 FACTIONS AT THE END 🔮[/]");
@@ -61,23 +60,23 @@ class Program
     {
         services.AddSingleton<IFactionTypeProvider, FactionTypeProvider>();
         services.AddSingleton<IAppLogger>(sp => new AppLogger(Log.Logger));
-        services.AddSingleton<ILiteDatabase>(sp => new LiteDatabase("factionsattheend.db"));
+        services.AddSingleton<IDataRepository>(sp => new LiteDbDataRepository(
+            "factionsattheend.db",
+            sp.GetRequiredService<IAppLogger>()
+        ));
         services.AddSingleton<IRandomProvider, RandomProvider>();
         services.AddSingleton<IGameStateFactory, GameStateFactory>();
         services.AddSingleton<IEventService, EventService>();
         services.AddSingleton<IFactionService, FactionService>();
         services.AddSingleton<IGameDataService, GameDataService>();
-        services.AddSingleton<IGlobalAchievementService>(sp => new GlobalAchievementService(
-            sp.GetRequiredService<ILiteDatabase>(),
-            sp.GetRequiredService<IAppLogger>()
-        ));
+        services.AddSingleton<IGlobalAchievementService, GlobalAchievementService>();
         services.AddTransient(sp => new GameUI(
             sp.GetRequiredService<GameEngine>(),
             sp.GetRequiredService<IValidator<Faction>>(),
             sp.GetRequiredService<IValidator<PlayerAction>>(),
             sp.GetRequiredService<IGlobalAchievementService>()
         ));
-        services.AddSingleton<GameEngine>(sp => new GameEngine(
+        services.AddSingleton(sp => new GameEngine(
             sp.GetRequiredService<IEventService>(),
             sp.GetRequiredService<IFactionService>(),
             sp.GetRequiredService<IGameDataService>(),
@@ -94,6 +93,5 @@ class Program
         services.AddSingleton<IValidator<GameEvent>, GameEventValidator>();
         services.AddSingleton<IValidator<EventChoice>, EventChoiceValidator>();
         services.AddSingleton<IValidator<GameState>, GameStateValidator>();
-        services.AddSingleton<IGameStateRepository, LiteDbGameStateRepository>();
     }
 }

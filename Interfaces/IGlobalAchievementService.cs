@@ -5,7 +5,7 @@ namespace FactionsAtTheEnd.Interfaces
     /// <summary>
     /// Defines the contract for a service that manages global achievements persisting across all games.
     /// </summary>
-    public interface IGlobalAchievementService
+    public interface IGlobalAchievementService : IDisposable
     {
         /// <summary>
         /// Adds a global achievement if not already unlocked.

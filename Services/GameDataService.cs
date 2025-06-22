@@ -3,19 +3,18 @@ using CommunityToolkit.Diagnostics;
 using FactionsAtTheEnd.Interfaces;
 using FactionsAtTheEnd.Models;
 using FluentValidation;
-using LiteDB;
 
 namespace FactionsAtTheEnd.Services;
 
 /// <summary>
-/// Handles saving, loading, deleting, exporting, and importing game state data using LiteDB.
+/// Handles saving, loading, deleting, exporting, and importing game state data.
+/// Acts as a service layer over the unified data repository.
 /// </summary>
 public class GameDataService : IGameDataService
 {
-    private readonly IGameStateRepository _repository;
+    private readonly IDataRepository _dataRepository;
     private readonly IValidator<GameState> _gameStateValidator;
     private readonly IAppLogger _logger;
-    private readonly IFactionService _factionService;
     private readonly IGameStateFactory _gameStateFactory;
 
     private static readonly JsonSerializerOptions CachedJsonOptions = new()
@@ -26,30 +25,28 @@ public class GameDataService : IGameDataService
     /// <summary>
     /// Initializes a new instance of the <see cref="GameDataService"/> class.
     /// </summary>
-    /// <param name="repository">The game state repository.</param>
+    /// <param name="dataRepository">The unified data repository.</param>
     /// <param name="logger">The application logger.</param>
-    /// <param name="factionService">The faction service.</param>
     /// <param name="gameStateValidator">The validator for game state objects.</param>
     /// <param name="gameStateFactory">The factory for rehydrating game state objects.</param>
     public GameDataService(
-        IGameStateRepository repository,
+        IDataRepository dataRepository,
         IAppLogger logger,
-        IFactionService factionService,
         IValidator<GameState> gameStateValidator,
         IGameStateFactory gameStateFactory
     )
     {
-        Guard.IsNotNull(repository, nameof(repository));
+        Guard.IsNotNull(dataRepository, nameof(dataRepository));
         Guard.IsNotNull(logger, nameof(logger));
-        Guard.IsNotNull(factionService, nameof(factionService));
         Guard.IsNotNull(gameStateValidator, nameof(gameStateValidator));
         Guard.IsNotNull(gameStateFactory, nameof(gameStateFactory));
-        _repository = repository;
+
+        _dataRepository = dataRepository;
         _logger = logger;
-        _factionService = factionService;
         _gameStateValidator = gameStateValidator;
         _gameStateFactory = gameStateFactory;
-        _logger.Information("GameDataService initialized with repository instance.");
+
+        _logger.Information("GameDataService initialized with unified repository.");
     }
 
     /// <summary>
@@ -64,7 +61,7 @@ public class GameDataService : IGameDataService
         {
             await Task.Run(() =>
             {
-                _repository.Upsert(gameState);
+                _dataRepository.UpsertGameState(gameState);
             });
             _logger.Information("Game saved: {SaveName}", gameState.SaveName);
         }
@@ -89,7 +86,10 @@ public class GameDataService : IGameDataService
         {
             var games = await Task.Run(() =>
             {
-                return _repository.GetAll().OrderByDescending(g => g.LastPlayed).ToList();
+                return _dataRepository
+                    .GetAllGameStates()
+                    .OrderByDescending(g => g.LastPlayed)
+                    .ToList();
             });
             _logger.Information("Loaded {Count} saved games.", games.Count);
             return games;
@@ -113,7 +113,7 @@ public class GameDataService : IGameDataService
         {
             var game = await Task.Run(() =>
             {
-                return _repository.FindById(gameId);
+                return _dataRepository.FindGameStateById(gameId);
             });
             if (game != null)
             {
@@ -143,7 +143,7 @@ public class GameDataService : IGameDataService
         {
             await Task.Run(() =>
             {
-                _repository.Delete(gameId);
+                _dataRepository.DeleteGameState(gameId);
             });
             _logger.Information("Game deleted: {GameId}", gameId);
         }
@@ -168,7 +168,7 @@ public class GameDataService : IGameDataService
         _logger.Debug("Exporting game state: {SaveName}", gameState.SaveName);
         try
         {
-            var json = System.Text.Json.JsonSerializer.Serialize(gameState, CachedJsonOptions);
+            var json = JsonSerializer.Serialize(gameState, CachedJsonOptions);
             _logger.Information("Game state exported: {SaveName}", gameState.SaveName);
             return json;
         }
@@ -193,10 +193,7 @@ public class GameDataService : IGameDataService
         _logger.Debug("Importing game state from JSON");
         try
         {
-            var gameState = System.Text.Json.JsonSerializer.Deserialize<GameState>(
-                json,
-                CachedJsonOptions
-            );
+            var gameState = JsonSerializer.Deserialize<GameState>(json, CachedJsonOptions);
             if (gameState == null)
             {
                 _logger.Warning("Deserialized game state is null");
