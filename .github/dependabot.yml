@@ -6,3 +6,9 @@ updates:
       interval: "daily"
       time: "17:00"
       timezone: "Africa/Johannesburg"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "17:00"
+      
